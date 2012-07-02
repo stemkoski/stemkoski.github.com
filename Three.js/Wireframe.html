@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Template</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<script>
+/* 	Three.js  */
+
+// MAIN
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+// custom global variables
+var cube;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.doubleSided = true;
+	scene.add(floor);
+	// SKYBOX/FOG
+	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+    skyBox.flipSided = true; // render faces from inside of the cube, instead of from outside (default).
+	// scene.add(skyBox);
+	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+	
+	////////////
+	// CUSTOM //
+	////////////
+	// Sphere parameters: radius, segments along width, segments along height
+	var sphereGeom =  new THREE.SphereGeometry( 50, 32, 16 );
+	
+	// Basic wireframe materials.
+	var darkMaterial = new THREE.MeshBasicMaterial( { color: 0x000088 } );
+	var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x00ee00, wireframe: true, transparent: true } ); 
+	var multiMaterial = [ darkMaterial, wireframeMaterial ]; 
+		
+	// Creating three spheres to illustrate wireframes.
+	var sphere = new THREE.Mesh( THREE.GeometryUtils.clone(sphereGeom), wireframeMaterial );
+	sphere.position.set(-150, 50, 0);
+	scene.add( sphere );	
+	
+	// Create a sphere then put the wireframe over it.
+	var sphereBase = new THREE.Mesh( THREE.GeometryUtils.clone(sphereGeom), darkMaterial );
+	sphereBase.position.set(0, 50, 0);
+	scene.add( sphereBase );	
+	var sphereWire = new THREE.Mesh( THREE.GeometryUtils.clone(sphereGeom), wireframeMaterial );
+	sphereWire.position = sphereBase.position;
+	scene.add( sphereWire );	
+	
+	// This sphere is created using an array containing both materials above.
+	var sphere = THREE.SceneUtils.createMultiMaterialObject( 
+		THREE.GeometryUtils.clone(sphereGeom), multiMaterial );
+	sphere.position.set(150, 50, 0);
+	scene.add( sphere );		
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something
+	}
+	
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>

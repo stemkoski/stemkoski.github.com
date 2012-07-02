@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Template</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<script>
+/* 	Three.js  */
+
+// MAIN
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+// custom global variables
+var cube;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	//var light = new THREE.PointLight(0xffffff);
+	//light.position.set(0,250,0);
+	//scene.add(light);
+	
+	// SKYBOX/FOG
+	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+    skyBox.flipSided = true; // render faces from inside of the cube, instead of from outside (default).
+	// scene.add(skyBox);
+	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+	
+	////////////
+	// CUSTOM //
+	////////////
+
+	// must enable shadows on the renderer 
+	renderer.shadowMapEnabled = true;
+	
+	// "shadow cameras" show the light source and direction
+	
+	// spotlight #1 -- yellow, dark shadow
+	var spotlight = new THREE.SpotLight(0xffff00);
+	spotlight.position.set(-60,150,-30);
+	spotlight.shadowCameraVisible = true;
+	spotlight.shadowDarkness = 0.95;
+	spotlight.intensity = 2;
+	// must enable shadow casting ability for the light
+	spotlight.castShadow = true;
+	scene.add(spotlight);
+
+	// spotlight #2 -- red, light shadow
+	var spotlight2 = new THREE.SpotLight(0xff0000);
+	spotlight2.position.set(60,150,-60);
+	scene.add(spotlight2);
+	spotlight2.shadowCameraVisible = true;
+	spotlight2.shadowDarkness = 0.70;
+	spotlight2.intensity = 2;
+	spotlight2.castShadow = true;
+	
+	// spotlight #3
+	var spotlight3 = new THREE.SpotLight(0x0000ff);
+	spotlight3.position.set(150,80,-100);
+	spotlight3.shadowCameraVisible = true;
+	spotlight3.shadowDarkness = 0.95;
+	spotlight3.intensity = 2;
+	spotlight3.castShadow = true;
+	scene.add(spotlight3);
+	// change the direction this spotlight is facing
+	var lightTarget = new THREE.Object3D();
+	lightTarget.position.set(150,10,-100);
+	scene.add(lightTarget);
+	spotlight3.target = lightTarget;
+
+	// cube: mesh to cast shadows
+	var cubeGeometry = new THREE.CubeGeometry( 50, 50, 50 );
+	var cubeMaterial = new THREE.MeshLambertMaterial( { color: 0x888888 } );
+	cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
+	cube.position.set(0,50,0);
+	// Note that the mesh is flagged to cast shadows
+	cube.castShadow = true;
+	scene.add(cube);
+	
+	// floor: mesh to receive shadows
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	// Note the change to Lambert material.
+	var floorMaterial = new THREE.MeshLambertMaterial( { map: floorTexture } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 100, 100);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.doubleSided = true;
+	// Note the mesh is flagged to receive shadows
+	floor.receiveShadow = true;
+	scene.add(floor);
+	
+	// create "light-ball" meshes
+	var sphereGeometry = new THREE.SphereGeometry( 10, 16, 8 );
+	var darkMaterial = new THREE.MeshBasicMaterial( { color: 0x000000 } );
+		
+	var wireframeMaterial = new THREE.MeshBasicMaterial( 
+		{ color: 0xffff00, wireframe: true, transparent: true } ); 
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		sphereGeometry, [ darkMaterial, wireframeMaterial ] );
+	shape.position = spotlight.position;
+	scene.add( shape );
+	
+	var wireframeMaterial = new THREE.MeshBasicMaterial( 
+		{ color: 0xff0000, wireframe: true, transparent: true } ); 
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		sphereGeometry, [ darkMaterial, wireframeMaterial ] );
+	shape.position = spotlight2.position;
+	scene.add( shape );
+	
+	var wireframeMaterial = new THREE.MeshBasicMaterial( 
+		{ color: 0x0000ff, wireframe: true, transparent: true } ); 
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		sphereGeometry, [ darkMaterial, wireframeMaterial ] );
+	shape.position = spotlight3.position;
+	scene.add( shape );
+	
+ 
+  
+
+ // var spin = THREE.Matrix4.rotationAxisAngleMatrix(targetVec, spinAmount);    //rotation around target
+
+  // spin.multiplySelf(rot);            //compose the rotations (order matters, can be done other ways)
+
+  // theCube.matrix = spin;             //assign matrix (autoUpdateMatrix = false)
+	
+	
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something
+	}
+	
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>

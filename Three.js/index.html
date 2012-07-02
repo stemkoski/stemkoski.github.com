@@ -1,0 +1,295 @@
+<html>
+<head>
+<title>Three.js - examples</title>
+
+<style>
+body 
+{
+	background-color: #eeeeee;
+	background-image: url("html-images/white-pixels.png");
+	background-repeat: repeat;      /* repeat, no-repeat */
+	background-attachment: fixed;   /* scroll, fixed */
+	background-position: top left;  /* for no-repeat setting: top/bottom, left/right */
+	margin: 2% 5% 0% 5%;            /* top, left, bottom, right or TRBL */
+	
+	font-family: Georgia, Serif;	/* list font names in order of preference */
+	font-weight: normal;            /* normal, bold */
+	font-style: normal;             /* normal, italic */
+	font-variant: normal;           /* normal, small-caps */
+	font-size: 16px;                /* font size */
+	color: #000000;                 /* hexadecimal RGB color code */
+	text-decoration: none;          /* none, underline, overline, line-through */
+	text-align: left;               /* left, right, center, justify */
+}
+
+.fancy
+{
+	min-height: 150px;
+	/* next two lines for elder IE compatibility */
+	height: auto !important; 
+	height: 150px; 
+	
+	/* Background color and gradients */
+	background: #eeeeee;
+	background: -moz-linear-gradient(top, #ffffff, #cccccc);
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#cccccc));
+	/* really nifty translucence */
+	background: -moz-linear-gradient(top, rgba(255, 255, 255, 0.8), rgba(200, 200, 200, 0.8) );
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from( rgba(255, 255, 255, 0.8) ), to( rgba(200, 200, 200, 0.8) ));
+	
+	/* Rounded corners */
+	-moz-border-radius: 15px 15px 15px 15px;
+	-webkit-border-radius: 15px 15px 15px 15px;
+	border-radius: 15px 15px 15px 15px;
+}
+
+/* Page text links */
+a 
+{
+	font-size: 20px;
+	font-weight: bold;
+	font-variantx: small-caps;
+	color:#00c;
+	text-shadow: 1px 1px 0px #aaa;
+	margin: 13px 0px 0px 0px;
+	text-decoration: none;
+	
+	-webkit-transition: all 300ms ease-in-out;
+	-moz-transition: all 300ms ease-in-out;
+	-o-transition: all 300ms ease-in-out;
+	-ms-transition: all 300ms ease-in-out;
+	transition: all 300ms ease-in-out; 
+}
+a:hover 
+{
+	color:#c00;
+	/*text-shadow: 1px 1px 0px #f00;
+	/* gradual change */
+	-webkit-transition: all 300ms ease-in-out;
+	-moz-transition: all 300ms ease-in-out;
+	-o-transition: all 300ms ease-in-out;
+	-ms-transition: all 300ms ease-in-out;
+	transition: all 300ms ease-in-out; 
+}
+
+.superText
+{
+	color: #000;
+	text-shadow: 1px 1px 0px #aaa;
+}
+
+a .superImage
+{  
+	height: 148px;
+	border: 1px solid #000000;
+	margin: 0px 20px 0px 0px;
+	float:left;
+	
+	/* Rounded corners */
+	-moz-border-radius: 15px 15px 15px 15px;
+	-webkit-border-radius: 15px 15px 15px 15px;
+	border-radius: 15px 15px 15px 15px;
+	
+	position: relative; 
+	
+	-webkit-transition: all 300ms ease-in-out;
+	-moz-transition: all 300ms ease-in-out;
+	-o-transition: all 300ms ease-in-out;
+	-ms-transition: all 300ms ease-in-out;
+	transition: all 300ms ease-in-out; 
+}  
+a:hover .superImage
+{  
+	top: -10px;  
+	
+	/* fallback on standard opaque colors */
+	-moz-box-shadow: 10px 10px 5px #888;
+	-webkit-box-shadow: 10px 10px 5px #888;
+	box-shadow: 10px 10px 5px #888;
+	/* translucent: the way shadows should be */
+	-moz-box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.5);
+	-webkit-box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.5);
+	box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.5);
+	
+	-webkit-transition: all 300ms ease-in-out;
+	-moz-transition: all 300ms ease-in-out;
+	-o-transition: all 300ms ease-in-out;
+	-ms-transition: all 300ms ease-in-out;
+	transition: all 300ms ease-in-out;
+}  
+
+.bigTitle
+{
+	font-size: 32px;
+	font-weight: bold;
+	font-variantx: small-caps;
+	color:#004;
+	text-align: center;
+	text-shadow: -1px -1px 2px #fff, 1px 1px 3px #000;	
+}
+</style>
+
+</head>
+<body>
+
+<div class="bigTitle">Three.js Examples</div>
+
+<br/><br/>
+<div class="fancy">
+<a href="HelloWorld.html" target="_blank">
+<img src="html-images/HelloWorld.png" class="superImage" />
+<br/>Hello World</a>
+<p class ="superText"> A heavily commented but basic scene. Illustrates the setup of a scene, camera, renderer, event handlers (for window resize and fullscreen, provided by the THREEx library), mouse controls to rotate/zoom/pan the scene, mini-display for FPS stats, and setting up basic geometries: a sphere with lighting effects, a multi-colored cube, a plane with an image texture applied, and skybox/fog options for rendering objects distant from the camera.
+<br/> Many of these features are described in more detail in the examples below. 
+</p>
+</div>
+
+<div class="fancy">
+<a href="Template.html" target="_blank">
+<img src="html-images/Template.png" class="superImage" />
+<br/>Template</a>
+<p class ="superText"> The "Hello World" code with most comments and meshes removed. </p>
+</div>
+
+<div class="fancy">
+<a href="Materials-Solid.html" target="_blank">
+<img src="html-images/Materials-Solid.png" class="superImage" />
+<br/>Materials - Solid</a>
+<p class ="superText"> Illustrates the difference between the Basic, Lambert, and Phong materials. </p>
+</div>
+
+<div class="fancy">
+<a href="Wireframe.html" target="_blank">
+<img src="html-images/Wireframe.png" class="superImage" />
+<br/>Wireframe</a>
+<p class ="superText"> Demonstrates how to create and apply wireframe materials. </p>
+</div>
+
+<div class="fancy">
+<a href="Vertex-Colors.html" target="_blank">
+<img src="html-images/Vertex-Colors.png" class="superImage" />
+<br/>Vertex Colors</a>
+<p class ="superText"> Assigning colors to vertices to achieve special effects such as gradients and randomization. </p>
+</div>
+
+<div class="fancy">
+<a href="Shapes.html" target="_blank">
+<img src="html-images/Shapes.png" class="superImage" />
+<br/>Shapes</a>
+<p class ="superText"> Uses some of the built-in geometry constructors to create the following three dimensional shapes (and variations): cube, icosahedron, octahedron, tetrahedron, sphere, dome, cylinder, prism, cone, pyramid, frustum (truncated cone and truncated pyramid), torus, torus knots. </p>
+</div>
+
+<div class="fancy">
+<a href="Extrusion.html" target="_blank">
+<img src="html-images/Extrusion.png" class="superImage" />
+<br/>Extrusion</a>
+<p class ="superText"> Extrusion. </p>
+</div>
+
+<div class="fancy">
+<a href="Text3D.html" target="_blank">
+<img src="html-images/Text3D.png" class="superImage" />
+<br/>Text3D</a>
+<p class ="superText"> Text3D </p>
+</div>
+
+<div class="fancy">
+<a href="Textures.html" target="_blank">
+<img src="html-images/Textures.png" class="superImage" />
+<br/>Textures</a>
+<p class ="superText"> Demonstrates surfaces with textures (image-based materials), including shading and coloring effects. </p>
+</div>
+
+<div class="fancy">
+<a href="Texture-Repeat.html" target="_blank">
+<img src="html-images/Texture-Repeat.png" class="superImage" />
+<br/>Texture - Repeat</a>
+<p class ="superText"> Repeating (tiling) a texture on a surface. </p>
+</div>
+
+<div class="fancy">
+<a href="Subdivision-Cube.html" target="_blank">
+<img src="html-images/Subdivision-Cube.png" class="superImage" />
+<br/>Subdivision Modifier - Cube</a>
+<p class ="superText"> Demostrates a function that interpolates additional points to a geometry, creating a "smoothing" effect. This example applies the modifier to a variety of cube geometries, resulting in spherical and beveled cubes. </p>
+</div>
+
+<div class="fancy">
+<a href="Skybox.html" target="_blank">
+<img src="html-images/Skybox.png" class="superImage" />
+<br/>SkyBox</a>
+<p class ="superText"> Using textures to create a SkyBox. </p>
+</div>
+
+<div class="fancy">
+<a href="Translucence.html" target="_blank">
+<img src="html-images/Translucence.png" class="superImage" />
+<br/>Translucence</a>
+<p class ="superText"> Illustrates using basic and phong-shaded translucent materials, making image textures translucent, using additive blending for a glow-like effect, and using image textures that already have alpha transparency. </p>
+</div>
+
+<div class="fancy">
+<a href="Shadow.html" target="_blank">
+<img src="html-images/Shadow.png" class="superImage" />
+<br/>Shadow</a>
+<p class ="superText"> ... </p>
+</div>
+
+<div class="fancy">
+<a href="Reflection.html" target="_blank">
+<img src="html-images/Reflection.png" class="superImage" />
+<br/>Reflection</a>
+<p class ="superText"> ... </p>
+</div>
+
+<div class="fancy">
+<a href="Texture-From-Canvas.html" target="_blank">
+<img src="html-images/Texture-From-Canvas.png" class="superImage" />
+<br/>Texture from Canvas</a>
+<p class ="superText"> Create a canvas element via JavaScript, draw text or images on it, and then use it as a texture for a mesh. </p>
+</div>
+
+<div class="fancy">
+<a href="Texture-Animation.html" target="_blank">
+<img src="html-images/Texture-Animation.png" class="superImage" />
+<br/>Texture Animation</a>
+<p class ="superText"> Repeats (tiles) a texture on a surface. </p>
+</div>
+
+<div class="fancy">
+<a href="Mesh-Movement.html" target="_blank">
+<img src="html-images/Mesh-Movement.png" class="superImage" />
+<br/>Mesh Movement</a>
+<p class ="superText"> Using the functionality provided by THREEx.Keyboard, translate and rotate a mesh.
+<br/>Controls -- W/S: translate forwards/backwards (local). Q/E: translate left/right (local). A/D: rotate left/right (local). R/F: rotate up/down (local). UP/DOWN: translate Z-/Z+ (global). LEFT/RIGHT: translate X-/X+ (global). </p>
+</div>
+
+<div class="fancy">
+<a href="Chase-Camera.html" target="_blank">
+<img src="html-images/Chase-Camera.png" class="superImage" />
+<br/>Chase Camera</a>
+<p class ="superText"> Create a "chase cam" -- move the camera around together with a mesh. </p>
+</div>
+
+<!-- 
+<div class="fancy">
+<a href="Multi-Camera.html" target="_blank">
+<img src="html-images/Multi-Camera.png" class="superImage" />
+<br/>Multiple Cameras</a>
+<p class ="superText"> Switch between multiple cameras. (Chase cam & overhead cam). </p>
+</div>
+
+<div class="fancy">
+<a href="Camera-Texture.html" target="_blank">
+<img src="html-images/Camera-Texture.png" class="superImage" />
+<br/>Camera to Texture</a>
+<p class ="superText"> Move around a camera and project what it sees it onto a texture.
+</p>
+</div>
+
+-->
+
+
+</body>
+</html>
+

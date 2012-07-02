@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Template</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<script>
+/* 	Three.js  */
+
+// MAIN
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+// custom global variables
+var cube;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { color: 0xcccccc } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.doubleSided = true;
+	scene.add(floor);
+	// SKYBOX/FOG
+	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+    skyBox.flipSided = true; // render faces from inside of the cube, instead of from outside (default).
+	// scene.add(skyBox);
+	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+	
+	////////////
+	// CUSTOM //
+	////////////
+	
+	// Using wireframe materials to illustrate shape details.
+	var darkMaterial = new THREE.MeshBasicMaterial( { color: 0xffffcc } );
+	var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } ); 
+	var multiMaterial = [ darkMaterial, wireframeMaterial ]; 
+
+	///////////
+	// ROW 1 //
+	///////////
+	
+	// cube
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.CubeGeometry(50, 50, 50, 1, 1, 1), 
+		multiMaterial );
+	shape.position.set(-200, 50, 100);
+	scene.add( shape );
+
+	// icosahedron
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.IcosahedronGeometry( 40, 0 ), // radius, subdivisions
+		multiMaterial );
+	shape.position.set(-100, 50, 100);
+	scene.add( shape );
+
+	// octahedron
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.OctahedronGeometry( 40, 0 ), 
+		multiMaterial );
+	shape.position.set(0, 50, 100);
+	scene.add( shape );
+
+	// tetrahedron
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.TetrahedronGeometry( 40, 0 ), 
+		multiMaterial );
+	shape.position.set(100, 50, 100);
+	scene.add( shape );
+
+	// sphere
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.SphereGeometry( 40, 32, 16 ), 
+		multiMaterial );
+	shape.position.set(200, 50, 100);
+	scene.add( shape );
+	
+	///////////
+	// ROW 2 //
+	///////////
+	
+	// cube
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.CubeGeometry(50, 50, 50, 2, 2, 2), 
+		multiMaterial );
+	shape.position.set(-200, 50, 0);
+	scene.add( shape );
+
+	// icosahedron
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.IcosahedronGeometry( 40, 1 ), // radius, subdivisions
+		multiMaterial );
+	shape.position.set(-100, 50, 0);
+	scene.add( shape );
+
+	// octahedron
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.OctahedronGeometry( 40, 1 ), 
+		multiMaterial );
+	shape.position.set(0, 50, 0);
+	scene.add( shape );
+
+	// tetrahedron
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.TetrahedronGeometry( 40, 1 ), 
+		multiMaterial );
+	shape.position.set(100, 50, 0);
+	scene.add( shape );
+
+	// dome
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.SphereGeometry( 40, 32, 16, 0, 2 * Math.PI, 0, Math.PI / 2 ), 
+		multiMaterial );
+	// should set material to doubleSided = true so that the 
+	//   interior view does not appear transparent.
+	shape.position.set(200, 50, 0);
+	scene.add( shape );
+	
+	///////////
+	// ROW 3 //
+	///////////
+	
+	// cylinder
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		// radiusAtTop, radiusAtBottom, height, segmentsAroundRadius, segmentsAlongHeight,
+		new THREE.CylinderGeometry( 30, 30, 80, 20, 4 ), 
+		multiMaterial );
+	shape.position.set(-200, 50, -100);
+	scene.add( shape );
+	
+	// cone
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		// radiusAtTop, radiusAtBottom, height, segmentsAroundRadius, segmentsAlongHeight,
+		new THREE.CylinderGeometry( 0, 30, 100, 20, 4 ), 
+		multiMaterial );
+	shape.position.set(-100, 50, -100);
+	scene.add( shape );
+	
+	// pyramid
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		// radiusAtTop, radiusAtBottom, height, segmentsAroundRadius, segmentsAlongHeight,
+		new THREE.CylinderGeometry( 0, 30, 100, 4, 4 ), 
+		multiMaterial );
+	shape.position.set(0, 50, -100);
+	scene.add( shape );
+
+	// torus
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+	    // radius of entire torus, diameter of tube (less than total radius), 
+		// segments around radius, segments around torus ("sides")
+		new THREE.TorusGeometry( 25, 10, 8, 4 ),
+		multiMaterial );
+	shape.position.set(100, 50, -100);
+	scene.add( shape );
+
+	// torus knot
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		// total knot radius, tube radius, number cylinder segments, sides per cyl. segment,
+		//  p-loops around torus, q-loops around torus
+		new THREE.TorusKnotGeometry( 30, 8, 60, 10, 2, 3 ), 
+		multiMaterial );
+	shape.position.set(200, 50, -100);
+	scene.add( shape );
+
+	///////////
+	// ROW 4 //
+	///////////
+	
+	// prism
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		// radiusAtTop, radiusAtBottom, height, segmentsAroundRadius, segmentsAlongHeight,
+		new THREE.CylinderGeometry( 30, 30, 80, 6, 4 ), 
+		multiMaterial );
+	shape.position.set(-200, 50, -200);
+	scene.add( shape );
+	
+	// cone - truncated
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		// radiusAtTop, radiusAtBottom, height, segmentsAroundRadius, segmentsAlongHeight,
+		new THREE.CylinderGeometry( 10, 30, 100, 20, 4 ), 
+		multiMaterial );
+	shape.position.set(-100, 50, -200);
+	scene.add( shape );
+	
+	// pyramid - truncated
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		// radiusAtTop, radiusAtBottom, height, segmentsAroundRadius, segmentsAlongHeight,
+		new THREE.CylinderGeometry( 15, 30, 100, 6, 4 ), 
+		multiMaterial );
+	shape.position.set(0, 50, -200);
+	scene.add( shape );
+
+	// torus
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+	    // radius of entire torus, diameter of tube (less than total radius), 
+		// sides per cylinder segment, cylinders around torus ("sides")
+		new THREE.TorusGeometry( 30, 20, 16, 40 ),
+		multiMaterial );
+	shape.position.set(100, 50, -200);
+	scene.add( shape );
+
+	// torus knot
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		// total knot radius, tube radius, number cylinder segments, sides per cyl. segment,
+		//  p-loops around torus, q-loops around torus
+		new THREE.TorusKnotGeometry( 30, 6, 160, 10, 3, 7 ), 
+		multiMaterial );
+	shape.position.set(200, 50, -200);
+	scene.add( shape );
+	
+	
+
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something
+	}
+	
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>

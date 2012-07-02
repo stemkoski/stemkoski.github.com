@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Hello World -- Three.js</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: June 2012 (three.js v49)
+ */
+	
+//////////	
+// MAIN //
+//////////
+
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+
+// custom global variables
+var cube;
+
+// initialization
+init();
+
+// animation loop / game loop
+animate();
+
+///////////////
+// FUNCTIONS //
+///////////////
+			
+function init() 
+{
+	///////////
+	// SCENE //
+	///////////
+	scene = new THREE.Scene();
+
+	////////////
+	// CAMERA //
+	////////////
+	
+	// set the view size in pixels (custom or according to window size)
+	// var SCREEN_WIDTH = 400, SCREEN_HEIGHT = 300;
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;	
+	// camera attributes
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	// set up camera
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	// add the camera to the scene
+	scene.add(camera);
+	// the camera defaults to position (0,0,0)
+	// 	so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	
+	//////////////
+	// RENDERER //
+	//////////////
+	
+	// create and start the renderer; choose antialias setting.
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	// create a div element to contain the renderer
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	// alternatively: if you insert the div via HTML, access it using
+	//   container = document.getElementById( 'container' );
+
+	// attach renderer to the container div
+	container.appendChild( renderer.domElement );
+	
+	////////////
+	// EVENTS //
+	////////////
+
+	// automatically resize renderer
+	THREEx.WindowResize(renderer, camera);
+	// toggle full-screen on given key press
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	
+	//////////////
+	// CONTROLS //
+	//////////////
+
+	// move mouse and: left   click (or hold 'A') to rotate, 
+	//                 middle click (or hold 'S') to zoom, 
+	//                 right  click (or hold 'D') to pan
+	controls = new THREE.TrackballControls( camera );
+	
+	///////////
+	// STATS //
+	///////////
+	
+	// displays current and past frames per second attained by scene
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	
+	///////////
+	// LIGHT //
+	///////////
+	
+	// create a light
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	var ambientLight = new THREE.AmbientLight(0x111111);
+	// scene.add(ambientLight);
+	
+	//////////////
+	// GEOMETRY //
+	//////////////
+		
+	// most objects displayed are a "mesh":
+	//  a collection of points ("geometry") and
+	//  a set of surface parameters ("material")	
+
+	// Sphere parameters: radius, segments along width, segments along height
+	var sphereGeometry = new THREE.SphereGeometry( 50, 32, 16 ); 
+	// use a "lambert" material rather than "basic" for realistic lighting.
+	//   (don't forget to add (at least one) light!)
+	var sphereMaterial = new THREE.MeshLambertMaterial( {color: 0x8888ff} ); 
+	var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+	sphere.position.set(100, 50, -50);
+	scene.add(sphere);
+	
+	// Create an array of materials to be used in a cube, one for each side
+	var cubeMaterialArray = [];
+	// order to add materials: x+,x-,y+,y-,z+,z-
+	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0xff3333 } ) );
+	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0xff8800 } ) );
+	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0xffff33 } ) );
+	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0x33ff33 } ) );
+	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0x3333ff } ) );
+	cubeMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0x8833ff } ) );
+	// Cube parameters: width (x), height (y), depth (z), 
+	//        (optional) segments along x, segments along y, segments along z, materials array
+	var cubeGeometry = new THREE.CubeGeometry( 100, 100, 100, 1, 1, 1, cubeMaterialArray );
+	// using THREE.MeshFaceMaterial() in the constructor below
+	//   causes the mesh to use the materials stored in the geometry
+	cube = new THREE.Mesh( cubeGeometry, new THREE.MeshFaceMaterial() );
+	cube.position.set(-100, 50, -50);
+	scene.add( cube );		
+
+	// create a set of coordinate axes to help orient user
+	// default size is 100 pixels in each direction; change size by setting scale
+	var axes = new THREE.AxisHelper();
+	axes.scale.set( 1, 1, 1 );
+	scene.add( axes );
+	
+	///////////
+	// FLOOR //
+	///////////
+	
+	// note: 4x4 checkboard pattern scaled so that each square is 25 by 25 pixels.
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 1, 1);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.doubleSided = true;
+	scene.add(floor);
+	
+	/////////
+	// SKY //
+	/////////
+	
+	// recommend either a skybox or fog effect (can't use both at the same time) 
+	// without one of these, the scene's background color is determined by webpage background
+
+	// make sure the camera's "far" value is large enough so that it will render the skyBox!
+	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+	skyBox.flipSided = true; // render faces from inside of the cube, instead of from outside (default).
+	scene.add(skyBox);
+	
+	// fog must be added to scene before first render
+	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	// delta = change in time since last call (in seconds)
+	var delta = clock.getDelta(); 
+
+	// functionality provided by THREEx.KeyboardState.js
+	if ( keyboard.pressed("1") )
+		document.getElementById('message').innerHTML = ' Have a nice day! - 1';	
+	if ( keyboard.pressed("2") )
+		document.getElementById('message').innerHTML = ' Have a nice day! - 2 ';	
+		
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{	
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
