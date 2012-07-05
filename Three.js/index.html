@@ -133,7 +133,7 @@ a:hover .superImage
 <body>
 
 <div class="bigTitle">Three.js Examples</div>
-
+(Download source code at GitHub.)
 <br/><br/>
 <div class="fancy">
 <a href="HelloWorld.html" target="_blank">
@@ -183,14 +183,15 @@ a:hover .superImage
 <a href="Extrusion.html" target="_blank">
 <img src="html-images/Extrusion.png" class="superImage" />
 <br/>Extrusion</a>
-<p class ="superText"> Extrusion. </p>
+<p class ="superText"> Create an array of 2D points,
+make a 2D shape, and create an extrusion (a 3D shape whose cross-sections are the given 2D shape). </p>
 </div>
 
 <div class="fancy">
 <a href="Text3D.html" target="_blank">
 <img src="html-images/Text3D.png" class="superImage" />
 <br/>Text3D</a>
-<p class ="superText"> Text3D </p>
+<p class ="superText"> Create a 3D text object (an extruded version of text rendered as a 2D image). </p>
 </div>
 
 <div class="fancy">
@@ -218,7 +219,7 @@ a:hover .superImage
 <a href="Skybox.html" target="_blank">
 <img src="html-images/Skybox.png" class="superImage" />
 <br/>SkyBox</a>
-<p class ="superText"> Using textures to create a SkyBox. </p>
+<p class ="superText"> Using textures to create a "SkyBox": backgrounds images projected onto a cube surrounding the rendering region, which creates the illusion of distant 3D surroundings. </p>
 </div>
 
 <div class="fancy">
@@ -232,14 +233,14 @@ a:hover .superImage
 <a href="Shadow.html" target="_blank">
 <img src="html-images/Shadow.png" class="superImage" />
 <br/>Shadow</a>
-<p class ="superText"> ... </p>
+<p class ="superText"> Using spotlights to create shadow effects in a scene. </p>
 </div>
 
 <div class="fancy">
 <a href="Reflection.html" target="_blank">
 <img src="html-images/Reflection.png" class="superImage" />
 <br/>Reflection</a>
-<p class ="superText"> ... </p>
+<p class ="superText"> Creating a mirror-like material by projecting an image of the surroundings onto a object. </p>
 </div>
 
 <div class="fancy">
@@ -260,36 +261,63 @@ a:hover .superImage
 <a href="Mesh-Movement.html" target="_blank">
 <img src="html-images/Mesh-Movement.png" class="superImage" />
 <br/>Mesh Movement</a>
-<p class ="superText"> Using the functionality provided by THREEx.Keyboard, translate and rotate a mesh.
-<br/>Controls -- W/S: translate forwards/backwards (local). Q/E: translate left/right (local). A/D: rotate left/right (local). R/F: rotate up/down (local). UP/DOWN: translate Z-/Z+ (global). LEFT/RIGHT: translate X-/X+ (global). </p>
+<p class ="superText"> Using the functionality provided by THREEx.Keyboard, translate and rotate a mesh, with the following controls:
+<br/> W/S/Q/E: translate forwards/backwards/left/right (local). <br/> A/D/R/F: rotate left/right/up/down (local). 
+<br/> UP/DOWN/LEFT/RIGHT: translate Z-/Z+/X-/X+ (global). </p>
 </div>
 
 <div class="fancy">
 <a href="Chase-Camera.html" target="_blank">
 <img src="html-images/Chase-Camera.png" class="superImage" />
 <br/>Chase Camera</a>
-<p class ="superText"> Create a "chase cam" -- move the camera around together with a mesh. </p>
+<p class ="superText"> Create a "chase cam" -- move the camera around together with a mesh. (Same controls as in "Mesh Movement" example.)</p>
 </div>
 
-<!-- 
 <div class="fancy">
-<a href="Multi-Camera.html" target="_blank">
-<img src="html-images/Multi-Camera.png" class="superImage" />
+<a href="Multiple-Cameras.html" target="_blank">
+<img src="html-images/Multiple-Cameras.png" class="superImage" />
 <br/>Multiple Cameras</a>
-<p class ="superText"> Switch between multiple cameras. (Chase cam & overhead cam). </p>
+<p class ="superText"> Switch between multiple cameras: chase camera (press "1") and fixed top view (press "2"). (Otherwise, same controls as in "Mesh Movement" example.)</p>
 </div>
 
 <div class="fancy">
 <a href="Camera-Texture.html" target="_blank">
 <img src="html-images/Camera-Texture.png" class="superImage" />
 <br/>Camera to Texture</a>
-<p class ="superText"> Move around a camera and project what it sees it onto a texture.
+<p class ="superText"> Move around a camera and project what it sees it onto a texture. (Same controls as in "Mesh Movement" example.)
 </p>
 </div>
 
+<!--
+<div class="fancy">
+<a href="Reflection.html" target="_blank">
+<img src="html-images/Reflection.png" class="superImage" />
+<br/>Collision Detection</a>
+<p class ="superText"> ... </p>
+</div>
 -->
+
 
 
 </body>
 </html>
 
+<!--
+images w/alpha?
+
+15. model
+15b model with subsurf
+16. model w/animation
+17. model w/animation start & stop
+
+17.5 physics. (not rec.)
+
+18 collision - boxes, rays
+
+20. video
+21. video - fancy (req model)
+
+25. DAT.GUI.
+30. glow filter
+31. particles (smoke, fire, water, explosion)
+-->
