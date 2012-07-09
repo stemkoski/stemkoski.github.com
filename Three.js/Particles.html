@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Template</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<script>
+/* 	Three.js  */
+
+// MAIN
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+// custom global variables
+var cube;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.doubleSided = true;
+	scene.add(floor);
+	// SKYBOX/FOG
+	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+    skyBox.flipSided = true; // render faces from inside of the cube, instead of from outside (default).
+	scene.add(skyBox);
+	// skybox works better for alpha blending with images.
+	
+	////////////
+	// CUSTOM //
+	////////////
+	
+	var particleTexture = THREE.ImageUtils.loadTexture( 'images/spark.png' );
+
+	particleGroup = new THREE.Object3D();
+	particleAttributes = { startSize: [], startPosition: [], randomness: [] };
+	
+	var totalParticles = 200;
+	var radiusRange = 50;
+	for( var i = 0; i < totalParticles; i++ ) 
+	{
+		var sprite = new THREE.Sprite( { map: particleTexture, useScreenCoordinates: false, color: 0xffffff } );
+		sprite.position.set( Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5 );
+		// for a cube:
+		// sprite.position.multiplyScalar( radiusRange );
+		// for a solid sphere:
+		// sprite.position.setLength( radiusRange * Math.random() );
+		// for a spherical shell:
+		sprite.position.setLength( radiusRange * (Math.random() * 0.1 + 0.9) );
+		
+		// sprite.color.setRGB( Math.random(),  Math.random(),  Math.random() ); 
+		sprite.color.setHSV( Math.random(), 0.9, 0.9 ); 
+		
+		// sprite.opacity = 0.80; // translucent particles
+		sprite.blending = THREE.AdditiveBlending; // "glowing" particles
+		
+		particleGroup.add( sprite );
+		// add variable qualities to arrays, if they need to be accessed later
+		particleAttributes.startPosition.push( sprite.position.clone() );
+		particleAttributes.randomness.push( Math.random() );
+	}
+	particleGroup.position.y = 50;
+	scene.add( particleGroup );
+}
+
+var particleGroup, particleAttributes;
+
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	var time = 4 * clock.getElapsedTime();
+	
+	for ( var c = 0; c < particleGroup.children.length; c ++ ) 
+	{
+		var sprite = particleGroup.children[ c ];
+
+		// particle wiggle
+		// var wiggleScale = 2;
+		// sprite.position.x += wiggleScale * (Math.random() - 0.5);
+		// sprite.position.y += wiggleScale * (Math.random() - 0.5);
+		// sprite.position.z += wiggleScale * (Math.random() - 0.5);
+		
+		// pulse away/towards center
+		// individual rates of movement
+		var a = particleAttributes.randomness[c] + 1;
+		var pulseFactor = Math.sin(a * time) * 0.1 + 0.9;
+		sprite.position.x = particleAttributes.startPosition[c].x * pulseFactor;
+		sprite.position.y = particleAttributes.startPosition[c].y * pulseFactor;
+		sprite.position.z = particleAttributes.startPosition[c].z * pulseFactor;	
+	}
+
+	// rotate the entire group
+	// particleGroup.rotation.x = time * 0.5;
+	particleGroup.rotation.y = time * 0.75;
+	// particleGroup.rotation.z = time * 1.0;
+
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something cool
+	}
+	
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
