@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Template</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<script type='text/javascript' src='js/DAT.GUI.min.js'></script>
+
+<script>
+/* 	Three.js  */
+
+// MAIN
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+
+// custom global variables
+var cube;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	// note addition...
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.doubleSided = true;
+	scene.add(floor);
+	// SKYBOX/FOG
+	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+    skyBox.flipSided = true; // render faces from inside of the cube, instead of from outside (default).
+	// scene.add(skyBox);
+	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+	
+	////////////
+	// CUSTOM //
+	////////////
+	var cubeGeometry = new THREE.CubeGeometry( 50, 50, 50 );
+	var cubeMaterial = new THREE.MeshBasicMaterial( { color: 0x000088 } );
+	cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
+	cube.position.set(0,26,0);
+	scene.add(cube);
+	
+	var gui = new dat.GUI();
+	
+	var parameters = 
+	{
+		a: 200, // numeric
+		b: 200, // numeric slider
+		c: "Hello, GUI!", // string
+		d: false, // boolean (checkbox)
+		e: "#ff8800", // color (hex)
+		f: function() { alert("Hello!") },
+		g: function() { alertMessage( parameters.c ) },
+		v : 0,    // dummy value, only type is important
+		w: "...", // dummy value, only type is important
+		x: 0, y: 0, z: 0
+	};
+	// gui.add( parameters )
+	gui.add( parameters, 'a' ).name('Number');
+	gui.add( parameters, 'b' ).min(128).max(256).step(16).name('Slider');
+	gui.add( parameters, 'c' ).name('String');
+	gui.add( parameters, 'd' ).name('Boolean');
+	
+	gui.addColor( parameters, 'e' ).name('Color');
+	
+	var numberList = [1, 2, 3];
+	gui.add( parameters, 'v', numberList ).name('List');
+	
+	var stringList = ["One", "Two", "Three"];
+	gui.add( parameters, 'w', stringList ).name('List');
+	
+	gui.add( parameters, 'f' ).name('Say "Hello!"');
+	gui.add( parameters, 'g' ).name("Alert Message");
+	
+	var folder1 = gui.addFolder('Coordinates');
+	folder1.add( parameters, 'x' );
+	folder1.add( parameters, 'y' );
+	folder1.close();
+	gui.open();
+	
+	// Note: if imported model appears too dark,
+	//   add an ambient light in this file
+	//   and increase values in model's exported .js file
+	//    to e.g. "colorAmbient" : [0.75, 0.75, 0.75]
+	var jsonLoader = new THREE.JSONLoader();
+	// triforce, bub, android, star, treasure-chest, mage, sword, flounder
+	jsonLoader.load( "models/ufo.js", addModelToScene );
+	// addModelToScene function is called back after model has loaded
+	
+	var ambientLight = new THREE.AmbientLight(0x111111);
+	//scene.add(ambientLight);
+	
+}
+
+function addModelToScene( geometry ) 
+{
+	var material = new THREE.MeshFaceMaterial();
+	android = new THREE.Mesh( geometry, material );
+	android.scale.set(10,10,10);
+	android.position.set(0,100,0);
+	// for transp.
+	// android.transparent = true;
+	// android.doubleSided = true;
+	// android.blending = THREE.AdditiveBlending;
+	scene.add( android );
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something
+	}
+	
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
