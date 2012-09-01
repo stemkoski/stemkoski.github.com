@@ -43,22 +43,28 @@ var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 
 // custom global variables
-var gui, gui_zText, 
-	gui_xMin, gui_xMax, gui_yMin, gui_yMax,
+var gui, gui_xText, gui_yText, gui_zText, 
+	gui_uMin, gui_uMax, gui_vMin, gui_vMax,
 	gui_a, gui_b, gui_c, gui_d,
 	gui_segments;
 
-var zFuncText = "x^2 - y^2";
-var zFunc = Parser.parse(zFuncText).toJSFunction( ['x','y'] );
+var xFuncText = "u^2 + sin(v)";
+var xFunc = Parser.parse(xFuncText).toJSFunction( ['u','v'] );
+var yFuncText = "u^2 + sin(v)";
+var yFunc = Parser.parse(yFuncText).toJSFunction( ['u','v'] );
+var zFuncText = "u^2 + sin(v)";
+var zFunc = Parser.parse(zFuncText).toJSFunction( ['u','v'] );
 
 // parameters for the equations
 var a = 0.01, b = 0.01, c = 0.01, d = 0.01;
 
 var meshFunction;
 var segments = 20, 
-	xMin = -10, xMax = 10, xRange = xMax - xMin,
-	yMin = -10, yMax = 10, yRange = yMax - yMin,
+	uMin = 0.01, uMax = 0.02, uRange = uMax - uMin,
+	vMin = 0.01, vMax = 0.02, vRange = vMax - vMin,
 	zMin = -10, zMax = 10, zRange = zMax - zMin;
+	
+var xMin = xMax = yMin = yMax = 0; // for autosizing window
 	
 var graphGeometry;
 var gridMaterial, wireMaterial, vertexColorMaterial;
@@ -101,8 +107,7 @@ function init()
 	light.position.set(0,250,0);
 	scene.add(light);
 	// SKYBOX/FOG
-	// scene.fog = new THREE.FogExp2( 0x888888, 0.00025 );
-	
+	scene.fog = new THREE.FogExp2( 0x888888, 0.0025 );
 	////////////
 	// CUSTOM //
 	////////////
@@ -111,7 +116,7 @@ function init()
 
 	// wireframe for xy-plane
 	var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000088, wireframe: true } ); 
-	var floorGeometry = new THREE.PlaneGeometry(1000,1000,10,10);
+	var floorGeometry = new THREE.PlaneGeometry(100,100,10,10);
 	var floor = new THREE.Mesh(floorGeometry, wireframeMaterial);
 	floor.position.z = -0.01;
 	floor.doubleSided = true;
@@ -130,8 +135,8 @@ function init()
 
 	var vertexColorMaterial  = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
 
-	// bgcolor
-	renderer.setClearColorHex( 0x888888, 1 );
+	// Background clear color
+	// renderer.setClearColorHex( 0x888888, 1 );
 
 	///////////////////
 	//   GUI SETUP   //	
@@ -148,11 +153,13 @@ function init()
 	};
 
 	// GUI -- equation
-	gui_zText = gui.add( this, 'zFuncText' ).name('z = f(x,y) = ');
-	gui_xMin = gui.add( this, 'xMin' ).name('x Minimum = ');
-	gui_xMax = gui.add( this, 'xMax' ).name('x Maximum = ');
-	gui_yMin = gui.add( this, 'yMin' ).name('y Minimum = ');
-	gui_yMax = gui.add( this, 'yMax' ).name('y Maximum = ');
+	gui_xText = gui.add( this, 'xFuncText' ).name('x = f(u,v) = ');
+	gui_yText = gui.add( this, 'yFuncText' ).name('y = g(u,v) = ');
+	gui_zText = gui.add( this, 'zFuncText' ).name('z = h(u,v) = ');
+	gui_uMin = gui.add( this, 'uMin' ).name('u Minimum = ');
+	gui_uMax = gui.add( this, 'uMax' ).name('u Maximum = ');
+	gui_vMin = gui.add( this, 'vMin' ).name('v Minimum = ');
+	gui_vMax = gui.add( this, 'vMax' ).name('v Maximum = ');
 	gui_segments = gui.add( this, 'segments' ).name('Subdivisions = ');
 
 	// GUI -- parameters
@@ -173,7 +180,7 @@ function init()
 
 	// GUI -- preset equations
 	var gui_preset = gui.addFolder('Preset equations');
-	gui_preset.add( parameters, 'preset1' ).name('Sine Circles');
+	gui_preset.add( parameters, 'preset1' ).name('Torus');
 
 	gui.add( parameters, 'resetCam' ).name("Reset Camera");
 	gui.add( parameters, 'graphFunc' ).name("Graph Function");	
@@ -183,15 +190,19 @@ function init()
 
 function createGraph()
 {
-	xRange = xMax - xMin;
-	yRange = yMax - yMin;
-	zFunc = Parser.parse(zFuncText).toJSFunction( ['x','y'] );
-	meshFunction = function(x, y) 
+	uRange = uMax - uMin;
+	vRange = vMax - vMin;
+	xFunc = Parser.parse(xFuncText).toJSFunction( ['u','v'] );	
+	yFunc = Parser.parse(yFuncText).toJSFunction( ['u','v'] );	
+	zFunc = Parser.parse(zFuncText).toJSFunction( ['u','v'] );
+	meshFunction = function(u0, v0) 
 	{
-		x = xRange * x + xMin;
-		y = yRange * y + yMin;
-		var z = zFunc(x,y); //= Math.cos(x) * Math.sqrt(y);
-		if ( isNaN(z) )
+		var u = uRange * u0 + uMin;
+		var v = vRange * v0 + vMin;
+		var x = xFunc(u,v);
+		var y = yFunc(u,v);
+		var z = zFunc(u,v);
+		if ( isNaN(x) || isNaN(y) || isNaN(z) )
 			return new THREE.Vector3(0,0,0); // TODO: better fix
 		else
 			return new THREE.Vector3(x, y, z);
@@ -233,6 +244,11 @@ function createGraph()
 	// end vertex colors //
 	///////////////////////
 	
+	xMin = graphGeometry.boundingBox.min.x;
+	xMax = graphGeometry.boundingBox.max.x;
+	yMin = graphGeometry.boundingBox.min.y;
+	yMax = graphGeometry.boundingBox.max.y;
+	
 	// material choices: vertexColorMaterial, wireMaterial , normMaterial , shadeMaterial
 	
 	if (graphMesh) 
@@ -250,10 +266,12 @@ function createGraph()
 
 function preset01()
 {
-	gui_zText.setValue("sin(sqrt(a*x^2  + b*y^2))");
-	gui_xMin.setValue(-10); gui_xMax.setValue(10);
-	gui_yMin.setValue(-10); gui_yMax.setValue(10);
-	gui_a.setValue(1);
+	gui_xText.setValue("cos(u)*(a + b*cos(v))");
+	gui_yText.setValue("sin(u)*(a + b*cos(v))");
+	gui_zText.setValue("b*sin(v)");
+	gui_uMin.setValue(0); gui_uMax.setValue(6.283);
+	gui_vMin.setValue(0); gui_vMax.setValue(6.283);
+	gui_a.setValue(3);
 	gui_b.setValue(1);
 	gui_segments.setValue(40);
 	createGraph(); resetCamera();
@@ -265,7 +283,7 @@ function resetCamera()
 	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
 	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
-	camera.position.set( 2*xMax, 0.5*yMax, 4*zMax);
+	camera.position.set( 2*xMax, 0.5*yMax, 4*zMax );
 	camera.up = new THREE.Vector3( 0, 0, 1 );
 	camera.lookAt(scene.position);	
 	scene.add(camera);
