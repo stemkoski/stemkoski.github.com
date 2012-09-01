@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Template</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head> 
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<script type='text/javascript' src='js/DAT.GUI.min.js'></script>
+
+<!-- http://silentmatt.com/javascript-expression-evaluator/ -->
+<script src="js/parser.js"></script>
+
+<script>
+/* 	Three.js  */
+
+// MAIN
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+
+// custom global variables
+var gui, gui_xText, gui_yText, gui_zText, 
+	gui_tMin, gui_tMax,
+	gui_a, gui_b, gui_c, gui_d,
+	gui_segments, gui_radiusSegments, gui_tubeRadius;
+
+var autoUpdate = true;
+
+var myKnot;
+var tubeMeshWire, tubeMeshSolid;
+
+// extrusion segments -- how many sample points to take along curve.
+var segments = 120;
+// how many sides the tube cross-section has
+var radiusSegments = 6;
+var tubeRadius = 0.1;
+
+var tMin = -2.11, tMax = 2.11, tRange = tMax - tMin;
+
+var xFuncText = "t^3 - 3*t";
+var yFuncText = "t^4 - 4*t^2";
+var zFuncText = "(t^5 - 10*t)/5";
+var xFunc = Parser.parse(xFuncText).toJSFunction( ['t'] );
+var yFunc = Parser.parse(yFuncText).toJSFunction( ['t'] );
+var zFunc = Parser.parse(zFuncText).toJSFunction( ['t'] );
+
+// parameters for the equations
+var a = 0.01, b = 0.01, c = 0.01, d = 0.01;
+
+var xMin = xMax = yMin = yMax = zMin = zMax = 0; // for autosizing window
+	
+var graphMesh, wireMaterial;
+
+Knot = THREE.Curve.create( 
+	function() {},
+	function(t) 
+	{
+		// default:    0 < t < 1
+		//    want: tMin < t < tMax
+		t = t * tRange + tMin;
+		return new THREE.Vector3(xFunc(t), yFunc(t), zFunc(t)).multiplyScalar(1);
+	}
+);
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	// RENDERER
+	renderer = new THREE.WebGLRenderer( {antialias:false} );
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	// SKYBOX/FOG
+	scene.fog = new THREE.FogExp2( 0x888888, 0.0025 );
+	////////////
+	// CUSTOM //
+	////////////
+	
+	scene.add( new THREE.AxisHelper() );
+
+	// wireframe for xy-plane
+	var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000088, wireframe: true } ); 
+	var floorGeometry = new THREE.PlaneGeometry(100,100,10,10);
+	var floor = new THREE.Mesh(floorGeometry, wireframeMaterial);
+	floor.position.z = -0.01;
+	floor.doubleSided = true;
+	// rotate to lie in x-y plane
+	floor.rotation.x = Math.PI / 2;
+	scene.add(floor);
+	
+	// "wireframe texture" (from image)
+	var wireTexture = new THREE.ImageUtils.loadTexture( 'images/square.png' );
+	wireTexture.wrapS = wireTexture.wrapT = THREE.RepeatWrapping; 
+	wireTexture.repeat.set( 40, 40 );
+	wireMaterial = new THREE.MeshBasicMaterial( { map: wireTexture, vertexColors: THREE.VertexColors } );
+	
+	// Background clear color
+	// renderer.setClearColorHex( 0x888888, 1 );
+
+	///////////////////
+	//   GUI SETUP   //	
+	///////////////////
+
+	gui = new dat.GUI();
+	
+	parameters = 
+	{
+		resetCam:  function() { resetCamera(); },	
+		preset1:   function() { preset01(); },
+		graphFunc: function() { createGraph(); },
+		finalValue: 337
+	};
+
+	// GUI -- equation
+	gui_xText = gui.add( this, 'xFuncText' ).name('x = f(t) = ');
+	gui_yText = gui.add( this, 'yFuncText' ).name('y = g(t) = ');
+	gui_zText = gui.add( this, 'zFuncText' ).name('z = h(t) = ');
+	gui_tMin = gui.add( this, 'tMin' ).name('t Minimum = ');
+	gui_tMax = gui.add( this, 'tMax' ).name('t Maximum = ');
+	gui_segments = gui.add( this, 'segments' ).name('t Segments = ').min(3).max(400).step(1);
+	gui_radiusSegments = gui.add( this, 'radiusSegments' ).name('r Segments = ').min(3).max(10).step(1);
+	gui_tubeRadius = gui.add( this, 'tubeRadius' ).name('Tube Radius = ').min(0).max(1);
+
+	// GUI -- parameters
+	var gui_parameters = gui.addFolder('Parameters');
+	a = b = c = d = 0.01;
+	autoUpdate = false;
+	gui_a = gui_parameters.add( this, 'a' ).min(-5).max(5).step(0.01).name('a = ');
+	gui_a.onChange( function(value) { if (autoUpdate) createGraph(); } );
+	gui_b = gui_parameters.add( this, 'b' ).min(-5).max(5).step(0.01).name('b = ');
+	gui_b.onChange( function(value) { if (autoUpdate) createGraph(); } );
+	gui_c = gui_parameters.add( this, 'c' ).min(-5).max(5).step(0.01).name('c = ');
+	gui_c.onChange( function(value) { if (autoUpdate) createGraph(); } );
+	gui_d = gui_parameters.add( this, 'd' ).min(-5).max(5).step(0.01).name('d = ');
+	gui_d.onChange( function(value) { if (autoUpdate) createGraph(); } );
+	gui_a.setValue(1);
+	gui_b.setValue(1);
+	gui_c.setValue(1);
+	gui_d.setValue(1);
+	autoUpdate = true;
+	
+	// GUI -- preset equations
+	var gui_preset = gui.addFolder('Preset equations');
+	gui_preset.add( parameters, 'preset1' ).name('Trefoil');
+
+	gui.add( parameters, 'resetCam' ).name("Reset Camera");
+	gui.add( parameters, 'graphFunc' ).name("Graph Function");	
+
+	preset01();
+}
+
+function createGraph()
+{
+	xFunc = Parser.parse(xFuncText).toJSFunction( ['t'] );
+	yFunc = Parser.parse(yFuncText).toJSFunction( ['t'] );
+	zFunc = Parser.parse(zFuncText).toJSFunction( ['t'] );
+	
+	// knot stuff
+	myKnot = new Knot;
+	
+    var closedTube = false; // connect the ends
+	var debug = false; // show normal vectors
+    var tubeGeometry = new THREE.TubeGeometry(myKnot, segments, tubeRadius, radiusSegments, closedTube, debug);
+
+	///////////////////////////////////////////////
+	// calculate vertex colors based on T values //
+	///////////////////////////////////////////////
+	var color, point, face, numberOfSides, vertexIndex;
+	// faces are indexed using characters
+	var faceIndices = [ 'a', 'b', 'c', 'd' ];
+	// first, assign colors to vertices as desired
+	for ( var s = 0; s <= segments; s++ ) 
+	for ( var r = 0; r < radiusSegments; r++ ) 
+	{
+		vertexIndex = r + s * radiusSegments;
+		color = new THREE.Color( 0xffffff );
+		// according to length along curve, repeat once
+		color.setHSV( (1 * s / segments) % 1, 1, 1 );
+		// according to radius segment -- ribbons of color
+		// color.setHSV( (1 * r / radiusSegments) % 1, 1, 1 );
+		tubeGeometry.colors[vertexIndex] = color; // use this array for convenience
+	}
+	// copy the colors as necessary to the face's vertexColors array.
+	for ( var i = 0; i < tubeGeometry.faces.length; i++ ) 
+	{
+		face = tubeGeometry.faces[ i ];
+		numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
+		for( var j = 0; j < numberOfSides; j++ ) 
+		{
+			vertexIndex = face[ faceIndices[ j ] ];
+			face.vertexColors[ j ] = tubeGeometry.colors[ vertexIndex ];
+		}
+	}
+	///////////////////////
+	// end vertex colors //
+	///////////////////////
+	
+	// for auto-sizing window
+	tubeGeometry.computeBoundingBox();
+	xMin = tubeGeometry.boundingBox.min.x;
+	xMax = tubeGeometry.boundingBox.max.x;
+	yMin = tubeGeometry.boundingBox.min.y;
+	yMax = tubeGeometry.boundingBox.max.y;
+	zMin = tubeGeometry.boundingBox.min.z;
+	zMax = tubeGeometry.boundingBox.max.z;
+	
+	if (graphMesh) 
+	{
+		scene.remove( graphMesh );
+		renderer.deallocateObject( graphMesh );
+	}
+
+	wireMaterial.map.repeat.set( segments, radiusSegments );
+	
+	graphMesh = new THREE.Mesh( tubeGeometry, wireMaterial );
+	graphMesh.doubleSided = true;
+	scene.add(graphMesh);
+}
+
+function preset01()
+{
+	autoUpdate = false;
+	gui_xText.setValue("t^3 + a*t");
+	gui_yText.setValue("t^4 + b*t^2");
+	gui_zText.setValue("(1/10)*(t^5 + (-10)*t)");
+	gui_tMin.setValue(-2.1); gui_tMax.setValue(2.1); 
+	gui_a.setValue(-3);
+	gui_b.setValue(-4);
+	gui_segments.setValue(120);
+	createGraph(); resetCamera();
+	autoUpdate = true;
+}
+		
+function resetCamera()
+{
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 5000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	camera.position.set( 2*xMax, 0.5*yMax, 4*zMax );
+	camera.up = new THREE.Vector3( 0, 0, 1 );
+	camera.lookAt(scene.position);	
+	scene.add(camera);
+	
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	THREEx.WindowResize(renderer, camera);
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something
+	}
+	
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
