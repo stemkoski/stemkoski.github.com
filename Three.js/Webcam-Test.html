@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>WebRTC tutorial</title>
+	<!-- http://www.webrtc.org/ -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 5px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<p id="errorMessage"></p>
+
+<center>
+Video on left, Canvas on right.
+<br />
+<video id="monitor" autoplay width="320" height="240" style="visibility: visible;"></video>
+<canvas id="videoImage" width="320" height="240" style="visibility: visible;"></canvas>
+</center>
+
+<script src="js/RequestAnimationFrame.js">
+//  Provides requestAnimationFrame in a cross browser way.
+//  http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+</script>
+
+<script>
+navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.getUserMedia;
+window.URL = window.URL || window.webkitURL;
+
+var camvideo = document.getElementById('monitor');
+
+	if (!navigator.getUserMedia) 
+	{
+		document.getElementById('errorMessage').innerHTML = 
+			'Sorry. <code>navigator.getUserMedia()</code> is not available.';
+		return;
+	}
+	navigator.getUserMedia({video: true}, gotStream, noStream);
+
+function gotStream(stream) 
+{
+	if (window.URL) 
+	{   camvideo.src = window.URL.createObjectURL(stream);   } 
+	else // Opera
+	{   camvideo.src = stream;   }
+
+	camvideo.onerror = function(e) 
+	{   stream.stop();   };
+
+	stream.onended = noStream;
+}
+
+function noStream(e) 
+{
+	var msg = 'No camera available.';
+	if (e.code == 1) 
+	{   msg = 'User denied access to use camera.';   }
+	document.getElementById('errorMessage').textContent = msg;
+}
+</script>
+
+<!-- The code below contains a loop to draw the contents of the video tag
+	 onto the canvas tag, enabling us to do cool things with the image. -->
+	 
+<script>
+
+// global variables
+var video, videoImage, videoImageContext;
+
+// assign variables to HTML elements
+video = document.getElementById( 'monitor' );
+videoImage = document.getElementById( 'videoImage' );
+videoImageContext = videoImage.getContext( '2d' );
+
+// background color if no video present
+videoImageContext.fillStyle = '#000000';
+videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );				
+
+// start the loop				
+animate();
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+}
+
+function render() 
+{	
+	if ( video.readyState === video.HAVE_ENOUGH_DATA ) 
+		videoImageContext.drawImage( video, 0, 0, videoImage.width, videoImage.height );
+}
+
+</script>
+
+</body>
+</html>

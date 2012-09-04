@@ -60,6 +60,10 @@ a
 	-ms-transition: all 300ms ease-in-out;
 	transition: all 300ms ease-in-out; 
 }
+.toc
+{
+	font-size: 16px;
+}
 a:hover 
 {
 	color:#c00;
@@ -133,9 +137,67 @@ a:hover .superImage
 <body>
 
 <div class="bigTitle">Three.js Examples</div>
-(Download source code at GitHub.)
+Hosted at <a class="toc" href="http://stemkoski.github.com/Three.js/">GitHub</a>. Last updated: 1 September 2012.
+<hr>
+<!-- categories:
+Basic
+Cameras
+Sprites
+Textures
+Mouse input
+GUIs
+Models
+RTC
+Advanced Algorithms (Collision, Marching)
+Mathematical
+-->
+&bull; <a class="toc" href="#hello-world">Hello World</a>
+&bull; <a class="toc" href="#template">Template</a>
+&bull; <a class="toc" href="#materials-solid">Materials - Solid</a>
+&bull; <a class="toc" href="#wireframe">Wireframe</a>
+&bull; <a class="toc" href="#vertex-colors">Vertex Colors</a>
+&bull; <a class="toc" href="#shapes">Shapes</a>
+&bull; <a class="toc" href="#extrusion">Extrusion</a>
+&bull; <a class="toc" href="#text3D">Text 3D</a>
+&bull; <a class="toc" href="#textures">Textures</a>
+&bull; <a class="toc" href="#sprites">Sprites</a>
+&bull; <a class="toc" href="#texture-repeat">Texture - Repeat</a>
+&bull; <a class="toc" href="#subdivision-cube">Subdivision Modifier - Cube</a>
+&bull; <a class="toc" href="#skybox">SkyBox</a>
+&bull; <a class="toc" href="#translucence">Translucence</a>
+&bull; <a class="toc" href="#shadow">Shadow</a>
+&bull; <a class="toc" href="#reflection">Reflection</a>
+&bull; <a class="toc" href="#particles">Particles</a>
+&bull; <a class="toc" href="#texture-from-canvas">Texture from Canvas</a>
+&bull; <a class="toc" href="#texture-animation">Texture Animation</a>
+&bull; <a class="toc" href="#mesh-movement">Mesh Movement</a>
+&bull; <a class="toc" href="#chase-camera">Chase Camera</a>
+&bull; <a class="toc" href="#multiple-cameras">Multiple Cameras</a>
+&bull; <a class="toc" href="#camera-texture">Camera to Texture</a>
+&bull; <a class="toc" href="#viewports-dual">Viewports - Dual</a>
+&bull; <a class="toc" href="#viewports-quad">Viewports - Quad</a>
+&bull; <a class="toc" href="#video-texture">Video to Texture</a>
+&bull; <a class="toc" href="#webcam-test">Webcam Test</a>
+&bull; <a class="toc" href="#webcam-texture">Webcam to Texture</a>
+&bull; <a class="toc" href="#gui">GUI</a>
+&bull; <a class="toc" href="#gui-controller">GUI Controller</a>
+&bull; <a class="toc" href="#mouse-sprite">Mouse Sprite</a>
+&bull; <a class="toc" href="#mouse-hovering">Mouse Hovering</a>
+&bull; <a class="toc" href="#mouse-tooltip">Mouse Tooltip</a>
+&bull; <a class="toc" href="#model">Model</a>
+&bull; <a class="toc" href="#model-animation">Animated Model</a>
+&bull; <a class="toc" href="#model-animation-control">Animated Model with Controls</a>
+&bull; <a class="toc" href="#collision-detection">Collision Detection</a>
+&bull; <a class="toc" href="#marching-cubes">Marching Cubes Algorithm</a>
+&bull; <a class="toc" href="#csg">Constructive Solid Geometry</a>
+&bull; <a class="toc" href="#graphulus-function">Function Grapher</a>
+&bull; <a class="toc" href="#graphulus-surface">Parametric Surface Grapher</a>
+&bull; <a class="toc" href="#graphulus-curve">Parametric Curve Grapher</a>
+&bull;
+
 <br/><br/>
 <div class="fancy">
+<a name="hello-world"></a>
 <a href="HelloWorld.html" target="_blank">
 <img src="html-images/HelloWorld.png" class="superImage" />
 <br/>Hello World</a>
@@ -145,6 +207,7 @@ a:hover .superImage
 </div>
 
 <div class="fancy">
+<a name="template"></a>
 <a href="Template.html" target="_blank">
 <img src="html-images/Template.png" class="superImage" />
 <br/>Template</a>
@@ -152,6 +215,7 @@ a:hover .superImage
 </div>
 
 <div class="fancy">
+<a name="materials-solid"></a>
 <a href="Materials-Solid.html" target="_blank">
 <img src="html-images/Materials-Solid.png" class="superImage" />
 <br/>Materials - Solid</a>
@@ -159,6 +223,7 @@ a:hover .superImage
 </div>
 
 <div class="fancy">
+<a name="wireframe"></a>
 <a href="Wireframe.html" target="_blank">
 <img src="html-images/Wireframe.png" class="superImage" />
 <br/>Wireframe</a>
@@ -166,6 +231,7 @@ a:hover .superImage
 </div>
 
 <div class="fancy">
+<a name="vertex-colors"></a>
 <a href="Vertex-Colors.html" target="_blank">
 <img src="html-images/Vertex-Colors.png" class="superImage" />
 <br/>Vertex Colors</a>
@@ -173,6 +239,7 @@ a:hover .superImage
 </div>
 
 <div class="fancy">
+<a name="shapes"></a>
 <a href="Shapes.html" target="_blank">
 <img src="html-images/Shapes.png" class="superImage" />
 <br/>Shapes</a>
@@ -180,6 +247,7 @@ a:hover .superImage
 </div>
 
 <div class="fancy">
+<a name="extrusion"></a>
 <a href="Extrusion.html" target="_blank">
 <img src="html-images/Extrusion.png" class="superImage" />
 <br/>Extrusion</a>
@@ -188,6 +256,7 @@ make a 2D shape, and create an extrusion (a 3D shape whose cross-sections are th
 </div>
 
 <div class="fancy">
+<a name="text3D"></a>
 <a href="Text3D.html" target="_blank">
 <img src="html-images/Text3D.png" class="superImage" />
 <br/>Text3D</a>
@@ -195,6 +264,7 @@ make a 2D shape, and create an extrusion (a 3D shape whose cross-sections are th
 </div>
 
 <div class="fancy">
+<a name="textures"></a>
 <a href="Textures.html" target="_blank">
 <img src="html-images/Textures.png" class="superImage" />
 <br/>Textures</a>
@@ -202,6 +272,7 @@ make a 2D shape, and create an extrusion (a 3D shape whose cross-sections are th
 </div>
 
 <div class="fancy">
+<a name="sprites"></a>
 <a href="Sprites.html" target="_blank">
 <img src="html-images/Sprites.png" class="superImage" />
 <br/>Sprites</a>
@@ -210,6 +281,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="texture-repeat"></a>
 <a href="Texture-Repeat.html" target="_blank">
 <img src="html-images/Texture-Repeat.png" class="superImage" />
 <br/>Texture - Repeat</a>
@@ -217,6 +289,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="subdivision-cube"></a>
 <a href="Subdivision-Cube.html" target="_blank">
 <img src="html-images/Subdivision-Cube.png" class="superImage" />
 <br/>Subdivision Modifier - Cube</a>
@@ -224,6 +297,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="skybox"></a>
 <a href="Skybox.html" target="_blank">
 <img src="html-images/Skybox.png" class="superImage" />
 <br/>SkyBox</a>
@@ -231,6 +305,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="translucence"></a>
 <a href="Translucence.html" target="_blank">
 <img src="html-images/Translucence.png" class="superImage" />
 <br/>Translucence</a>
@@ -238,6 +313,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="shadow"></a>
 <a href="Shadow.html" target="_blank">
 <img src="html-images/Shadow.png" class="superImage" />
 <br/>Shadow</a>
@@ -245,6 +321,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="reflection"></a>
 <a href="Reflection.html" target="_blank">
 <img src="html-images/Reflection.png" class="superImage" />
 <br/>Reflection</a>
@@ -252,6 +329,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="particles"></a>
 <a href="Particles.html" target="_blank">
 <img src="html-images/Particles.png" class="superImage" />
 <br/>Particles</a>
@@ -259,6 +337,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="texture-from-canvas"></a>
 <a href="Texture-From-Canvas.html" target="_blank">
 <img src="html-images/Texture-From-Canvas.png" class="superImage" />
 <br/>Texture from Canvas</a>
@@ -266,6 +345,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="texture-animation"></a>
 <a href="Texture-Animation.html" target="_blank">
 <img src="html-images/Texture-Animation.png" class="superImage" />
 <br/>Texture Animation</a>
@@ -273,6 +353,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="mesh-movement"></a>
 <a href="Mesh-Movement.html" target="_blank">
 <img src="html-images/Mesh-Movement.png" class="superImage" />
 <br/>Mesh Movement</a>
@@ -282,6 +363,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="chase-camera"></a>
 <a href="Chase-Camera.html" target="_blank">
 <img src="html-images/Chase-Camera.png" class="superImage" />
 <br/>Chase Camera</a>
@@ -289,6 +371,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="multiple-cameras"></a>
 <a href="Multiple-Cameras.html" target="_blank">
 <img src="html-images/Multiple-Cameras.png" class="superImage" />
 <br/>Multiple Cameras</a>
@@ -296,6 +379,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="camera-texture"></a>
 <a href="Camera-Texture.html" target="_blank">
 <img src="html-images/Camera-Texture.png" class="superImage" />
 <br/>Camera to Texture</a>
@@ -304,6 +388,28 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="viewports-dual"></a>
+<a href="Viewports-Dual.html" target="_blank">
+<img src="html-images/Viewports-Dual.png" class="superImage" />
+<br/>Viewports - Dual</a>
+<p class ="superText"> Simultaneously render two different camera views onto the same canvas element.
+(Same controls as in "Mesh Movement" example.)
+</p>
+</div>
+
+<div class="fancy">
+<a name="viewports-quad"></a>
+<a href="Viewports-Quad.html" target="_blank">
+<img src="html-images/Viewports-Quad.png" class="superImage" />
+<br/>Viewports - Quad</a>
+<p class ="superText"> Simultaneously render four different camera views onto the same canvas element: one perspective camera and three
+orthographic cameras along the axis directions (similar to many 3D modeling software configurations).
+(Same controls as in "Mesh Movement" example.)
+</p>
+</div>
+
+<div class="fancy">
+<a name="video-texture"></a>
 <a href="Video.html" target="_blank">
 <img src="html-images/Video.png" class="superImage" />
 <br/>Video to Texture</a>
@@ -312,6 +418,28 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="webcam-test"></a>
+<a href="Webcam-Test.html" target="_blank">
+<img src="html-images/Webcam-Test.png" class="superImage" />
+<br/>Webcam Test</a>
+<p class ="superText"> Displays user webcam image on this webpage. Requires Webcam to run,
+user needs to accept permissions to run, requires WebRTC compatible browser  (see http://www.webrtc.org/).
+(No Three.js code required; this example is a lead-in to the following example.)</p>
+</div>
+
+<div class="fancy">
+<a name="webcam-texture"></a>
+<a href="Webcam-Texture.html" target="_blank">
+<img src="html-images/Webcam-Texture.png" class="superImage" />
+<br/>Webcam Texture</a>
+<p class ="superText"> Displays user webcam image as a texture on a mesh. Requires Webcam to run,
+user needs to accept permissions to run, requires WebRTC compatible browser  (see http://www.webrtc.org/). 
+Press P to pause webcam (image freezes) and R to resume webcam.
+</p>
+</div>
+
+<div class="fancy">
+<a name="gui"></a>
 <a href="GUI.html" target="_blank">
 <img src="html-images/GUI.png" class="superImage" />
 <br/>GUI</a>
@@ -319,6 +447,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="gui-controller"></a>
 <a href="GUI-Controller.html" target="_blank">
 <img src="html-images/GUI-Controller.png" class="superImage" />
 <br/>GUI Controller</a>
@@ -326,6 +455,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="mouse-sprite"></a>
 <a href="Mouse-Sprite.html" target="_blank">
 <img src="html-images/Mouse-Sprite.png" class="superImage" />
 <br/>Mouse Sprite</a>
@@ -333,6 +463,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="mouse-over"></a>
 <a href="Mouse-Over.html" target="_blank">
 <img src="html-images/Mouse-Over.png" class="superImage" />
 <br/>Mouse Hovering</a>
@@ -340,6 +471,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="mouse-tooltip"></a>
 <a href="Mouse-Tooltip.html" target="_blank">
 <img src="html-images/Mouse-Tooltip.png" class="superImage" />
 <br/>Mouse Tooltip</a>
@@ -347,6 +479,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="model"></a>
 <a href="Model.html" target="_blank">
 <img src="html-images/Model.png" class="superImage" />
 <br/>Model</a>
@@ -354,6 +487,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="model-animation"></a>
 <a href="Model-Animation.html" target="_blank">
 <img src="html-images/Model-Animation.png" class="superImage" />
 <br/>Animated Model</a>
@@ -361,6 +495,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="model-animation-control"></a>
 <a href="Model-Animation-Control.html" target="_blank">
 <img src="html-images/Model-Animation-Control.png" class="superImage" />
 <br/>Animated Model with Controls</a>
@@ -368,6 +503,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="collision-detection"></a>
 <a href="Collision-Detection.html" target="_blank">
 <img src="html-images/Collision-Detection.png" class="superImage" />
 <br/>Collision Detection</a>
@@ -375,6 +511,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="marching-cubes"></a>
 <a href="Marching-Cubes.html" target="_blank">
 <img src="html-images/Marching-Cubes.png" class="superImage" />
 <br/>Marching Cubes Algorithm</a>
@@ -383,9 +520,19 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 <br>http://paulbourke.net/geometry/polygonise/ </p>
 </div>
 
+<div class="fancy">
+<a name="csg"></a>
+<a href="CSG.html" target="_blank">
+<img src="html-images/CSG.png" class="superImage" />
+<br/>Constructive Solid Geometry</a>
+<p class ="superText"> Create a new mesh from the union, intersection, or subtraction of two meshes. 
+Uses the library at http://github.com/chandlerprall/ThreeCSG/</p>
+</div>
+
 <hr color="black">
 
 <div class="fancy">
+<a name="graphulus-function"></a>
 <a href="Graphulus-Function.html" target="_blank">
 <img src="html-images/Graphulus-Function.png" class="superImage" />
 <br/>Function Grapher</a>
@@ -393,6 +540,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="graphulus-surface"></a>
 <a href="Graphulus-Surface.html" target="_blank">
 <img src="html-images/Graphulus-Surface.png" class="superImage" />
 <br/>Parametric Surface Grapher</a>
@@ -400,6 +548,7 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="graphulus-curve"></a>
 <a href="Graphulus-Curve.html" target="_blank">
 <img src="html-images/Graphulus-Curve.png" class="superImage" />
 <br/>Parametric Curve Grapher</a>
@@ -408,14 +557,13 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 
 <!--
 <div class="fancy">
+<a name="zzzz"></a>
 <a href="zzzz.html" target="_blank">
 <img src="html-images/zzzz.png" class="superImage" />
 <br/>zzzz</a>
 <p class ="superText"> ... </p>
 </div>
 -->
-
-
 
 </body>
 </html>
@@ -426,18 +574,10 @@ What are you doing, poking around in my HTML?  :p
 Notes to self (and nosy you):
 
 put up - 
-
-CSG
-view2, view4
 single triangle, square draw
 vertex colors alt - update
 
-webRTC to canvas...
-webRTC to texture...
-
-mathiness - 
-parametric curve graph
-surface graph
+mathiness -
 implicit graph
 Calculus-y variations: 
 	tangent line, tangent plane, riemann prisms, ...
@@ -445,10 +585,7 @@ Vector field (R^3 -> R^3), dropped particles flow, leave trails...
 Line integral - c(t) = <x(t),y(t)> & z = f(x,y)
 Flux through surface
 
-
-add a Table of contents...!
-
-
+categorize table of contents...?
 
 Most wanted:
 
@@ -457,12 +594,19 @@ Most wanted:
 - multiple views / viewports
 - filter (black and white film, e.g.)
 - specific particle effects (smoke, fire, water, electricity/spark, explosion)
-- particle emitters
-
-check jerome's work...
+- particle emitters (check jerome's work...)
 
 Fancy combo demos (not priority):
-
 Display video on a computer monitor/screen model 
+
+other recent thoughts:
+anaglyph-style effect
+convex hull of a point set
+the earth map from the webgl book
+http://mrdoob.com/projects/editor/
+dynamic terrain---
+http://alteredqualia.com/three/examples/webgl_terrain_dynamic2.html
+http://mrdoob.github.com/three.js/examples/webgl_trackballcamera_earth.html
+
 
 -->
