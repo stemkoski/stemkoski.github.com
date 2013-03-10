@@ -42,7 +42,6 @@ var camvideo = document.getElementById('monitor');
 	{
 		document.getElementById('errorMessage').innerHTML = 
 			'Sorry. <code>navigator.getUserMedia()</code> is not available.';
-		return;
 	}
 	navigator.getUserMedia({video: true}, gotStream, noStream);
 
