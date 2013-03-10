@@ -22,12 +22,17 @@
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
 <script>
-/* 	Three.js  */
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: March 2013 (three.js v56)
+ */
 
 // MAIN
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -78,17 +83,16 @@ function init()
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
 	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
 	floorTexture.repeat.set( 10, 10 );
-	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
 	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
 	floor.position.y = -0.5;
-	floor.doubleSided = true;
+	floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
 	// SKYBOX/FOG
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
-	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff } );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-    skyBox.flipSided = true; // render faces from inside of the cube, instead of from outside (default).
 	// scene.add(skyBox);
 	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
 	
@@ -109,7 +113,7 @@ function init()
 	// basic lava ball
 	var lavaTexture = THREE.ImageUtils.loadTexture( 'images/lava.jpg' );
 	var lavaMaterial = new THREE.MeshBasicMaterial( { map: lavaTexture } );
-	var lavaBall = new THREE.Mesh( THREE.GeometryUtils.clone(sphereGeom), lavaMaterial );
+	var lavaBall = new THREE.Mesh( sphereGeom.clone(), lavaMaterial );
 	lavaBall.position.set(-100, 50, 0);
 	scene.add( lavaBall );	
 	
@@ -118,7 +122,7 @@ function init()
 	lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
 	lavaTexture.repeat.set( 2, 2 );
 	var lavaMaterial = new THREE.MeshBasicMaterial( { map: lavaTexture } );
-	var lavaBall = new THREE.Mesh( THREE.GeometryUtils.clone(sphereGeom), lavaMaterial );
+	var lavaBall = new THREE.Mesh( sphereGeom.clone(), lavaMaterial );
 	lavaBall.position.set(0, 50, 0);
 	scene.add( lavaBall );		
 	
@@ -127,7 +131,7 @@ function init()
 	lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
 	lavaTexture.repeat.set( 3, 3 );
 	var lavaMaterial = new THREE.MeshBasicMaterial( { map: lavaTexture } );
-	var lavaBall = new THREE.Mesh( THREE.GeometryUtils.clone(sphereGeom), lavaMaterial );
+	var lavaBall = new THREE.Mesh( sphereGeom.clone(), lavaMaterial );
 	lavaBall.position.set(100, 50, 0);
 	scene.add( lavaBall );	
 	
@@ -138,7 +142,7 @@ function init()
 	
 	var crateTexture = new THREE.ImageUtils.loadTexture( 'images/crate.gif' );
 	var crateMaterial = new THREE.MeshBasicMaterial( { map: crateTexture } );
-	var crate = new THREE.Mesh( THREE.GeometryUtils.clone(cubeGeometry), crateMaterial );
+	var crate = new THREE.Mesh( cubeGeometry.clone(), crateMaterial );
 	crate.position.set(-60, 50, -100);
 	scene.add( crate );		
 	
@@ -146,7 +150,7 @@ function init()
 	crateTexture.wrapS = crateTexture.wrapT = THREE.RepeatWrapping;
 	crateTexture.repeat.set( 5, 5 );
 	var crateMaterial = new THREE.MeshBasicMaterial( { map: crateTexture } );
-	var crate = new THREE.Mesh( THREE.GeometryUtils.clone(cubeGeometry), crateMaterial );
+	var crate = new THREE.Mesh( cubeGeometry.clone(), crateMaterial );
 	crate.position.set(60, 50, -100);
 	scene.add( crate );		
 }

@@ -22,12 +22,17 @@
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
 <script>
-/* 	Three.js  */
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: March 2013 (three.js v56)
+ */
 
 // MAIN
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -78,17 +83,16 @@ function init()
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
 	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
 	floorTexture.repeat.set( 10, 10 );
-	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
 	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
 	floor.position.y = -0.5;
-	floor.doubleSided = true;
+	floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
 	// SKYBOX/FOG
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
-	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff } );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-    skyBox.flipSided = true; // render faces from inside of the cube, instead of from outside (default).
 	// scene.add(skyBox);
 	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
 	
@@ -99,28 +103,36 @@ function init()
 	var ballTexture = THREE.ImageUtils.loadTexture( 'images/redball.png' );
 	var crateTexture = THREE.ImageUtils.loadTexture( 'images/crate.png' );
 	
-	var sprite = new THREE.Sprite( { map: ballTexture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.topLeft } );
+	var ballMaterial = new THREE.SpriteMaterial( { map: ballTexture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.topLeft  } );
+	var sprite = new THREE.Sprite( ballMaterial );
 	sprite.position.set( 50, 50, 0 );
+	sprite.scale.set( 64, 64, 1.0 ); // imageWidth, imageHeight
 	scene.add( sprite );
 	
-	var sprite = new THREE.Sprite( { map: ballTexture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomRight } );
+	var ballMaterial = new THREE.SpriteMaterial( { map: ballTexture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomRight } );
+	var sprite = new THREE.Sprite( ballMaterial );
 	sprite.position.set( window.innerWidth - 50, window.innerHeight - 50, 0 );
+	sprite.scale.set( 64, 64, 1.0 ); // imageWidth, imageHeight
 	scene.add( sprite );
 	
-	var sprite2 = new THREE.Sprite( { map: crateTexture, useScreenCoordinates: false, color: 0xff0000 } );
-	sprite2.scale.x = sprite2.scale.y = 0.5;
+    var crateMaterial = new THREE.SpriteMaterial( { map: crateTexture, useScreenCoordinates: false, color: 0xff0000 } );
+	var sprite2 = new THREE.Sprite( crateMaterial );
 	sprite2.position.set( -100, 50, 0 );
+	sprite2.scale.set( 64, 64, 1.0 ); // imageWidth, imageHeight
 	scene.add( sprite2 );
 	
-	var sprite2 = new THREE.Sprite( { map: crateTexture, useScreenCoordinates: false, color: 0x00ff00 } );
-	sprite2.scale.x = sprite2.scale.y = 0.5;
-	sprite2.position.set( 0, 50, 0 );
+	var crateMaterial = new THREE.SpriteMaterial( { map: crateTexture, useScreenCoordinates: false, color: 0x00ff00 } );
+	var sprite2 = new THREE.Sprite( crateMaterial );
+	sprite2.position.set( -0, 50, 0 );
+	sprite2.scale.set( 64, 64, 1.0 ); // imageWidth, imageHeight
 	scene.add( sprite2 );
 	
-	var sprite2 = new THREE.Sprite( { map: crateTexture, useScreenCoordinates: false, color: 0x0000ff } );
-	sprite2.scale.x = sprite2.scale.y = 0.5;
+	var crateMaterial = new THREE.SpriteMaterial( { map: crateTexture, useScreenCoordinates: false, color: 0x0000ff } );
+	var sprite2 = new THREE.Sprite( crateMaterial );
 	sprite2.position.set( 100, 50, 0 );
+	sprite2.scale.set( 64, 64, 1.0 ); // imageWidth, imageHeight
 	scene.add( sprite2 );
+	
 }
 
 function animate() 

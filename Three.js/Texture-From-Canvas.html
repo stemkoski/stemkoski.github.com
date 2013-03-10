@@ -22,12 +22,17 @@
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
 <script>
-/* 	Three.js  */
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: March 2013 (three.js v56)
+ */
 
 // MAIN
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -78,17 +83,16 @@ function init()
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
 	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
 	floorTexture.repeat.set( 10, 10 );
-	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
 	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-	floor.position.y = -0.5;
+	floor.rotation.x = Math.PI / 2;
 	floor.doubleSided = true;
 	scene.add(floor);
 	// SKYBOX/FOG
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
-	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff } );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-    skyBox.flipSided = true; // render faces from inside of the cube, instead of from outside (default).
 	// scene.add(skyBox);
 	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
 	
@@ -109,7 +113,7 @@ function init()
 	var texture1 = new THREE.Texture(canvas1) 
 	texture1.needsUpdate = true;
       
-    var material1 = new THREE.MeshBasicMaterial( {map: texture1} );
+    var material1 = new THREE.MeshBasicMaterial( {map: texture1, side:THREE.DoubleSide } );
     material1.transparent = true;
 
     var mesh1 = new THREE.Mesh(
@@ -117,9 +121,6 @@ function init()
         material1
       );
 	mesh1.position.set(0,50,0);
-	mesh1.rotation.x = Math.PI / 2;
-    mesh1.doubleSided = true;
-	
 	scene.add( mesh1 );
 	
 	/////// draw image on canvas /////////
@@ -141,7 +142,7 @@ function init()
 			texture2.needsUpdate = true;
 	};  
       
-    var material2 = new THREE.MeshBasicMaterial( {map: texture2} );
+    var material2 = new THREE.MeshBasicMaterial( {map: texture2, side:THREE.DoubleSide} );
     material2.transparent = true;
 
     var mesh2 = new THREE.Mesh(
@@ -149,8 +150,6 @@ function init()
         material2
       );
 	mesh2.position.set(0,50,-50);
-	mesh2.rotation.x = Math.PI / 2;
-    mesh2.doubleSided = true;
 	scene.add( mesh2 );	
 }
 

@@ -22,6 +22,7 @@
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
@@ -30,7 +31,11 @@
 <script src="js/MarchingCubesData.js"></script>
 
 <script>
-/* 	Three.js  */
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: March 2013 (three.js v56)
+ */
 
 // MAIN
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -85,13 +90,11 @@ function init()
 	// CUSTOM //
 	////////////
 	
-	scene.add( new THREE.AxisHelper() );
+	scene.add( new THREE.AxisHelper(100) );
 
 	// number of cubes along a side
 	size = 20;
-	
-	
-	
+
 	var axisMin = -10;
 	var axisMax =  10;
 	var axisRange = axisMax - axisMin;
@@ -176,64 +179,64 @@ function init()
 		if ( bits & 1 )
 		{		
 			mu = ( isolevel - value0 ) / ( value1 - value0 );
-			vlist[0] = points[p].clone().lerpSelf( points[px], mu );
+			vlist[0] = points[p].clone().lerp( points[px], mu );
 		}
 		if ( bits & 2 )
 		{
 			mu = ( isolevel - value1 ) / ( value3 - value1 );
-			vlist[1] = points[px].clone().lerpSelf( points[pxy], mu );
+			vlist[1] = points[px].clone().lerp( points[pxy], mu );
 		}
 		if ( bits & 4 )
 		{
 			mu = ( isolevel - value2 ) / ( value3 - value2 );
-			vlist[2] = points[py].clone().lerpSelf( points[pxy], mu );
+			vlist[2] = points[py].clone().lerp( points[pxy], mu );
 		}
 		if ( bits & 8 )
 		{
 			mu = ( isolevel - value0 ) / ( value2 - value0 );
-			vlist[3] = points[p].clone().lerpSelf( points[py], mu );
+			vlist[3] = points[p].clone().lerp( points[py], mu );
 		}
 		// top of the cube
 		if ( bits & 16 )
 		{
 			mu = ( isolevel - value4 ) / ( value5 - value4 );
-			vlist[4] = points[pz].clone().lerpSelf( points[pxz], mu );
+			vlist[4] = points[pz].clone().lerp( points[pxz], mu );
 		}
 		if ( bits & 32 )
 		{
 			mu = ( isolevel - value5 ) / ( value7 - value5 );
-			vlist[5] = points[pxz].clone().lerpSelf( points[pxyz], mu );
+			vlist[5] = points[pxz].clone().lerp( points[pxyz], mu );
 		}
 		if ( bits & 64 )
 		{
 			mu = ( isolevel - value6 ) / ( value7 - value6 );
-			vlist[6] = points[pyz].clone().lerpSelf( points[pxyz], mu );
+			vlist[6] = points[pyz].clone().lerp( points[pxyz], mu );
 		}
 		if ( bits & 128 )
 		{
 			mu = ( isolevel - value4 ) / ( value6 - value4 );
-			vlist[7] = points[pz].clone().lerpSelf( points[pyz], mu );
+			vlist[7] = points[pz].clone().lerp( points[pyz], mu );
 		}
 		// vertical lines of the cube
 		if ( bits & 256 )
 		{
 			mu = ( isolevel - value0 ) / ( value4 - value0 );
-			vlist[8] = points[p].clone().lerpSelf( points[pz], mu );
+			vlist[8] = points[p].clone().lerp( points[pz], mu );
 		}
 		if ( bits & 512 )
 		{
 			mu = ( isolevel - value1 ) / ( value5 - value1 );
-			vlist[9] = points[px].clone().lerpSelf( points[pxz], mu );
+			vlist[9] = points[px].clone().lerp( points[pxz], mu );
 		}
 		if ( bits & 1024 )
 		{
 			mu = ( isolevel - value3 ) / ( value7 - value3 );
-			vlist[10] = points[pxy].clone().lerpSelf( points[pxyz], mu );
+			vlist[10] = points[pxy].clone().lerp( points[pxyz], mu );
 		}
 		if ( bits & 2048 )
 		{
 			mu = ( isolevel - value2 ) / ( value6 - value2 );
-			vlist[11] = points[py].clone().lerpSelf( points[pyz], mu );
+			vlist[11] = points[py].clone().lerp( points[pyz], mu );
 		}
 		
 		// construct triangles -- get correct vertices from triTable.
@@ -256,7 +259,7 @@ function init()
 			var face = new THREE.Face3(vertexIndex, vertexIndex+1, vertexIndex+2);
 			geometry.faces.push( face );
 
-			geometry.faceVertexUvs[ 0 ].push( [ new THREE.UV(0,0), new THREE.UV(0,1), new THREE.UV(1,1) ] );
+			geometry.faceVertexUvs[ 0 ].push( [ new THREE.Vector2(0,0), new THREE.Vector2(0,1), new THREE.Vector2(1,1) ] );
 
 			vertexIndex += 3;
 			i += 3;
@@ -264,9 +267,9 @@ function init()
 	}
 	 
 	geometry.computeFaceNormals();
-	var colorMaterial =  new THREE.MeshNormalMaterial;
+	var colorMaterial =  new THREE.MeshNormalMaterial( {side: THREE.DoubleSide} );
 	var mesh = new THREE.Mesh( geometry, colorMaterial );
-	mesh.doubleSided = true;
+	// mesh.doubleSided = true;
 	scene.add(mesh);
 }
 

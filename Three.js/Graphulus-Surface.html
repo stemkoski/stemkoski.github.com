@@ -22,6 +22,7 @@
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
@@ -32,7 +33,11 @@
 <script src="js/parser.js"></script>
 
 <script>
-/* 	Three.js  */
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: March 2013 (three.js v56)
+ */
 
 // MAIN
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -115,13 +120,12 @@ function init()
 	scene.add( new THREE.AxisHelper() );
 
 	// wireframe for xy-plane
-	var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000088, wireframe: true } ); 
+	var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000088, wireframe: true, side:THREE.DoubleSide } ); 
 	var floorGeometry = new THREE.PlaneGeometry(100,100,10,10);
 	var floor = new THREE.Mesh(floorGeometry, wireframeMaterial);
 	floor.position.z = -0.01;
-	floor.doubleSided = true;
 	// rotate to lie in x-y plane
-	floor.rotation.x = Math.PI / 2;
+	// floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
 	
 	var normMaterial = new THREE.MeshNormalMaterial;
@@ -131,7 +135,7 @@ function init()
 	var wireTexture = new THREE.ImageUtils.loadTexture( 'images/square.png' );
 	wireTexture.wrapS = wireTexture.wrapT = THREE.RepeatWrapping; 
 	wireTexture.repeat.set( 40, 40 );
-	wireMaterial = new THREE.MeshBasicMaterial( { map: wireTexture, vertexColors: THREE.VertexColors } );
+	wireMaterial = new THREE.MeshBasicMaterial( { map: wireTexture, vertexColors: THREE.VertexColors, side:THREE.DoubleSide } );
 
 	var vertexColorMaterial  = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
 
@@ -226,7 +230,7 @@ function createGraph()
 	{
 		point = graphGeometry.vertices[ i ];
 		color = new THREE.Color( 0x0000ff );
-		color.setHSV( 0.7 * (zMax - point.z) / zRange, 1, 0.9 );
+		color.setHSL( 0.7 * (zMax - point.z) / zRange, 1, 0.5 );
 		graphGeometry.colors[i] = color; // use this array for convenience
 	}
 	// copy the colors as necessary to the face's vertexColors array.
@@ -254,7 +258,7 @@ function createGraph()
 	if (graphMesh) 
 	{
 		scene.remove( graphMesh );
-		renderer.deallocateObject( graphMesh );
+		// renderer.deallocateObject( graphMesh );
 	}
 
 	wireMaterial.map.repeat.set( segments, segments );

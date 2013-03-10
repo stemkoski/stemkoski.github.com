@@ -21,9 +21,13 @@
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
+
+<!-- Note the extra JS file for this example! -->
+<script src="js/SubdivisionModifier.js"></script>
 
 <script>
 
@@ -80,17 +84,16 @@ function init()
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
 	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
 	floorTexture.repeat.set( 8, 8 );
-	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
 	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
 	floor.position.y = 0;
-	floor.doubleSided = true;
+	floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
 	// SKYBOX
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
-	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff } );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-    skyBox.flipSided = true;
 	scene.add(skyBox);
 	
 	// CUSTOM CODE
@@ -107,11 +110,11 @@ function init()
 	var cubeGeometry = new THREE.CubeGeometry( 80, 80, 80, 1, 1, 1 );
 		
 	var crate = THREE.SceneUtils.createMultiMaterialObject( 
-		THREE.GeometryUtils.clone(cubeGeometry), multiMaterial );
+		cubeGeometry.clone(), multiMaterial );
 	crate.position.set(-150, 50, 100);
 	scene.add( crate );		
 
-	var smooth = THREE.GeometryUtils.clone( cubeGeometry );
+	var smooth = cubeGeometry.clone();
 	var modifier = new THREE.SubdivisionModifier( 1 );
 	modifier.modify( smooth ); 
 
@@ -120,7 +123,7 @@ function init()
 	crate.position.set(-50, 50, 100);
 	scene.add( crate );		
 
-	var smooth = THREE.GeometryUtils.clone( cubeGeometry );
+	var smooth = cubeGeometry.clone();
 	var modifier = new THREE.SubdivisionModifier( 2 );
 	modifier.modify( smooth ); 
 
@@ -140,11 +143,11 @@ function init()
 	var cubeGeometry = new THREE.CubeGeometry( 80, 80, 80, 2, 2, 2 );
 		
 	var crate = THREE.SceneUtils.createMultiMaterialObject( 
-		THREE.GeometryUtils.clone(cubeGeometry), multiMaterial );
+		cubeGeometry.clone(), multiMaterial );
 	crate.position.set(-150, 50, 0);
 	scene.add( crate );		
 
-	var smooth = THREE.GeometryUtils.clone( cubeGeometry );
+	var smooth = cubeGeometry.clone();
 	var modifier = new THREE.SubdivisionModifier( 1 );
 	modifier.modify( smooth ); 
 
@@ -153,7 +156,7 @@ function init()
 	crate.position.set(-50, 50, 0);
 	scene.add( crate );		
 
-	var smooth = THREE.GeometryUtils.clone( cubeGeometry );
+	var smooth = cubeGeometry.clone();
 	var modifier = new THREE.SubdivisionModifier( 2 );
 	modifier.modify( smooth ); 
 
@@ -174,11 +177,11 @@ function init()
 	var cubeGeometry = new THREE.CubeGeometry( 80, 80, 80, 3, 3, 3 );
 		
 	var crate = THREE.SceneUtils.createMultiMaterialObject( 
-		THREE.GeometryUtils.clone(cubeGeometry), multiMaterial );
+		cubeGeometry.clone(), multiMaterial );
 	crate.position.set(-150, 50, -100);
 	scene.add( crate );		
 
-	var smooth = THREE.GeometryUtils.clone( cubeGeometry );
+	var smooth = cubeGeometry.clone();
 	var modifier = new THREE.SubdivisionModifier( 1 );
 	modifier.modify( smooth ); 
 
@@ -187,7 +190,7 @@ function init()
 	crate.position.set(-50, 50, -100);
 	scene.add( crate );		
 
-	var smooth = THREE.GeometryUtils.clone( cubeGeometry );
+	var smooth = cubeGeometry.clone();
 	var modifier = new THREE.SubdivisionModifier( 2 );
 	modifier.modify( smooth ); 
 

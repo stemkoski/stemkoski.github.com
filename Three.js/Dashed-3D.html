@@ -32,6 +32,8 @@
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
 	Date: March 2013 (three.js v56)
+	
+	Example described by "calude", at:	http://stackoverflow.com/questions/15084165/three-js-wireframe-only-shape-with-hidden-edges-as-dashed-lines
  */
 
 // MAIN
@@ -99,71 +101,26 @@ function init()
 	////////////
 	// CUSTOM //
 	////////////
+	var cubeGeometry = new THREE.CubeGeometry( 50, 50, 50 );
 	
-	// radius, segments along width, segments along height
-	var sphereGeom =  new THREE.SphereGeometry( 40, 32, 16 );
 	
-	// overlapping translucent red/green/blue spheres
-	var redMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, transparent: true, opacity: 0.5 } );
-	var sphere = new THREE.Mesh( sphereGeom.clone(), redMaterial );
-	sphere.position.set(-100, 50, 50);
-	scene.add( sphere );	
+	var cubeMaterial1 = new THREE.MeshBasicMaterial( { color: 0xccccdd, side: THREE.DoubleSide, depthTest: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 } );
 	
-	var greenMaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00, transparent: true, opacity: 0.5 } );
-	var sphere = new THREE.Mesh( sphereGeom.clone(), greenMaterial );
-	sphere.position.set(-100, 50, -50);
-	scene.add( sphere );	
+	var dashMaterial = new THREE.LineDashedMaterial( { color: 0xff0000, dashSize: 2, gapSize: 3, depthTest: false, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1  } );
 	
-	var blueMaterial = new THREE.MeshBasicMaterial( { color: 0x0000ff, transparent: true, opacity: 0.5 } );
-	var sphere = new THREE.Mesh( sphereGeom.clone(), blueMaterial );
-	sphere.position.set(-100, 50, -150);
-	scene.add( sphere );	
+	var cubeMaterial3 = new THREE.MeshBasicMaterial( { color: 0x000000, depthTest: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1, wireframe: true } );
 	
-	// basic material translucence
-	var darkMaterial = new THREE.MeshBasicMaterial( { color: 0x333333, transparent: true, opacity: 0.95 } );
-	var sphere = new THREE.Mesh( sphereGeom.clone(), darkMaterial );
-	sphere.position.set(0, 50, 0);
-	scene.add( sphere );		
- 
-	// phong material translucence
-	var darkMaterial = new THREE.MeshPhongMaterial( { color: 0x333333, transparent: true, opacity: 0.95 } );
-	var sphere = new THREE.Mesh( sphereGeom.clone(), darkMaterial );
-	sphere.position.set(100, 50, 0);
-	scene.add( sphere );
+	cube = new THREE.Mesh( cubeGeometry.clone(), cubeMaterial1 );
+	cube.position.set(0,26,0);
+	scene.add(cube);
 	
-	// image material translucence
-	var moonTexture = THREE.ImageUtils.loadTexture( 'images/moon.jpg' );
-	var moonMaterial = new THREE.MeshLambertMaterial( { map: moonTexture, transparent: true, opacity: 0.75 } );
-	var moon = new THREE.Mesh( sphereGeom.clone(), moonMaterial );
-	moon.position.set(200, 50, 0);
-	scene.add( moon );	
+	cube = new THREE.Line( geo2line(new THREE.CubeGeometry( 50, 50, 50 )), dashMaterial, THREE.LinePieces );
+	cube.position.set(0,26,0);
+	scene.add(cube);
 	
-	// translucent blue sphere with additive blending for "glow" effect
-	var darkMaterial = new THREE.MeshBasicMaterial( { color: 0x0000ff,  transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending } );
-	var sphere = new THREE.Mesh( sphereGeom.clone(), darkMaterial );
-	sphere.position.set(0, 50, -100);
-	scene.add( sphere );	
-	
-	// translucent blue sphere with additive blending and phong shading
-	// added ambient light and color for better results
-	var ambientLight = new THREE.AmbientLight(0x444444);
-	scene.add(ambientLight);
-	
-	var darkMaterial = new THREE.MeshPhongMaterial( { color: 0x0000ff, ambient: 0xff0000, transparent: true, blending: THREE.AdditiveBlending } );
-	var sphere = new THREE.Mesh( sphereGeom.clone(), darkMaterial );
-	sphere.position.set(100, 50, -100);
-	scene.add( sphere );	
-	
-	// image with transparency on a plane
-	
-	var ballTexture = THREE.ImageUtils.loadTexture( 'images/redball.png' );
-	var ballMaterial = new THREE.MeshBasicMaterial( { map: ballTexture, transparent : true, side: THREE.DoubleSide } );
-	
-	var planeGeometry = new THREE.PlaneGeometry(100,100,1,1);
-	var plane = new THREE.Mesh( planeGeometry, ballMaterial );
-	plane.position.set( 200, 50, -100 );
-	scene.add(plane);
-	
+	cube = new THREE.Mesh( cubeGeometry.clone(), cubeMaterial3 );
+	cube.position.set(0,26,0);
+	scene.add(cube);
 	
 }
 
@@ -190,6 +147,34 @@ function render()
 	renderer.render( scene, camera );
 }
 
+function geo2line( geo ) // credit to WestLangley!
+{
+    var geometry = new THREE.Geometry();
+    var vertices = geometry.vertices;
+	
+	for ( i = 0; i < geo.faces.length; i++ ) 
+	{
+        var face = geo.faces[ i ];
+        if ( face instanceof THREE.Face3 ) 
+		{
+            var a = geo.vertices[ face.a ].clone();
+			var b = geo.vertices[ face.b ].clone();
+			var c = geo.vertices[ face.c ].clone();
+            vertices.push( a,b, b,c, c,a );
+        } 
+		else if ( face instanceof THREE.Face4 ) 
+		{
+			var a = geo.vertices[ face.a ].clone();
+			var b = geo.vertices[ face.b ].clone();
+			var c = geo.vertices[ face.c ].clone();
+			var d = geo.vertices[ face.d ].clone();
+            vertices.push( a,b, b,c, c,d, d,a );
+        }
+    }
+
+    geometry.computeLineDistances();
+    return geometry;
+}
 </script>
 
 </body>
