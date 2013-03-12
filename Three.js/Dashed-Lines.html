@@ -88,13 +88,38 @@ function init()
 	////////////
 	// CUSTOM //
 	////////////
+
+	var lineGeometry = new THREE.Geometry();
+	var vertArray = lineGeometry.vertices;
+	vertArray.push( new THREE.Vector3(-150, -100, 0), new THREE.Vector3(-150, 100, 0) );
+	lineGeometry.computeLineDistances();
+	var lineMaterial = new THREE.LineBasicMaterial( { color: 0xcc0000 } );
+	var line = new THREE.Line( lineGeometry, lineMaterial );
+	scene.add(line);
+
+	var lineGeometry = new THREE.Geometry();
+	var vertArray = lineGeometry.vertices;
+	vertArray.push( new THREE.Vector3(-100, -100, 0), new THREE.Vector3(-100, 100, 0) );
+	lineGeometry.computeLineDistances();
+	var lineMaterial = new THREE.LineDashedMaterial( { color: 0x00cc00, dashSize: 4, gapSize: 2 } );
+	var line = new THREE.Line( lineGeometry, lineMaterial );
+	scene.add(line);
+
+	var lineGeometry = new THREE.Geometry();
+	var vertArray = lineGeometry.vertices;
+	vertArray.push( new THREE.Vector3(-50, -100, 0), new THREE.Vector3(-50, 100, 0) );
+	lineGeometry.computeLineDistances();
+	var lineMaterial = new THREE.LineDashedMaterial( { color: 0x0000cc, dashSize: 1, gapSize: 3 } );
+	var line = new THREE.Line( lineGeometry, lineMaterial );
+	scene.add(line);
+	
 	var cubeGeometry = new THREE.CubeGeometry( 50, 50, 50 );
 
 	// use LineBasicMaterial if no dashes are desired
 	var dashMaterial = new THREE.LineDashedMaterial( { color: 0x000000, dashSize: 2, gapSize: 3 } );
 	
 	cube = new THREE.Line( geo2line(cubeGeometry), dashMaterial, THREE.LinePieces );
-	cube.position.set(0,26,0);
+	cube.position.set(50,26,0);
 	scene.add(cube);
 	
 }
