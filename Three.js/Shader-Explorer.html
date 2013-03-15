@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Template</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<!-- Note the additional JS files! always need all of these for postprocessing. -->
+<script src="js/postprocessing/EffectComposer.js"></script>
+<script src="js/postprocessing/RenderPass.js"></script>
+<script src="js/postprocessing/ShaderPass.js"></script>
+<script src="js/postprocessing/MaskPass.js"></script>
+<script src="js/shaders/CopyShader.js"></script>
+
+<!-- separate out the shaders specific to this demo -->
+<script src="js/shaders/DotScreenShader.js"></script>
+<script src="js/postprocessing/DotScreenPass.js"></script>
+
+<script src="js/shaders/BleachBypassShader.js"></script>
+<script src="js/shaders/ColorifyShader.js"></script>
+<script src="js/shaders/ConvolutionShader.js"></script>
+<script src="js/shaders/DotScreenShader.js"></script>
+<script src="js/shaders/FilmShader.js"></script>
+<script src="js/shaders/HorizontalBlurShader.js"></script>
+<script src="js/shaders/SepiaShader.js"></script>
+<script src="js/shaders/VerticalBlurShader.js"></script>
+<script src="js/shaders/VignetteShader.js"></script>
+
+<script src="js/postprocessing/BloomPass.js"></script>
+<script src="js/postprocessing/FilmPass.js"></script>
+<script src="js/postprocessing/DotScreenPass.js"></script>
+<script src="js/postprocessing/TexturePass.js"></script>
+
+
+<!-- GUI for experimenting with shaders -->		
+<script type='text/javascript' src='js/DAT.GUI.min.js'></script>
+
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: March 2013 (three.js v56)
+ */
+
+// MAIN
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+// custom global variables
+var cube, gui;
+var shaderActive = "none";
+
+// variables for shader
+var composer, finalPass;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.rotation.x = Math.PI / 2;
+	scene.add(floor);
+	
+	// SKYBOX/FOG
+	var materialArray = [];
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-xpos.png' ) }));
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-xneg.png' ) }));
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-ypos.png' ) }));
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-yneg.png' ) }));
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-zpos.png' ) }));
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-zneg.png' ) }));
+	for (var i = 0; i < 6; i++)
+	   materialArray[i].side = THREE.BackSide;
+	var skyboxMaterial = new THREE.MeshFaceMaterial( materialArray );
+	
+	var skyboxGeom = new THREE.CubeGeometry( 5000, 5000, 5000, 1, 1, 1 );
+	
+	var skybox = new THREE.Mesh( skyboxGeom, skyboxMaterial );
+	scene.add( skybox );	
+
+	
+	////////////
+	// CUSTOM //
+	////////////
+	var cubeGeometry = new THREE.CubeGeometry( 50, 50, 50 );
+	var crateTexture = new THREE.ImageUtils.loadTexture( 'images/crate.gif' );
+	var crateMaterial = new THREE.MeshBasicMaterial( { map: crateTexture } );
+	cube = new THREE.Mesh( cubeGeometry, crateMaterial );
+	cube.position.set(-50,26,0);
+	scene.add(cube);
+	
+	var sphereGeometry = new THREE.SphereGeometry( 50, 32, 16 ); 
+	var sphereMaterial = new THREE.MeshLambertMaterial( {color: 0x8888ff} ); 
+	var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+	sphere.position.set(50, 50, -50);
+	scene.add(sphere);
+
+	
+	/////////////////////
+	// POST-PROCESSING //
+	/////////////////////
+	
+	// GUI setup
+	
+	gui = new dat.GUI();
+	
+	parameters = 
+	{
+		x: 0, y: 30, z: 0,
+		sepiaAmount: 0.9,
+		vignetteOffset: 1.5,
+		vignetteDarkness: 1.6,
+		dotscreenAngle: 0.5,
+		dotscreenScale: 0.8,
+		useShaderNone:      function() { setupShaderNone();      },
+		useShaderSepia:     function() { setupShaderSepia();     },
+		useShaderVignette:  function() { setupShaderVignette();  },
+		useShaderDotScreen: function() { setupShaderDotScreen(); }
+		
+	};
+	
+	gui.add( parameters, 'useShaderNone' ).name("Display Original Scene");
+	
+	var folderSepia = gui.addFolder('Sepia');
+	var sepiaAmountGUI = folderSepia.add( parameters, 'sepiaAmount' ).min(0).max(1).step(0.01).name("Amount").listen();
+	sepiaAmountGUI.onChange(
+		function(value)
+		{   setupShaderSepia();   }
+	);
+	folderSepia.add( parameters, 'useShaderSepia' ).name("Use Sepia Shader");
+	folderSepia.open();
+	
+	var folderVignette = gui.addFolder('Vignette');
+	var vignetteOffsetGUI = folderVignette.add( parameters, 'vignetteOffset' ).min(0).max(3).step(0.01).name("Offset").listen();
+	vignetteOffsetGUI.onChange(
+		function(value)
+		{   setupShaderVignette();   }
+	);
+	var vignetteDarknessGUI = folderVignette.add( parameters, 'vignetteDarkness' ).min(0).max(3).step(0.01).name("Darkness").listen();
+	vignetteDarknessGUI.onChange(
+		function(value)
+		{   setupShaderVignette();   }
+	);
+	folderVignette.add( parameters, 'useShaderVignette' ).name("Use Vignette Shader");
+	folderVignette.open();
+	
+	var folderDotScreen = gui.addFolder('Dot Screen');
+	var dotScreenAngleGUI = folderDotScreen.add( parameters, 'dotscreenAngle' ).min(0).max(3.14).step(0.01).name("Angle").listen();
+	dotScreenAngleGUI.onChange(
+		function(value)
+		{   setupShaderDotScreen();   }
+	);
+	var dotScreenScaleGUI = folderDotScreen.add( parameters, 'dotscreenScale' ).min(0).max(2).step(0.01).name("Scale").listen();
+	dotScreenScaleGUI.onChange(
+		function(value)
+		{   setupShaderDotScreen();   }
+	);
+	folderDotScreen.add( parameters, 'useShaderDotScreen' ).name("Use DotScreen Shader");
+	folderDotScreen.open();
+	
+	
+	setupShaderNone();
+	
+	
+}
+
+function setupShaderNone()
+{
+	shaderActive = "none";
+}
+
+function setupShaderSepia()
+{
+	composer = new THREE.EffectComposer( renderer );
+	composer.addPass( new THREE.RenderPass( scene, camera ) );
+	
+	var shaderSepia = THREE.SepiaShader;
+	var effectSepia = new THREE.ShaderPass( shaderSepia );
+	effectSepia.uniforms[ "amount" ].value = parameters.sepiaAmount;
+	effectSepia.renderToScreen = true;
+	composer.addPass(effectSepia);
+	shaderActive = "sepia";	
+}
+
+function setupShaderVignette()
+{
+	composer = new THREE.EffectComposer( renderer );
+	composer.addPass( new THREE.RenderPass( scene, camera ) );
+	
+	var shaderVignette = THREE.VignetteShader;
+	var effectVignette = new THREE.ShaderPass( shaderVignette );
+	// larger values = darker closer to center
+	// darkness < 1  => lighter edges
+	effectVignette.uniforms[ "offset" ].value = parameters.vignetteOffset;
+	effectVignette.uniforms[ "darkness" ].value = parameters.vignetteDarkness;
+	effectVignette.renderToScreen = true;
+	composer.addPass(effectVignette);
+	shaderActive = "vignette";
+}
+
+function setupShaderDotScreen()
+{
+	composer = new THREE.EffectComposer( renderer );
+	composer.addPass( new THREE.RenderPass( scene, camera ) );
+	
+	var effectDotScreen = new THREE.DotScreenPass( new THREE.Vector2(0,0), parameters.dotscreenAngle, parameters.dotscreenScale ); 
+	effectDotScreen.renderToScreen = true; 
+	composer.addPass(effectDotScreen); 
+	shaderActive = "dotscreen";
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something
+	}
+	
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	if ( shaderActive == "none" )
+		renderer.render( scene, camera );
+	else
+		composer.render();
+}
+
+</script>
+
+</body>
+</html>
