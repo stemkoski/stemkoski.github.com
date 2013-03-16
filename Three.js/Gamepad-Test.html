@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>gamepad.js - test</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 10px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<!-- stats display here -->
+<div id="graphics"></div> 
+
+<!-- graphics here -->
+<center>
+<canvas id="myCanvas" width="480" height="320"></canvas> 
+</center>
+
+<!-- FPS display -->
+<script src="js/Stats.js"></script>
+<!-- requestAnimationFrame cross-browser compatibility -->
+<script src="js/RequestAnimationFrame.js"></script>
+<!-- Simplfied keyboard interaction -->
+<script src="js/KeyboardState.js"></script>
+<!-- Simplfied gamepad interaction (patched version) -->
+<script src="js/gamepad.js"></script>
+
+<script>
+
+// declare global variables (if any) here
+var prevTime, currTime, dt;
+var keyboard;
+var playerColor = "#888888";
+
+// assign variables to page elements for easy access
+
+var graphicsArea = document.getElementById('graphics');     // stats here
+var displayCanvas  = document.getElementById('myCanvas');
+var displayContext = displayCanvas.getContext('2d');
+
+// create a second canvas to implement double buffering
+var bufferCanvas = document.createElement('canvas');
+bufferCanvas.width = displayCanvas.width;
+bufferCanvas.height = displayCanvas.height;
+var bufferContext = bufferCanvas.getContext('2d');
+
+var statsDisplay;
+	
+var playerPosX, playerPosY, playerVelX, playerVelY;
+
+//////////
+// MAIN //
+//////////
+
+initialize();
+window.requestAnimationFrame( render );
+setTimeout( update, 1000 / 60 );
+
+///////////////
+// FUNCTIONS //
+///////////////	
+
+function initialize() 
+{
+	// set up stats display
+	statsDisplay = new Stats();
+	statsDisplay.domElement.style.position = 'absolute';
+	statsDisplay.domElement.style.bottom = '0px';
+	statsDisplay.domElement.style.zIndex = 100;
+	graphicsArea.appendChild( statsDisplay.domElement );
+	
+	// initialize the keyboard
+	keyboard = new KeyboardState();
+	
+	// player variables
+	playerVelX = playerVelY = 0;
+	playerPosX = 50;
+	playerPosY = 150;
+	
+	// if (Gamepad.supported) alert("Gamepad is GO");
+}
+
+// game logic functions appear here
+function update()
+{
+	// calculate delta (time elapsed since last update)
+	currTime = new Date().getTime();        // update time
+    dt = currTime - (prevTime || currTime); // dt = 0 during first loop
+    prevTime = currTime;                    // store for next dt calculation
+	
+	playerVelX = 0;
+	playerVelY = 0;
+	
+	// keyboard fallback if gamepad not supported
+	if ( keyboard.pressed("up") )
+		playerVelY -= 150;
+	if ( keyboard.pressed("down") )
+		playerVelY += 150;
+	if ( keyboard.pressed("left") )
+		playerVelX -= 150;
+	if ( keyboard.pressed("right") )
+		playerVelX += 150;
+
+	if (Gamepad.supported) 
+	{
+		var pads = Gamepad.getStates();
+        var pad = pads[0]; // assume only 1 player.
+        if (pad) 
+		{
+			// adjust for deadzone.
+			if (Math.abs(pad.leftStickX) > 0.2)
+				playerVelX += 150 * pad.leftStickX
+			if (Math.abs(pad.leftStickY) > 0.2)
+				playerVelY += 150 * pad.leftStickY;
+
+			if (Math.abs(pad.rightStickX) > 0.2)
+				playerVelX += 150 * pad.rightStickX
+			if (Math.abs(pad.rightStickY) > 0.2)
+				playerVelY += 150 * pad.rightStickY;
+				
+			if ( pad.dpadUp )
+				playerVelY -= 150;
+			if ( pad.dpadDown )
+				playerVelY += 150;
+			if ( pad.dpadLeft )
+				playerVelX -= 150;
+			if ( pad.dpadRight )
+				playerVelX += 150;
+								
+			if ( pad.faceButton0 ) // A
+				playerColor = "#00cc00";
+			if ( pad.faceButton1 ) // B
+				playerColor = "#cc0000";
+			if ( pad.faceButton2 ) // X
+				playerColor = "#0000cc";
+			if ( pad.faceButton3 ) // Y		
+				playerColor = "#cccc00";
+				
+			if ( pad.select || pad.start )
+			{
+				playerVelX = playerVelY = 0;
+				playerPosX = 50;
+				playerPosY = 150;
+			}
+				
+        }
+	}
+	
+	playerPosX += playerVelX * (dt / 1000);
+	playerPosY += playerVelY * (dt / 1000);
+	
+	statsDisplay.update();
+	
+	var updateTime = 0; // adjust for time used to execute code in update method
+	// loop @ 60 frames per second
+    setTimeout( update, 1000 / 60 - updateTime );
+}
+
+function render() 
+{
+
+	// clear screen
+	bufferCanvas.width = bufferCanvas.width;
+	var groundHeight = 100;
+	// draw sky
+	bufferContext.fillStyle = "#8888ff";
+	bufferContext.fillRect(0, 0, displayCanvas.width, displayCanvas.height);
+	// draw grass
+	bufferContext.fillStyle = "#44ff44";
+	// top left (x,y) and dimensions (w,h)
+	bufferContext.fillRect(0, bufferCanvas.height - groundHeight, bufferCanvas.width, groundHeight);
+	// draw player
+	bufferContext.fillStyle = playerColor;
+	bufferContext.fillRect(playerPosX, playerPosY, 80, 80);
+	
+	displayContext.drawImage(bufferCanvas, 0, 0);
+
+	// loop @ next possible update time
+	window.requestAnimationFrame( render );
+}
+
+</script>
+
+</body>
+</html>

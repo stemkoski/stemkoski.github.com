@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+	<title>gamepad.js - example</title>
+    <script src="js/gamepad.js"></script>
+</head>
+<body>
+
+    <h1 id='title'></h1>
+    <div id='pads'></div>
+
+    <style type="text/css">
+        body { font-family: 'Segoe UI', 'Helvetica', 'Arial'; }
+    </style>
+    <script type="text/javascript">
+        if ( !window.requestAnimationFrame ) {
+            window.requestAnimationFrame = ( function() {
+                return window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                window.oRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                function( /* function FrameRequestCallback */ callback, /* DOMElement Element */ element ) {
+                    window.setTimeout( callback, 1000 / 60 );
+                };
+            })();
+        }
+
+        var names = [
+            'leftStick',
+            'rightStick',
+            'faceButton0',
+            'faceButton1',
+            'faceButton2',
+            'faceButton3',
+            'leftShoulder0',
+            'rightShoulder0',
+            'leftShoulder1',
+            'rightShoulder1',
+            'select',
+            'start',
+            'leftStickButton',
+            'rightStickButton',
+            'dpadUp',
+            'dpadDown',
+            'dpadLeft',
+            'dpadRight'
+        ];
+        function createDomElements() {
+            var root = document.getElementById('pads');
+            for (var i = 0; i < 8; ++i) {
+                var pad = document.createElement('div');
+                pad.id = 'pad' + i;
+                root.appendChild(pad);
+                pad.style.display = 'none';
+
+                var title = document.createElement('h2');
+                title.id = 'pad' + i + '_title';
+                pad.appendChild(title);
+
+                for (var j = 0; j < 2; ++j) {
+                    var stickouter = document.createElement('div');
+                    stickouter.style.width = '256px';
+                    stickouter.style.height = '256px';
+                    stickouter.style.border = '1px dotted #888';
+                    stickouter.style.margin = '1em';
+                    stickouter.style.cssFloat = 'left';
+                    stickouter.style.marginTop = '32px';
+                    var stickimg = document.createElement('img');
+                    stickimg.id = 'pad' + i + '_' + names[j];
+                    stickimg.style.position = 'relative';
+                    stickouter.appendChild(stickimg);
+                    pad.appendChild(stickouter);
+                }
+
+                for (var j = 2; j < names.length; ++j) {
+                    var name = names[j];
+                    if ((j - 2) % 4 == 0)
+                        pad.appendChild(document.createElement('br'));
+                    var item = document.createElement('img');
+                    item.style.width = '64px';
+                    item.id = 'pad' + i + '_' + name;
+                    pad.appendChild(item);
+                }
+            }
+        }
+
+        function update() {
+            window.requestAnimationFrame(update);
+
+            var pads = Gamepad.getStates();
+            for (var i = 0; i < pads.length; ++i) {
+                var pad = pads[i];
+                if (pad) {
+                    document.getElementById('pad' + i).style.display = '';
+                    document.getElementById('pad' + i + '_title').innerHTML = pad.name;
+                    for (var j = 0; j < names.length; ++j) {
+                        var name = names[j];
+                        var buttonDom = document.getElementById('pad' + i + '_' + names[j]);
+                        buttonDom.src = pad.images[name];
+                        if (j >= 2)
+                            buttonDom.style.opacity = pad[name] / 0.8 + 0.2;
+                    }
+                    var leftStick = document.getElementById('pad' + i + '_leftStick');
+                    var rightStick = document.getElementById('pad' + i + '_rightStick');
+                    var imgSize = 32;
+                    leftStick.style.left = Math.floor((pad.leftStickX + 1.0) / 2.0 * 256 - imgSize) + 'px';
+                    leftStick.style.top = Math.floor((pad.leftStickY + 1.0) / 2.0 * 256 - imgSize) + 'px';
+                    rightStick.style.left = Math.floor((pad.rightStickX + 1.0) / 2.0 * 256 - imgSize) + 'px';
+                    rightStick.style.top = Math.floor((pad.rightStickY + 1.0) / 2.0 * 256 - imgSize) + 'px';
+                } else {
+                    document.getElementById('pad' + i).style.display = 'none';
+                }
+            }
+        }
+
+        if (Gamepad.supported) {
+            document.getElementById('title').innerHTML = "Press buttons on your gamepads.";
+            createDomElements();
+            update();
+        } else {
+            document.getElementById('title').innerHTML = "Sorry, your browser doesn't seem to support the Gamepad API. <a href='http://www.gamepadjs.com/#browser-support'>Go here for more information</a>.";
+        }
+    </script>
+	<br/><br/>
+	<p align="right"><font size="-1">
+	Example from: <a href="https://github.com/inequation/gamepad.js">https://github.com/inequation/gamepad.js</a>
+	</font>
+	</p>
+</body>
+</html>

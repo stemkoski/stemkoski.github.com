@@ -141,7 +141,7 @@ a:hover .superImage
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 48. Last updated: 16 March 2013. Compatible with Three.js version 56.
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 50. Last updated: 16 March 2013. Compatible with Three.js version 56.
 <hr>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
 &bull; <a class="toc" href="#template">Template</a>
@@ -177,6 +177,8 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#video-texture">Video to Texture</a>
 &bull; <a class="toc" href="#webcam-test">Webcam Test</a>
 &bull; <a class="toc" href="#webcam-texture">Webcam to Texture</a>
+&bull; <a class="toc" href="#gamepad-test">Gamepad Test</a>
+&bull; <a class="toc" href="#mesh-movement-gamepad">Mesh Movement - Gamepad</a>
 &bull; <a class="toc" href="#gui">GUI</a>
 &bull; <a class="toc" href="#gui-controller">GUI Controller</a>
 &bull; <a class="toc" href="#mouse-sprite">Mouse Sprite</a>
@@ -485,6 +487,24 @@ user needs to accept permissions to run, requires WebRTC compatible browser  (se
 <p class ="superText"> Displays user webcam image as a texture on a mesh. Requires Webcam to run,
 user needs to accept permissions to run, requires WebRTC compatible browser  (see http://www.webrtc.org/). 
 Press P to pause webcam (image freezes) and R to resume webcam.
+</p>
+</div>
+
+<div class="fancy">
+<a name="gamepad-test"></a>
+<a href="Gamepad-Test.html" target="_blank">
+<img src="html-images/Gamepad-Test.png" class="superImage" />
+<br/>Gamepad Test</a>
+<p class ="superText"> Uses a Gamepad (e.g. XBox controller) to move a square image around a canvas. Requires Chrome browser and connected gamepad to run. Uses gamepad.js library (patched) from http://github.com/inequation/gamepad.js. Analog sticks and directional pad move square up/down/left/right. A/B/X/Y buttons change colors of square. Start/select buttons reset square to original position. [Note: You may need to press one of A/B/X/Y buttons for controller to be recognized by the web browser.]  
+(No Three.js code required; this example is a lead-in to the following example.)</p>
+</div>
+
+<div class="fancy">
+<a name="mesh-movement-gamepad"></a>
+<a href="Mesh-Movement-Gamepad.html" target="_blank">
+<img src="html-images/Mesh-Movement-Gamepad.png" class="superImage" />
+<br/>Mesh Movement - Gamepad</a>
+<p class ="superText"> Uses a Gamepad (e.g. XBox controller) to move a cube around a Three.js scene, similar to Mesh-Movement example above. Requires Chrome browser and connected gamepad to run. Left analog stick moves cube forward/backward and turns left/right.  Directional pad moves cube forward/backward/left/right.  Right analog stick only turns cube left/right.  Right shoulder buttons double speed of movement/turns. Start/select buttons reset cube to original position and rotation.
 </p>
 </div>
 

@@ -27,6 +27,9 @@
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
+<!-- Simplfied gamepad interaction (patched version) -->
+<script src="js/gamepad.js"></script>
+
 <script>
 /*
 	Three.js "tutorials by example"
@@ -46,6 +49,7 @@ var MovingCube;
 
 init();
 animate();
+setTimeout( update, 1000 / 60 );
 
 // FUNCTIONS 		
 function init() 
@@ -94,7 +98,6 @@ function init()
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
 	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-	// scene.add(skyBox);
 	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
 	
 	////////////
@@ -109,8 +112,9 @@ function init()
 	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/yneg.png' ) }));
 	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zpos.png' ) }));
 	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zneg.png' ) }));
+	
+	var MovingCubeGeom = new THREE.CubeGeometry( 50, 50, 50, 1, 1, 1 );
 	var MovingCubeMat = new THREE.MeshFaceMaterial(materialArray);
-	var MovingCubeGeom = new THREE.CubeGeometry( 50, 50, 50, 1, 1, 1, materialArray );
 	MovingCube = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
 	MovingCube.position.set(0, 25.1, 0);
 	scene.add( MovingCube );	
@@ -131,10 +135,11 @@ function update()
 	var moveDistance = 200 * delta; // 200 pixels per second
 	var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
 	
-	// local coordinates
 
 	// local transformations
 
+	// keyboard fallback if gamepad not supported
+	
 	// move forwards/backwards/left/right
 	if ( keyboard.pressed("W") )
 		MovingCube.translateZ( -moveDistance );
@@ -173,6 +178,73 @@ function update()
 	if ( keyboard.pressed("down") )
 		MovingCube.position.z += moveDistance;
 		
+		
+	if (Gamepad.supported) 
+	{
+		var pads = Gamepad.getStates();
+        var pad = pads[0]; // assume only 1 player.
+        if (pad) 
+		{
+			// reset to original position
+			if ( pad.start || pad.select )
+			{
+				MovingCube.position.set(0, 25.1, 0);
+				MovingCube.rotation.set(0, 0, 0);
+			}	
+			// right should buttons activate "turbo" (increased speed)
+			if ( pad.rightShoulder0 || pad.rightShoulder1 )
+			{
+				moveDistance *= 2; 
+				rotateAngle  *= 2;
+			}
+
+			// forwards/backwards
+			if ( pad.dpadUp )
+				MovingCube.translateZ( -moveDistance );
+			if ( pad.dpadDown )
+				MovingCube.translateZ(  moveDistance );
+			// left/right (strafe)
+			if ( pad.dpadLeft )
+				MovingCube.translateX( -moveDistance );
+			if ( pad.dpadRight )
+				MovingCube.translateX(  moveDistance );
+		
+			// don't forget to adjust for stick deadzone!
+			
+			// forwards/backwards
+			if (Math.abs(pad.leftStickY) > 0.2)
+				MovingCube.translateZ( moveDistance * pad.leftStickY );
+			// left/right (turn)
+			if (Math.abs(pad.leftStickX) > 0.4)
+			{	
+				var rotation_matrix = new THREE.Matrix4().identity();
+				rotation_matrix = new THREE.Matrix4().makeRotationY(-rotateAngle * pad.leftStickX);
+				MovingCube.matrix.multiply(rotation_matrix);
+				MovingCube.rotation.setEulerFromRotationMatrix(MovingCube.matrix);
+			}
+			
+			// in this example, the right stick supports turning only 
+			//  	(to avoid forwards/backwards in precision movements)
+			if (Math.abs(pad.rightStickX) > 0.2)
+			{	
+				var rotation_matrix = new THREE.Matrix4().identity();
+				rotation_matrix = new THREE.Matrix4().makeRotationY(-rotateAngle * pad.rightStickX);
+				MovingCube.matrix.multiply(rotation_matrix);
+				MovingCube.rotation.setEulerFromRotationMatrix(MovingCube.matrix);
+			}
+			
+			/*
+				Other potential events to handle:
+				if ( pad.faceButton0 ) // A on Xbox
+				if ( pad.faceButton1 ) // B on Xbox
+				if ( pad.faceButton2 ) // X on Xbox
+				if ( pad.faceButton3 ) // Y	on Xbox
+				if ( pad.start )
+				if ( pad.select )
+			*/
+        }
+	}
+	
 	controls.update();
 	stats.update();
 }
