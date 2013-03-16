@@ -141,7 +141,7 @@ a:hover .superImage
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 45. Last updated: 12 March 2013 (now compatible with Three.js v56).
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 48. Last updated: 16 March 2013. Compatible with Three.js version 56.
 <hr>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
 &bull; <a class="toc" href="#template">Template</a>
@@ -173,6 +173,7 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#viewports-quad">Viewports - Quad</a>
 &bull; <a class="toc" href="#shader-simple">Shader - Simple</a>
 &bull; <a class="toc" href="#shader-explorer">Shader - Explorer</a>
+&bull; <a class="toc" href="#selective-glow">Selective Glow Effect using Shaders</a>
 &bull; <a class="toc" href="#video-texture">Video to Texture</a>
 &bull; <a class="toc" href="#webcam-test">Webcam Test</a>
 &bull; <a class="toc" href="#webcam-texture">Webcam to Texture</a>
@@ -449,6 +450,15 @@ orthographic cameras along the axis directions (similar to many 3D modeling soft
 </div>
 
 <div class="fancy">
+<a name="selective-glow"></a>
+<a href="Selective-Glow.html" target="_blank">
+<img src="html-images/Selective-Glow.png" class="superImage" />
+<br/>Selective Glow Effect using Shaders</a>
+<p class ="superText"> Demonstrates a selective glow effect using shaders. This approach requires the creation of two scenes - the base scene and a secondary scene containing copies of the base scene objects with either bright textures for glow effects or black textures. The secondary scene is blurred and then additively blended with the base scene.
+</p>
+</div>
+
+<div class="fancy">
 <a name="video-texture"></a>
 <a href="Video.html" target="_blank">
 <img src="html-images/Video.png" class="superImage" />
@@ -614,8 +624,9 @@ What are you doing, poking around in my HTML?  :p
 Notes to self (and nosy you):
 
 put up - 
-single triangle, square draw
-vertex colors alt - update
+single triangle, square creation methods
+
+the line-to-cylinder method
 
 mathiness -
 implicit graph
@@ -627,12 +638,12 @@ Flux through surface
 
 categorize table of contents...?
 
-Most wanted:
+Future goals:
 
+- blur filter
+- selective glow
 - model with subsurf
 - physics
-- multiple views / viewports
-- filter (black and white film, e.g.)
 - specific particle effects (smoke, fire, water, electricity/spark, explosion)
 - particle emitters (check jerome's work...)
 

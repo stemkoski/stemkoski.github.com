@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Selective Glow</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<!-- Note the additional JS files! always need all of these for postprocessing. -->
+<script src="js/postprocessing/EffectComposer.js"></script>
+<script src="js/postprocessing/RenderPass.js"></script>
+<script src="js/postprocessing/ShaderPass.js"></script>
+<script src="js/postprocessing/MaskPass.js"></script>
+<script src="js/shaders/CopyShader.js"></script>
+
+<!-- separate out the shaders specific to this demo -->
+<script src="js/shaders/AdditiveBlendShader.js"></script>
+<script src="js/shaders/HorizontalBlurShader.js"></script>
+<script src="js/shaders/VerticalBlurShader.js"></script>
+<script src="js/postprocessing/BloomPass.js"></script>
+
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: March 2013 (three.js v56)
+ */
+
+// MAIN
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+
+// custom global variables
+var composer2, finalComposer;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	
+	// SKYBOX/FOG
+	var materialArray = [];
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-xpos.png' ) }));
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-xneg.png' ) }));
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-ypos.png' ) }));
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-yneg.png' ) }));
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-zpos.png' ) }));
+	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/dawnmountain-zneg.png' ) }));
+	for (var i = 0; i < 6; i++)
+	   materialArray[i].side = THREE.BackSide;
+	var skyboxMaterial = new THREE.MeshFaceMaterial( materialArray );
+	var skyboxGeom = new THREE.CubeGeometry( 5000, 5000, 5000, 1, 1, 1 );
+	var skybox = new THREE.Mesh( skyboxGeom, skyboxMaterial );
+	scene.add( skybox );	
+
+	
+	////////////
+	// CUSTOM //
+	////////////
+	
+	////////////////////////////////////////////////////////////////
+	// set up primary scene 
+	////////////////////////////////////////////////////////////////
+
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.rotation.x = Math.PI / 2;
+	scene.add(floor);
+	
+	var cubeGeometry = new THREE.CubeGeometry( 50, 50, 50 );
+	var crateTexture = new THREE.ImageUtils.loadTexture( 'images/crate.gif' );
+	var crateMaterial = new THREE.MeshBasicMaterial( { map: crateTexture } );
+	var cube = new THREE.Mesh( cubeGeometry, crateMaterial );
+	cube.position.set(-50,35,0);
+	scene.add(cube);
+	
+	var sphereGeometry = new THREE.SphereGeometry( 50, 32, 16 ); 
+	var sphereMaterial = new THREE.MeshLambertMaterial( {color: 0x8888ff} ); 
+	var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+	sphere.position.set(50, 50, -50);
+	scene.add(sphere);
+	
+	////////////////////////////////////////////////////////////////
+	// set up secondary scene 
+	////////////////////////////////////////////////////////////////
+	
+	var scene2 = new THREE.Scene();
+	// lights
+	scene2.add( new THREE.PointLight( 0xffffff ) );
+	scene2.add( new THREE.AmbientLight( 0xffffff ) );
+	// camera
+	camera2 = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+	camera2.position = camera.position;
+	camera2.rotation = camera.rotation;
+	camera.lookAt(scene.position);	
+	scene2.add( camera2 );
+
+	// objects
+	var cubeGeometry2 = new THREE.CubeGeometry( 55, 55, 55 );
+	var crateMaterial2 = new THREE.MeshBasicMaterial( { color: 0x0088ff, transparent:true, opacity:0.50 } );
+	var cube2 = new THREE.Mesh( cubeGeometry2, crateMaterial2 );
+	cube2.position.set(-50,35,0);
+	scene2.add(cube2);
+	
+	// clone earlier geometries so that light is correctly blocked in final render
+	var blackMaterial = new THREE.MeshBasicMaterial( {color: 0x000000} ); 
+	var sphere = new THREE.Mesh(sphereGeometry.clone(), blackMaterial);
+	sphere.position.set(50, 50, -50);
+	scene2.add(sphere);
+	var floor = new THREE.Mesh(floorGeometry.clone(), blackMaterial);
+	floor.position.y = -0.5;
+	floor.rotation.x = Math.PI / 2;
+	scene2.add(floor);
+	
+	// prepare secondary composer
+	var renderTargetParameters = 
+		{ minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, 
+		  format: THREE.RGBFormat, stencilBuffer: false };
+	var renderTarget = new THREE.WebGLRenderTarget( SCREEN_WIDTH, SCREEN_HEIGHT, renderTargetParameters );
+	composer2 = new THREE.EffectComposer( renderer, renderTarget );
+	
+	// prepare the secondary render's passes
+	var render2Pass = new THREE.RenderPass( scene2, camera2 );
+	composer2.addPass( render2Pass );
+	
+	// special effects to be applied to secondary render:
+	var effectHorizBlur = new THREE.ShaderPass( THREE.HorizontalBlurShader );
+	var effectVertiBlur = new THREE.ShaderPass( THREE.VerticalBlurShader );
+	effectHorizBlur.uniforms[ "h" ].value = 2 / window.innerWidth;
+	effectVertiBlur.uniforms[ "v" ].value = 2 / window.innerHeight;
+	composer2.addPass( effectHorizBlur );
+	composer2.addPass( effectVertiBlur );
+	
+	////////////////////////////////////////////////////////////////////////
+	// final composer will blend composer2.render() results with the scene 
+	////////////////////////////////////////////////////////////////////////
+	
+	// prepare final composer
+	finalComposer = new THREE.EffectComposer( renderer, renderTarget );
+
+	// prepare the final render's passes
+	var renderModel = new THREE.RenderPass( scene, camera );
+	finalComposer.addPass( renderModel );
+
+	var effectBlend = new THREE.ShaderPass( THREE.AdditiveBlendShader, "tDiffuse1" );
+	effectBlend.uniforms[ 'tDiffuse2' ].value = composer2.renderTarget2;
+	effectBlend.renderToScreen = true;
+	finalComposer.addPass( effectBlend );
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	composer2.render();
+	finalComposer.render();
+}
+
+</script>
+
+</body>
+</html>
