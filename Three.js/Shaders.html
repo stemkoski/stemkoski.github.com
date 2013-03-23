@@ -28,11 +28,7 @@
 <script src="js/THREEx.WindowResize.js"></script>
 
 <script>
-/*
-	Three.js "tutorials by example"
-	Author: Lee Stemkoski
-	Date: March 2013 (three.js v56)
- */
+/* 	Three.js  */
 
 // MAIN
 
@@ -40,9 +36,8 @@
 var container, scene, camera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
-
 // custom global variables
-var android;
+var cube;
 
 init();
 animate();
@@ -81,48 +76,89 @@ function init()
 	container.appendChild( stats.domElement );
 	// LIGHT
 	var light = new THREE.PointLight(0xffffff);
-	light.position.set(-100,200,100);
+	light.position.set(0,150,100);
 	scene.add(light);
 	// FLOOR
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
 	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
 	floorTexture.repeat.set( 10, 10 );
-	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
 	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
 	floor.position.y = -0.5;
-	floor.rotation.x = Math.PI / 2;
-	scene.add(floor);
+	floor.doubleSided = true;
+	// scene.add(floor);
 	// SKYBOX/FOG
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
-	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x000000 } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-	// scene.add(skyBox);
-	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+    skyBox.flipSided = true; // render faces from inside of the cube, instead of from outside (default).
+	scene.add(skyBox);
+	// scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
 	
 	////////////
 	// CUSTOM //
 	////////////
-	
-	// Note: if imported model appears too dark,
-	//   add an ambient light in this file
-	//   and increase values in model's exported .js file
-	//    to e.g. "colorAmbient" : [0.75, 0.75, 0.75]
-	var jsonLoader = new THREE.JSONLoader();
-	jsonLoader.load( "models/android.js", addModelToScene );
-	// addModelToScene function is called back after model has loaded
-	
-	var ambientLight = new THREE.AmbientLight(0x111111);
-	scene.add(ambientLight);
-	
-}
 
-function addModelToScene( geometry, materials ) 
-{
-	var material = new THREE.MeshFaceMaterial( materials );
-	android = new THREE.Mesh( geometry, material );
-	android.scale.set(10,10,10);
-	scene.add( android );
+	// Spheres
+	//   Note: a standard flat rectangular image will look distorted,
+	//   a "spherical projection" image will look "normal".
+	
+	// radius, segmentsWidth, segmentsHeight
+	var sphereGeom =  new THREE.SphereGeometry( 40, 32, 16 ); 
+	
+	var light2 = new THREE.AmbientLight(0x444444);
+	scene.add(light2);
+	
+	// basic moon
+	var moonTexture = THREE.ImageUtils.loadTexture( 'images/moon.jpg' );
+	var moonMaterial = new THREE.MeshBasicMaterial( { map: moonTexture } );
+	var moon = new THREE.Mesh( sphereGeom.clone(), moonMaterial );
+	moon.position.set(-100, 50, 0);
+	// scene.add( moon );	
+	
+	// shaded moon -- side away from light picks up AmbientLight's color.
+	var earthSurfaceImage = THREE.ImageUtils.loadTexture( 'images/earth-image.jpg' );
+	
+
+	var earthNormalMap = THREE.ImageUtils.loadTexture("images/earth-normal.jpg" );
+	var earthSpecularMap = THREE.ImageUtils.loadTexture("images/earth-specular.jpg" );
+	var shader = THREE.ShaderUtils.lib[ "normal" ];
+	var uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+uniforms[ "tNormal" ].texture = earthNormalMap;
+uniforms[ "tDiffuse" ].texture = earthSurfaceImage;
+uniforms[ "tSpecular" ].texture = earthSpecularMap;
+uniforms[ "enableDiffuse" ].value = true;
+uniforms[ "enableSpecular" ].value = true;
+var shaderMaterial = new THREE.ShaderMaterial({
+fragmentShader: shader.fragmentShader,
+vertexShader: shader.vertexShader,
+uniforms: uniforms,
+lights: true
+});
+
+var globeGeometry = new THREE.SphereGeometry(30, 32, 32);
+// We'll need these tangents for our shader
+globeGeometry.computeTangents();
+var globeMesh = new THREE.Mesh( globeGeometry, shaderMaterial );
+
+
+	// var moonMaterial = new THREE.MeshLambertMaterial( { map: moonTexture } );
+	var earth = new THREE.Mesh( globeGeometry, shaderMaterial );
+	earth.position.set(0, 50, 0);
+	scene.add( earth );		
+	
+
+
+	// create a small sphere to show position of light
+	var lightbulb = new THREE.Mesh( 
+		new THREE.SphereGeometry( 10, 16, 8 ), 
+		new THREE.MeshBasicMaterial( { color: 0xffaa00 } )
+	);
+	scene.add( lightbulb );
+	lightbulb.position = light.position;
+	
+	
 }
 
 function animate() 

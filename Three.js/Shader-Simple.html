@@ -46,7 +46,7 @@
  */
 
 // MAIN
-if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
 // standard global variables
 var container, scene, camera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
@@ -73,7 +73,10 @@ function init()
 	camera.position.set(0,150,400);
 	camera.lookAt(scene.position);	
 	// RENDERER
-	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	container = document.createElement( 'div' );
 	document.body.appendChild( container );

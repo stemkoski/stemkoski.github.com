@@ -41,7 +41,7 @@ var container, scene, camera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 // custom global variables
-var cube;
+var globe;
 
 init();
 animate();
@@ -70,11 +70,8 @@ function init()
 	// EVENTS
 	THREEx.WindowResize(renderer, camera);
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
-
 	// CONTROLS
-	// MUST REMOVE THIS LINE!!!
-	// controls = new THREE.TrackballControls( camera );
-
+	controls = new THREE.TrackballControls( camera );
 	// STATS
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -83,8 +80,17 @@ function init()
 	container.appendChild( stats.domElement );
 	// LIGHT
 	var light = new THREE.PointLight(0xffffff);
-	light.position.set(0,250,0);
+	light.position.set(-100,150,0);
 	scene.add(light);
+	
+	var lightbulbGeometry = new THREE.SphereGeometry( 10, 16, 8 );
+	var lightbulbMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, transparent: true,  opacity: 0.8, blending: THREE.AdditiveBlending } );
+	var wireMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } );
+	var materialArray = [lightbulbMaterial, wireMaterial];
+	var lightbulb = THREE.SceneUtils.createMultiMaterialObject( lightbulbGeometry, materialArray );
+	lightbulb.position = light.position;
+	scene.add(lightbulb);
+	
 	// FLOOR
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
 	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
@@ -94,35 +100,33 @@ function init()
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
 	floor.position.y = -0.5;
 	floor.rotation.x = Math.PI / 2;
-	scene.add(floor);
+	//scene.add(floor);
 	// SKYBOX/FOG
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
-	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, side: THREE.BackSide } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-	// scene.add(skyBox);
-	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+	scene.add(skyBox);
 	
 	////////////
 	// CUSTOM //
 	////////////
-	
-	// create an array with six textures for a cool cube
-	var materialArray = [];
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/xpos.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/xneg.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/ypos.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/yneg.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zpos.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zneg.png' ) }));
-	var MovingCubeMat = new THREE.MeshFaceMaterial(materialArray);
-	var MovingCubeGeom = new THREE.CubeGeometry( 50, 50, 50, 1, 1, 1, materialArray );
-	MovingCube = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
-	MovingCube.position.set(0, 25.1, 0);
-	scene.add( MovingCube );	
-	
-}
 
-var MovingCube;
+	
+    // Create our Earth with nice texture - normal map for elevation, specular highlights
+	var colors = THREE.ImageUtils.loadTexture( "images/earth-day.jpg" );
+	var bumpy = THREE.ImageUtils.loadTexture( "images/earth-topo.jpg" );
+	var shiny = THREE.ImageUtils.loadTexture( "images/earth-specular.jpg" );
+
+	var superTexture = new THREE.MeshPhongMaterial( { color: 0xffffff, map: colors, 
+		bumpMap: bumpy, bumpScale: 4, specular: 0xffffff, specularMap: shiny, emissive: 0x888888 } );
+
+
+    var globeGeometry = new THREE.SphereGeometry(100, 32, 32);
+
+    globe = new THREE.Mesh( globeGeometry, superTexture ); 
+
+    scene.add(globe);	
+}
 
 function animate() 
 {
@@ -133,51 +137,13 @@ function animate()
 
 function update()
 {
-	var delta = clock.getDelta(); // seconds.
-	var moveDistance = 200 * delta; // 200 pixels per second
-	var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
-	
-	// local transformations
-
-	// move forwards/backwards/left/right
-	if ( keyboard.pressed("W") )
-		MovingCube.translateZ( -moveDistance );
-	if ( keyboard.pressed("S") )
-		MovingCube.translateZ(  moveDistance );
-	if ( keyboard.pressed("Q") )
-		MovingCube.translateX( -moveDistance );
-	if ( keyboard.pressed("E") )
-		MovingCube.translateX(  moveDistance );	
-
-	// rotate left/right/up/down
-	var rotation_matrix = new THREE.Matrix4().identity();
-	if ( keyboard.pressed("A") )
-		rotation_matrix = new THREE.Matrix4().makeRotationY(rotateAngle);
-	if ( keyboard.pressed("D") )
-		rotation_matrix = new THREE.Matrix4().makeRotationY(-rotateAngle);
-	if ( keyboard.pressed("R") )
-		rotation_matrix = new THREE.Matrix4().makeRotationX(rotateAngle);
-	if ( keyboard.pressed("F") )
-		rotation_matrix = new THREE.Matrix4().makeRotationX(-rotateAngle);
-	if ( keyboard.pressed("A") || keyboard.pressed("D") || 
-	     keyboard.pressed("R") || keyboard.pressed("F") )
-	{
-		MovingCube.matrix.multiply(rotation_matrix);
-		MovingCube.rotation.setEulerFromRotationMatrix(MovingCube.matrix);
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something
 	}
-	
-	var relativeCameraOffset = new THREE.Vector3(0,50,200);
 
-	var cameraOffset = relativeCameraOffset.applyMatrix4( MovingCube.matrixWorld );
-
-	camera.position.x = cameraOffset.x;
-	camera.position.y = cameraOffset.y;
-	camera.position.z = cameraOffset.z;
-	camera.lookAt( MovingCube.position );
-	
-	//camera.updateMatrix();
-	//camera.updateProjectionMatrix();
-			
+    globe.rotation.y += 0.005;	
+	controls.update();
 	stats.update();
 }
 

@@ -17,8 +17,6 @@
 </head>
 <body>
 
-<div id="message"></div>
-
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
@@ -26,6 +24,34 @@
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
+
+<!-- references: 
+http://www.html5rocks.com/en/tutorials/webgl/shaders/
+http://stackoverflow.com/questions/12627422/custom-texture-shader-in-three-js
+-->
+
+<!-- ---------------- Custom Shader Code ------------------------ -->
+<script id="vertexShader" type="x-shader/x-vertex">
+varying vec2 vUv;
+void main() 
+{ 
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+}
+</script>
+
+<!-- fragment shader a.k.a. pixel shader -->
+<script id="fragmentShader" type="x-shader/x-vertex"> 
+varying vec2 vUv;
+void main() 
+{ 
+    // color format: RGBA
+	// this example: (r,g,b,a) = (u,v,0,1)
+    gl_FragColor = vec4( vec3( vUv, 0.0 ), 1.0 );
+}
+</script>
+<!-- ----------------------------------------------------------- -->
+
 
 <script>
 /*
@@ -70,11 +96,8 @@ function init()
 	// EVENTS
 	THREEx.WindowResize(renderer, camera);
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
-
 	// CONTROLS
-	// MUST REMOVE THIS LINE!!!
-	// controls = new THREE.TrackballControls( camera );
-
+	controls = new THREE.TrackballControls( camera );
 	// STATS
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -106,23 +129,27 @@ function init()
 	// CUSTOM //
 	////////////
 	
-	// create an array with six textures for a cool cube
-	var materialArray = [];
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/xpos.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/xneg.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/ypos.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/yneg.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zpos.png' ) }));
-	materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/zneg.png' ) }));
-	var MovingCubeMat = new THREE.MeshFaceMaterial(materialArray);
-	var MovingCubeGeom = new THREE.CubeGeometry( 50, 50, 50, 1, 1, 1, materialArray );
-	MovingCube = new THREE.Mesh( MovingCubeGeom, MovingCubeMat );
-	MovingCube.position.set(0, 25.1, 0);
-	scene.add( MovingCube );	
+	// create custom material from the shader code above
+	//   that is within specially labeled script tags
+	var customMaterial = new THREE.ShaderMaterial( 
+	{
+	    uniforms:       {  },
+		vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+	}   );
 	
+	// create a sphere and apply the material
+	var sphereGeometry = new THREE.SphereGeometry( 60, 32, 16 );
+    var sphere = new THREE.Mesh( sphereGeometry, customMaterial );
+	sphere.position.set( 60, 65, 0 );
+    scene.add( sphere );
+	
+	// create a cube and apply the material
+	var cubeGeometry = new THREE.CubeGeometry( 100, 100, 100 );
+	cube = new THREE.Mesh( cubeGeometry, customMaterial );
+	cube.position.set(-60, 65, 0);
+	scene.add(cube);
 }
-
-var MovingCube;
 
 function animate() 
 {
@@ -133,51 +160,12 @@ function animate()
 
 function update()
 {
-	var delta = clock.getDelta(); // seconds.
-	var moveDistance = 200 * delta; // 200 pixels per second
-	var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
-	
-	// local transformations
-
-	// move forwards/backwards/left/right
-	if ( keyboard.pressed("W") )
-		MovingCube.translateZ( -moveDistance );
-	if ( keyboard.pressed("S") )
-		MovingCube.translateZ(  moveDistance );
-	if ( keyboard.pressed("Q") )
-		MovingCube.translateX( -moveDistance );
-	if ( keyboard.pressed("E") )
-		MovingCube.translateX(  moveDistance );	
-
-	// rotate left/right/up/down
-	var rotation_matrix = new THREE.Matrix4().identity();
-	if ( keyboard.pressed("A") )
-		rotation_matrix = new THREE.Matrix4().makeRotationY(rotateAngle);
-	if ( keyboard.pressed("D") )
-		rotation_matrix = new THREE.Matrix4().makeRotationY(-rotateAngle);
-	if ( keyboard.pressed("R") )
-		rotation_matrix = new THREE.Matrix4().makeRotationX(rotateAngle);
-	if ( keyboard.pressed("F") )
-		rotation_matrix = new THREE.Matrix4().makeRotationX(-rotateAngle);
-	if ( keyboard.pressed("A") || keyboard.pressed("D") || 
-	     keyboard.pressed("R") || keyboard.pressed("F") )
-	{
-		MovingCube.matrix.multiply(rotation_matrix);
-		MovingCube.rotation.setEulerFromRotationMatrix(MovingCube.matrix);
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something
 	}
 	
-	var relativeCameraOffset = new THREE.Vector3(0,50,200);
-
-	var cameraOffset = relativeCameraOffset.applyMatrix4( MovingCube.matrixWorld );
-
-	camera.position.x = cameraOffset.x;
-	camera.position.y = cameraOffset.y;
-	camera.position.z = cameraOffset.z;
-	camera.lookAt( MovingCube.position );
-	
-	//camera.updateMatrix();
-	//camera.updateProjectionMatrix();
-			
+	controls.update();
 	stats.update();
 }
 
