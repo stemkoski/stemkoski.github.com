@@ -143,50 +143,62 @@ function init()
 	} );
 	var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
 	scene.add( skyBox );
-
+	
 	
 	 
 	////////////
 	// CUSTOM //
 	////////////
+
+    var sphereGeo = new THREE.SphereGeometry(100, 64, 32);
+	
+    // Create the Earth with nice texture - normal map for elevation, specular highlights
+
+	var colors = THREE.ImageUtils.loadTexture( "images/earth-day.jpg" );
+	var bumpy  = THREE.ImageUtils.loadTexture( "images/earth-topo.jpg" );
+	var shiny  = THREE.ImageUtils.loadTexture( "images/earth-specular.jpg" );
+
+	var earthMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, map: colors, 
+		bumpMap: bumpy, bumpScale: 4, specular: 0xffffff, specularMap: shiny, emissive: 0x888888 } );
+
+    this.earthSphere = new THREE.Mesh( sphereGeo, earthMaterial ); 
+    scene.add(earthSphere);	
+	
+	// add a cloud layer
+
+	var cloudMaterial = new THREE.MeshBasicMaterial( 
+	  { map: THREE.ImageUtils.loadTexture( "images/earth-clouds.png" ), transparent: true} );
+	  
+	this.cloudSphere = new THREE.Mesh( sphereGeo.clone(), cloudMaterial );
+	cloudSphere.scale.x = cloudSphere.scale.y = cloudSphere.scale.z = 1.005;
+	scene.add(cloudSphere);	
+	
+	// create secondary scene to add atmosphere effect
+	
+	atmosphereScene = new THREE.Scene();	
+	camera2 = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+	camera2.position = camera.position;
+	camera2.rotation = camera.rotation;	
+	atmosphereScene.add( camera2 );
 	
 	// create custom material from the shader code above
 	//   that is within specially labeled script tags
 	
-	var customMaterialAtmosphere = new THREE.ShaderMaterial( 
+	var atmosphereMaterial = new THREE.ShaderMaterial( 
 	{
 	    uniforms:       
 		{ 
-			"c":   { type: "f", value: 0.5 },
+			"c":   { type: "f", value: 0.35 },
 			"p":   { type: "f", value: 4.0 }
 		},
 		vertexShader:   document.getElementById( 'vertexShaderAtmosphere'   ).textContent,
 		fragmentShader: document.getElementById( 'fragmentShaderAtmosphere' ).textContent
 	}   );
 
-	
-	var sphereGeo = new THREE.SphereGeometry(100, 32, 16);
-    
-	var moonTexture = THREE.ImageUtils.loadTexture( 'images/moon.jpg' );
-	var moonMaterial = new THREE.MeshBasicMaterial( { map: moonTexture } );
-    var moon = new THREE.Mesh(sphereGeo, moonMaterial);
-    scene.add(moon);
-
-	
-	// create secondary scene to add atmosphere effect
-	
-	atmosphereScene = new THREE.Scene();
-	
-	camera2 = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-	camera2.position = camera.position;
-	camera2.rotation = camera.rotation;	
-	atmosphereScene.add( camera2 );
-	
-	var mesh = new THREE.Mesh( sphereGeo.clone(), customMaterialAtmosphere );
-	mesh.scale.x = mesh.scale.y = mesh.scale.z = 1.2;
-	mesh.material.side = THREE.BackSide;
-	// mesh.material.transparent = true;
-	atmosphereScene.add(mesh);
+	var atmosphere = new THREE.Mesh( sphereGeo.clone(), atmosphereMaterial );
+	atmosphere.scale.x = atmosphere.scale.y = atmosphere.scale.z = 1.2;
+	atmosphere.material.side = THREE.BackSide;
+	atmosphereScene.add( atmosphere );
 	
 	// clone earlier sphere geometry to block light correctly
 	// and make it a bit smaller so that light blends into surface a bit
@@ -209,8 +221,7 @@ function init()
 	// prepare the secondary render's passes
 	var render2Pass = new THREE.RenderPass( atmosphereScene, camera2 );
 	composer2.addPass( render2Pass );
-	
-	
+		
 	// prepare final composer
 	finalComposer = new THREE.EffectComposer( renderer, renderTarget );
 
@@ -223,35 +234,9 @@ function init()
 	effectBlend.renderToScreen = true;
 	finalComposer.addPass( effectBlend );
 
-	/////////
-	// GUI //
-	/////////
-	
-	gui = new dat.GUI();
-	
-	parameters = { c: 0.5, p: 4.0 };
-	
-	var cGUI = gui.add( parameters, 'c' ).min(0.0).max(1.0).step(0.01).name("c").listen();
-	cGUI.onChange( 
-		function(value)
-		{ customMaterialAtmosphere.uniforms[ "c" ].value = parameters.c; }
-	);
-	
-	var pGUI = gui.add( parameters, 'p' ).min(0.0).max(6.0).step(0.01).name("p").listen();
-	pGUI.onChange( 
-		function(value)
-		{ customMaterialAtmosphere.uniforms[ "p" ].value = parameters.p; }
-	);
-	
-	
-	
-	
-	
-	
+
     renderer.autoClear = false;
-    renderer.setClearColorHex(0x000000, 0.0);
-	
-	
+    renderer.setClearColorHex(0x000000, 0.0);	
 }
 
 function animate() 
@@ -268,6 +253,8 @@ function update()
 		// do something
 	}
 	
+	earthSphere.rotation.y += 0.0010;
+	cloudSphere.rotation.y += 0.0008;
 	controls.update();
 	stats.update();
 }
