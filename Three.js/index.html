@@ -141,7 +141,7 @@ a:hover .superImage
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 51. Last updated: 26 March 2013. Compatible with Three.js version 56.
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 53. Last updated: 14 May 2013. Compatible with Three.js version 56.
 <hr>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
 &bull; <a class="toc" href="#template">Template</a>
@@ -174,10 +174,12 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#shader-simple">Shader - Simple</a>
 &bull; <a class="toc" href="#shader-explorer">Shader - Explorer</a>
 &bull; <a class="toc" href="#selective-glow">Selective Glow Effect using Shaders</a>
+&bull; <a class="toc" href="#atmosphere">Atmosphere Effect using Shaders</a>
 &bull; <a class="toc" href="#video-texture">Video to Texture</a>
 &bull; <a class="toc" href="#webcam-test">Webcam Test</a>
 &bull; <a class="toc" href="#webcam-texture">Webcam to Texture</a>
 &bull; <a class="toc" href="#many-cameras">Many Cameras</a>
+&bull; <a class="toc" href="#css3d">Embedded HTML</a>
 &bull; <a class="toc" href="#gamepad-test">Gamepad Test</a>
 &bull; <a class="toc" href="#mesh-movement-gamepad">Mesh Movement - Gamepad</a>
 &bull; <a class="toc" href="#gui">GUI</a>
@@ -462,6 +464,15 @@ orthographic cameras along the axis directions (similar to many 3D modeling soft
 </div>
 
 <div class="fancy">
+<a name="atmosphere"></a>
+<a href="Atmosphere.html" target="_blank">
+<img src="html-images/Atmosphere.png" class="superImage" />
+<br/>Atmosphere Effect using Shaders</a>
+<p class ="superText"> Demonstrates an atmosphere effect using shaders. This approach requires the creation of two scenes - the base scene and a secondary scene containing a spherical object with a gradient texture created using a shader. The secondary scene is then additively blended with the base scene.
+</p>
+</div>
+
+<div class="fancy">
 <a name="video-texture"></a>
 <a href="Video.html" target="_blank">
 <img src="html-images/Video.png" class="superImage" />
@@ -500,7 +511,16 @@ Press P to pause webcam (image freezes) and R to resume webcam.
 Incorporates code from examples: Webcam Texture, Mesh Movement, Reflection, Skybox, and Viewports - Dual.
 Requires Webcam,
 user needs to accept permissions to run, requires WebRTC compatible browser  (see http://www.webrtc.org/). 
+</p>
+</div>
 
+<div class="fancy">
+<a name="css3d"></a>
+<a href="CSS3D.html" target="_blank">
+<img src="html-images/CSS3D.png" class="superImage" />
+<br/>Embedded HTML</a>
+<p class ="superText"> Displays an interactive webpage within a Three.js scene. Based on the work of Jerome Etienne:
+http://learningthreejs.com/blog/2013/04/30/closing-the-gap-between-html-and-webgl/
 </p>
 </div>
 
@@ -657,10 +677,25 @@ What are you doing, poking around in my HTML?  :p
 
 Notes to self (and nosy you):
 
-put up - 
-single triangle, square creation methods
+nearly ready:
+Shader-Simple
+Skybox-Shader
+The Geometry-to-Lines method
+The Line-to-Cylinder method
+Fancy04
+Atmosphere
+Earth
+Multiple Models Loader
 
-the line-to-cylinder method
+Write:
+- Single triangle/square creation methods
+- Galaxy (Earth + Sun + Moon + Tweening + Shadows + Nightlights)
+
+Jerome's awesomeness:
+- Headtracker
+- Embed Webpage on PlaneGeometry
+
+How to upload 3D things to Youtube?
 
 mathiness -
 implicit graph
@@ -674,10 +709,10 @@ categorize table of contents...?
 
 Future goals:
 
-- blur filter
-- selective glow
+
 - model with subsurf
 - physics
+- tween
 - specific particle effects (smoke, fire, water, electricity/spark, explosion)
 - particle emitters (check jerome's work...)
 
@@ -687,7 +722,7 @@ Display video on a computer monitor/screen model
 other recent thoughts:
 anaglyph-style effect
 convex hull of a point set
-the earth map from the webgl book
+
 http://mrdoob.com/projects/editor/
 dynamic terrain---
 http://alteredqualia.com/three/examples/webgl_terrain_dynamic2.html

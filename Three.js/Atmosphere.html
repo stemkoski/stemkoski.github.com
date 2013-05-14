@@ -70,7 +70,7 @@ void main()
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
-	Date: March 2013 (three.js v56)
+	Date: May 2013 (three.js v56)
  */
 
 // MAIN
@@ -122,7 +122,6 @@ function init()
 	light.position.set(0,250,0);
 	scene.add(light);
 	
-	
 	var imagePrefix = "images/nebula-";
 	var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
 	var imageSuffix = ".png";
@@ -144,8 +143,6 @@ function init()
 	var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
 	scene.add( skyBox );
 
-	
-	 
 	////////////
 	// CUSTOM //
 	////////////
@@ -164,14 +161,12 @@ function init()
 		fragmentShader: document.getElementById( 'fragmentShaderAtmosphere' ).textContent
 	}   );
 
-	
 	var sphereGeo = new THREE.SphereGeometry(100, 32, 16);
     
 	var moonTexture = THREE.ImageUtils.loadTexture( 'images/moon.jpg' );
 	var moonMaterial = new THREE.MeshBasicMaterial( { map: moonTexture } );
     var moon = new THREE.Mesh(sphereGeo, moonMaterial);
     scene.add(moon);
-
 	
 	// create secondary scene to add atmosphere effect
 	
@@ -184,8 +179,8 @@ function init()
 	
 	var mesh = new THREE.Mesh( sphereGeo.clone(), customMaterialAtmosphere );
 	mesh.scale.x = mesh.scale.y = mesh.scale.z = 1.2;
+	// atmosphere should provide light from behind the sphere, so only render the back side
 	mesh.material.side = THREE.BackSide;
-	// mesh.material.transparent = true;
 	atmosphereScene.add(mesh);
 	
 	// clone earlier sphere geometry to block light correctly
@@ -209,7 +204,6 @@ function init()
 	// prepare the secondary render's passes
 	var render2Pass = new THREE.RenderPass( atmosphereScene, camera2 );
 	composer2.addPass( render2Pass );
-	
 	
 	// prepare final composer
 	finalComposer = new THREE.EffectComposer( renderer, renderTarget );
@@ -243,15 +237,8 @@ function init()
 		{ customMaterialAtmosphere.uniforms[ "p" ].value = parameters.p; }
 	);
 	
-	
-	
-	
-	
-	
     renderer.autoClear = false;
     renderer.setClearColorHex(0x000000, 0.0);
-	
-	
 }
 
 function animate() 
@@ -274,8 +261,6 @@ function update()
 
 function render() 
 {
-	// renderer.clear();
-    // renderer.render(scene, camera);
 	composer2.render();
 	finalComposer.render();
 }
