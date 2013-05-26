@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Template</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<!-- ---------------- Custom Shader Code ------------------------ -->
+<script id="vertexShader" type="x-shader/x-vertex">
+varying vec2 vUv;
+void main() 
+{ 
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+}
+</script>
+
+<!-- fragment shader a.k.a. pixel shader -->
+<script id="fragmentShader" type="x-shader/x-vertex"> 
+uniform float timeSpeed;
+uniform float noiseScale;
+uniform float alpha;
+
+uniform float time;
+uniform sampler2D texture1;
+uniform sampler2D texture2;
+
+varying vec2 vUv;
+void main() 
+{
+	vec4 baseColor  = texture2D( texture1, vUv );
+	
+	vec2 uvTimeShift = vUv + vec2( -0.7, 1.5 ) * time * timeSpeed;	
+	vec4 baseColorTimeShift = texture2D( texture1, uvTimeShift );
+	
+	vec4 noiseGenerator = texture2D( texture2, vUv );
+	vec2 uvNoiseShift = vUv + noiseScale * vec2( noiseGenerator.r, noiseGenerator.g );
+	vec4 baseColorNoiseShift = texture2D( texture1, uvNoiseShift );
+	
+	vec4 noiseGeneratorTimeShift = texture2D( texture2, uvTimeShift );
+	vec2 uvNoiseTimeShift = vUv + noiseScale * vec2( noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.g );
+	vec4 baseColorNoiseTimeShift = texture2D( texture1, uvNoiseTimeShift );
+
+	baseColorNoiseTimeShift.a = alpha;
+	gl_FragColor = baseColorNoiseTimeShift;
+}  
+</script>
+<!-- ----------------------------------------------------------- -->
+
+
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: May 2013 (three.js v56)
+ */
+
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+// custom global variables
+var cube;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,100,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.rotation.x = Math.PI / 2;
+	scene.add(floor);
+	// SKYBOX/FOG
+	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+	
+	////////////
+	// CUSTOM //
+	////////////
+	
+	var noiseTexture = new THREE.ImageUtils.loadTexture( 'images/cloud.png' );
+	noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping; 
+		
+	var lavaTexture = new THREE.ImageUtils.loadTexture( 'images/lava.jpg' );
+	lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping; 
+	
+	// use "this." to create global object
+	this.customUniforms = {
+		timeSpeed: 	{ type: "f", value: 0.05 },
+		noiseScale:	{ type: "f", value: 0.5337 },
+		alpha: 		{ type: "f", value: 1.0 },
+		time: 		{ type: "f", value: 1.0 },
+		texture1: 	{ type: "t", value: lavaTexture },
+		texture2: 	{ type: "t", value: noiseTexture }
+	};
+	
+	// create custom material from the shader code above
+	//   that is within specially labeled script tags
+	var customMaterial = new THREE.ShaderMaterial( 
+	{
+	    uniforms: customUniforms,
+		vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+	}   );
+
+	// other material properties
+	customMaterial.side = THREE.DoubleSide;
+
+	// apply the material to a surface
+	var flatGeometry = new THREE.PlaneGeometry( 100, 100 );
+    var surface = new THREE.Mesh( flatGeometry, customMaterial );
+	surface.position.set(-60,50,150);
+	scene.add( surface );
+	
+	/////////////////////////////////
+	// again, but for water!
+	
+	var waterTexture = new THREE.ImageUtils.loadTexture( 'images/water.jpg' );
+	waterTexture.wrapS = waterTexture.wrapT = THREE.RepeatWrapping; 
+	
+	// use "this." to create global object
+	this.customUniforms2 = {
+		timeSpeed: 	{ type: "f", value: 1.15 },
+		noiseScale:	{ type: "f", value: 0.2 },
+		alpha: 		{ type: "f", value: 0.8 },
+		time: 		{ type: "f", value: 1.0 },
+		texture1: 	{ type: "t", value: waterTexture },
+		texture2: 	{ type: "t", value: noiseTexture }
+	};
+
+	// create custom material from the shader code above
+	//   that is within specially labeled script tags
+	var customMaterial2 = new THREE.ShaderMaterial( 
+	{
+	    uniforms: customUniforms2,
+		vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+	}   );
+ 
+	// other material properties
+	customMaterial2.side = THREE.DoubleSide;
+	customMaterial2.transparent = true;
+	
+	// apply the material to a surface
+	var flatGeometry = new THREE.PlaneGeometry( 100, 100 );
+    var surface = new THREE.Mesh( flatGeometry, customMaterial2 );
+	surface.position.set(60,50,150);
+	scene.add( surface );	
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something
+	}
+	var delta = clock.getDelta();
+	customUniforms.time.value += delta;
+	customUniforms2.time.value += delta;
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
