@@ -27,11 +27,36 @@
 
 <!-- ---------------- Custom Shader Code ------------------------ -->
 <script id="vertexShader" type="x-shader/x-vertex">
+uniform sampler2D noiseTexture;
+uniform float noiseScale;
+
+uniform sampler2D bumpTexture;
+uniform float bumpSpeed;
+uniform float bumpScale;
+
+uniform float time;
+
 varying vec2 vUv;
+
 void main() 
 { 
     vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+	
+	vec2 uvTimeShift = vUv + vec2( 1.1, 1.9 ) * time * bumpSpeed;
+	vec4 noiseGeneratorTimeShift = texture2D( noiseTexture, uvTimeShift );
+	vec2 uvNoiseTimeShift = vUv + noiseScale * vec2( noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.g );
+	// below, using uvTimeShift seems to result in more of a "rippling" effect
+	//   while uvNoiseTimeShift seems to result in more of a "shivering" effect
+	vec4 bumpData = texture2D( bumpTexture, uvTimeShift );
+
+	// move the position along the normal
+	//  but displace the vertices at the poles by the same amount
+	float displacement = ( vUv.y > 0.999 || vUv.y < 0.001 ) ? 
+		bumpScale * (0.3 + 0.02 * sin(time)) :  
+		bumpScale * bumpData.r;
+    vec3 newPosition = position + normal * displacement;
+	
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
 }
 </script>
 
@@ -39,21 +64,36 @@ void main()
 <script id="fragmentShader" type="x-shader/x-vertex"> 
 uniform sampler2D baseTexture;
 uniform float baseSpeed;
+uniform float repeatS;
+uniform float repeatT;
+
 uniform sampler2D noiseTexture;
 uniform float noiseScale;
-uniform float alpha;
+
+uniform sampler2D blendTexture;
+uniform float blendSpeed;
+uniform float blendOffset;
+
 uniform float time;
+uniform float alpha;
 
 varying vec2 vUv;
+
 void main() 
 {
 	vec2 uvTimeShift = vUv + vec2( -0.7, 1.5 ) * time * baseSpeed;	
 	vec4 noiseGeneratorTimeShift = texture2D( noiseTexture, uvTimeShift );
 	vec2 uvNoiseTimeShift = vUv + noiseScale * vec2( noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.b );
-	vec4 baseColor = texture2D( baseTexture, uvNoiseTimeShift );
+	vec4 baseColor = texture2D( baseTexture, uvNoiseTimeShift * vec2(repeatS, repeatT) );
 
-	baseColor.a = alpha;
-	gl_FragColor = baseColor;
+	vec2 uvTimeShift2 = vUv + vec2( 1.3, -1.7 ) * time * blendSpeed;	
+	vec4 noiseGeneratorTimeShift2 = texture2D( noiseTexture, uvTimeShift2 );
+	vec2 uvNoiseTimeShift2 = vUv + noiseScale * vec2( noiseGeneratorTimeShift2.g, noiseGeneratorTimeShift2.b );
+	vec4 blendColor = texture2D( blendTexture, uvNoiseTimeShift2 * vec2(repeatS, repeatT) ) - blendOffset * vec4(1.0, 1.0, 1.0, 1.0);
+
+	vec4 theColor = baseColor + blendColor;
+	theColor.a = alpha;
+	gl_FragColor = theColor;
 }  
 </script>
 <!-- ----------------------------------------------------------- -->
@@ -131,18 +171,50 @@ function init()
 	// CUSTOM //
 	////////////
 	
+	// base image texture for mesh
+	var lavaTexture = new THREE.ImageUtils.loadTexture( 'images/lava.jpg');
+	lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping; 
+	// multiplier for distortion speed 		
+	var baseSpeed = 0.02;
+	// number of times to repeat texture in each direction
+	var repeatS = repeatT = 4.0;
+	
+	// texture used to generate "randomness", distort all other textures
 	var noiseTexture = new THREE.ImageUtils.loadTexture( 'images/cloud.png' );
 	noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping; 
-		
-	var lavaTexture = new THREE.ImageUtils.loadTexture( 'images/lava.jpg' );
-	lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping; 
+	// magnitude of noise effect
+	var noiseScale = 0.5;
+	
+	// texture to additively blend with base image texture
+	var blendTexture = new THREE.ImageUtils.loadTexture( 'images/lava.jpg' );
+	blendTexture.wrapS = blendTexture.wrapT = THREE.RepeatWrapping; 
+	// multiplier for distortion speed 
+	var blendSpeed = 0.01;
+	// adjust lightness/darkness of blended texture
+	var blendOffset = 0.25;
+
+	// texture to determine normal displacement
+	var bumpTexture = noiseTexture;
+	bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping; 
+	// multiplier for distortion speed 		
+	var bumpSpeed   = 0.15;
+	// magnitude of normal displacement
+	var bumpScale   = 40.0;
 	
 	// use "this." to create global object
 	this.customUniforms = {
 		baseTexture: 	{ type: "t", value: lavaTexture },
-		baseSpeed: 		{ type: "f", value: 0.05 },
-		noiseTexture: 	{ type: "t", value: noiseTexture },
-		noiseScale:		{ type: "f", value: 0.5337 },
+		baseSpeed:		{ type: "f", value: baseSpeed },
+		repeatS:		{ type: "f", value: repeatS },
+		repeatT:		{ type: "f", value: repeatT },
+		noiseTexture:	{ type: "t", value: noiseTexture },
+		noiseScale:		{ type: "f", value: noiseScale },
+		blendTexture:	{ type: "t", value: blendTexture },
+		blendSpeed: 	{ type: "f", value: blendSpeed },
+		blendOffset: 	{ type: "f", value: blendOffset },
+		bumpTexture:	{ type: "t", value: bumpTexture },
+		bumpSpeed: 		{ type: "f", value: bumpSpeed },
+		bumpScale: 		{ type: "f", value: bumpScale },
 		alpha: 			{ type: "f", value: 1.0 },
 		time: 			{ type: "f", value: 1.0 }
 	};
@@ -155,50 +227,11 @@ function init()
 		vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
 		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
 	}   );
-
-	// other material properties
-	customMaterial.side = THREE.DoubleSide;
-
-	// apply the material to a surface
-	var flatGeometry = new THREE.PlaneGeometry( 100, 100 );
-    var surface = new THREE.Mesh( flatGeometry, customMaterial );
-	surface.position.set(-60,50,150);
-	scene.add( surface );
-	
-	/////////////////////////////////
-	// again, but for water!
-	
-	var waterTexture = new THREE.ImageUtils.loadTexture( 'images/water.jpg' );
-	waterTexture.wrapS = waterTexture.wrapT = THREE.RepeatWrapping; 
-	
-	// use "this." to create global object
-	this.customUniforms2 = {
-		baseTexture: 	{ type: "t", value: waterTexture },
-		baseSpeed: 		{ type: "f", value: 1.15 },
-		noiseTexture: 	{ type: "t", value: noiseTexture },
-		noiseScale:		{ type: "f", value: 0.2 },
-		alpha: 			{ type: "f", value: 0.8 },
-		time: 			{ type: "f", value: 1.0 }
-	};
-
-	// create custom material from the shader code above
-	//   that is within specially labeled script tags
-	var customMaterial2 = new THREE.ShaderMaterial( 
-	{
-	    uniforms: customUniforms2,
-		vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
-		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-	}   );
- 
-	// other material properties
-	customMaterial2.side = THREE.DoubleSide;
-	customMaterial2.transparent = true;
-	
-	// apply the material to a surface
-	var flatGeometry = new THREE.PlaneGeometry( 100, 100 );
-    var surface = new THREE.Mesh( flatGeometry, customMaterial2 );
-	surface.position.set(60,50,150);
-	scene.add( surface );	
+		
+	var ballGeometry = new THREE.SphereGeometry( 60, 64, 64 );
+	var ball = new THREE.Mesh(	ballGeometry, customMaterial );
+	ball.position.set(0, 65, 160);
+	scene.add( ball );
 }
 
 function animate() 
@@ -216,7 +249,6 @@ function update()
 	}
 	var delta = clock.getDelta();
 	customUniforms.time.value += delta;
-	customUniforms2.time.value += delta;
 	controls.update();
 	stats.update();
 }
