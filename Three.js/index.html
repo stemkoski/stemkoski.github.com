@@ -141,7 +141,7 @@ a:hover .superImage
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 55. Last updated: 27 May 2013. Compatible with Three.js version 56.
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 57. Last updated: 31 May 2013. Compatible with Three.js version 56.
 <hr>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
 &bull; <a class="toc" href="#template">Template</a>
@@ -180,6 +180,8 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#video-texture">Video to Texture</a>
 &bull; <a class="toc" href="#webcam-test">Webcam Test</a>
 &bull; <a class="toc" href="#webcam-texture">Webcam to Texture</a>
+&bull; <a class="toc" href="#motion-detection">Motion Detection</a>
+&bull; <a class="toc" href="#motion-detection-texture">Motion Detection and Scene</a>
 &bull; <a class="toc" href="#many-cameras">Many Cameras</a>
 &bull; <a class="toc" href="#css3d">Embedded HTML</a>
 &bull; <a class="toc" href="#gamepad-test">Gamepad Test</a>
@@ -501,6 +503,8 @@ orthographic cameras along the axis directions (similar to many 3D modeling soft
 </p>
 </div>
 
+<hr color="black">
+
 <div class="fancy">
 <a name="webcam-test"></a>
 <a href="Webcam-Test.html" target="_blank">
@@ -533,6 +537,32 @@ Requires Webcam,
 user needs to accept permissions to run, requires WebRTC compatible browser  (see http://www.webrtc.org/). 
 </p>
 </div>
+
+<div class="fancy">
+<a name="motion-detection"></a>
+<a href="Webcam-Motion-Detection.html" target="_blank">
+<img src="html-images/Webcam-Motion-Detection.png" class="superImage" />
+<br/>Motion Detection</a>
+<p class ="superText"> Displays user webcam image on webpage. 
+Requires WebRTC compatible browser  (see http://www.webrtc.org/).
+Detects motion occuring within given regions; see http://www.youtube.com/watch?v=ehkqgaGwGcw for demo.
+Based on http://www.adobe.com/devnet/html5/articles/javascript-motion-detection.html.
+(No Three.js code required; this example is a lead-in to the following example.)
+</p>
+</div>
+
+<div class="fancy">
+<a name="motion-detection-texture"></a>
+<a href="Webcam-Motion-Detection-Texture.html" target="_blank">
+<img src="html-images/Webcam-Motion-Detection-Texture.png" class="superImage" />
+<br/>Motion Detection and Scene</a>
+<p class ="superText"> Displays user webcam image on webpage. Requires Webcam,
+user needs to accept permissions to run, requires WebRTC compatible browser  (see http://www.webrtc.org/).
+Detects motion occuring over graphics regions, and changes texture on spinning cube accordingly.
+</p>
+</div>
+
+<hr color="black">
 
 <div class="fancy">
 <a name="css3d"></a>
@@ -703,8 +733,7 @@ Skybox-Shader
 The Geometry-to-Lines method
 The Line-to-Cylinder method
 Fancy04
-Atmosphere
-Earth
+Earth-Galaxy
 Multiple Models Loader
 
 Write:
@@ -713,7 +742,6 @@ Write:
 
 Jerome's awesomeness:
 - Headtracker
-- Embed Webpage on PlaneGeometry
 
 How to upload 3D things to Youtube?
 
