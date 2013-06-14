@@ -103,10 +103,28 @@ function init()
 	// CUSTOM //
 	////////////
 	
-	// this material causes a mesh to use colors assigned to vertices
+	//////////////////////////////////////////////////////////////////////
+	
+	// this material causes a mesh to use colors assigned to faces
 	var cubeMaterial = new THREE.MeshBasicMaterial( 
-	{ color: 0xffffff, shading: THREE.FlatShading, 
-	  vertexColors: THREE.VertexColors } );
+	{ color: 0xffffff, vertexColors: THREE.FaceColors } );
+	
+	var cubeGeometry = new THREE.CubeGeometry( 80, 80, 80, 3, 3, 3 );
+	for ( var i = 0; i < cubeGeometry.faces.length; i++ ) 
+	{
+		face  = cubeGeometry.faces[ i ];	
+		face.color.setRGB( Math.random(), Math.random(), Math.random() );		
+	}
+	cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
+	cube.position.set(-100, 50, 0);
+	scene.add(cube);
+	
+	//////////////////////////////////////////////////////////////////////
+
+	// this material causes a mesh to use colors assigned to vertices
+	//   different colors at face vertices create gradient effect
+	var cubeMaterial = new THREE.MeshBasicMaterial( 
+	{ color: 0xffffff, vertexColors: THREE.VertexColors } );
 	
 	var color, face, numberOfSides, vertexIndex;
 	
@@ -131,29 +149,10 @@ function init()
 		}
 	}
 	cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
-	cube.position.set(-100, 50, 0);
+	cube.position.set(0, 50, 0);
 	scene.add(cube);
-	
-	// red-shaded color cube
-	var cubeGeometry = new THREE.CubeGeometry( 80, 80, 80, 3, 3, 3 );
-	for ( var i = 0; i < cubeGeometry.faces.length; i++ ) 
-	{
-		face = cubeGeometry.faces[ i ];	
-		// determine if current face is a tri or a quad
-		numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
-		// assign color to each vertex of current face
-		for( var j = 0; j < numberOfSides; j++ ) 
-		{
-			vertexIndex = face[ faceIndices[ j ] ];
-			// initialize color variable
-			color = new THREE.Color( 0xffffff );
-			color.setRGB( Math.random(), 0, 0 );
-			face.vertexColors[ j ] = color;
-		}
-	}
-	cube = new THREE.Mesh( cubeGeometry, cubeMaterial );
-	cube.position.set( 0, 50, 0);
-	scene.add(cube);
+
+	//////////////////////////////////////////////////////////////////////
 	
 	// RGB color cube
 	var size = 80;

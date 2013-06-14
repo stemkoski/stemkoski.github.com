@@ -27,11 +27,14 @@
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
+<!-- GUI for experimenting with values -->		
+<script type='text/javascript' src='js/DAT.GUI.min.js'></script>
+
 <script>
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
-	Date: March 2013 (three.js v56)
+	Date: June 2013 (three.js v56)
  */
 
 // MAIN
@@ -40,8 +43,9 @@
 var container, scene, camera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
+
 // custom global variables
-var cube;
+var refractSphere, refractSphereCamera; // for refract material
 
 init();
 animate();
@@ -71,7 +75,7 @@ function init()
 	THREEx.WindowResize(renderer, camera);
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 	// CONTROLS
-	controls = new THREE.TrackballControls( camera );
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
 	// STATS
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -80,54 +84,74 @@ function init()
 	container.appendChild( stats.domElement );
 	// LIGHT
 	var light = new THREE.PointLight(0xffffff);
-	light.position.set(0,150,100);
+	light.position.set(0,250,0);
 	scene.add(light);
 	// FLOOR
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
 	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
 	floorTexture.repeat.set( 10, 10 );
-	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side:THREE.DoubleSide } );
 	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-	floor.position.y = -0.5;
+	floor.position.y = -40.5;
 	floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
-	// SKYBOX/FOG
-	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
-	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
-	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-	scene.add(skyBox);
+	
+	// SKYBOX
+	var imagePrefix = "images/dawnmountain-";
+	var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
+	var imageSuffix = ".png";
+	var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );	
+	
+	var materialArray = [];
+	for (var i = 0; i < 6; i++)
+		materialArray.push( new THREE.MeshBasicMaterial({
+			map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
+			side: THREE.BackSide
+		}));
+	var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+	var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+	scene.add( skyBox );
 	
 	////////////
 	// CUSTOM //
 	////////////
+	
+	var sphereGeom =  new THREE.SphereGeometry( 80, 64, 32 );
+	refractSphereCamera = new THREE.CubeCamera( 0.1, 5000, 512 );
+	scene.add( refractSphereCamera );
+	
+	refractSphereCamera.renderTarget.mapping = new THREE.CubeRefractionMapping();
+	
+	var refractMaterial = new THREE.MeshBasicMaterial( { 
+		color: 0xccccff, 
+		envMap: refractSphereCamera.renderTarget, 
+		refractionRatio: 0.985, 
+		reflectivity: 0.9 
+		} );		
 
-	var sphereGeometry = new THREE.SphereGeometry(50, 32, 16);
-	var moonTexture = THREE.ImageUtils.loadTexture( 'images/moon.jpg' );
-	var moonMaterial = new THREE.MeshLambertMaterial( { map: moonTexture } );
-	var moon = new THREE.Mesh( sphereGeometry, moonMaterial );
-	moon.position.set(-60, 50, 0);
-	scene.add( moon );		
+	refractSphere = new THREE.Mesh( sphereGeom, refractMaterial );
+	refractSphere.position.set(0,50,0);
+	refractSphereCamera.position = refractSphere.position;
+	scene.add(refractSphere);
+	
+	// experiment with parameters
+	
+	gui = new dat.GUI();
+	
+	parameters = { a: 0.985, b: 0.900 };
+	
+	var aGUI = gui.add( parameters, 'a' ).min(0.915).max(1.000).step(0.001).name("refractionRatio").listen();
+	aGUI.onChange( 
+		function(value)
+		{ refractMaterial.refractionRatio = parameters.a; }
+	);
+	var bGUI = gui.add( parameters, 'b' ).min(0.600).max(1.200).step(0.001).name("reflectivity").listen();
+	bGUI.onChange( 
+		function(value)
+		{ refractMaterial.reflectivity = parameters.b; }
+	);
 
-	var outlineMaterial1 = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.BackSide } );
-	var outlineMesh1 = new THREE.Mesh( sphereGeometry, outlineMaterial1 );
-	outlineMesh1.position = moon.position;
-	outlineMesh1.scale.multiplyScalar(1.05);
-	scene.add( outlineMesh1 );
-	
-	var cubeGeometry = new THREE.CubeGeometry( 80, 80, 80 );
-	var crateTexture = new THREE.ImageUtils.loadTexture( 'images/crate.gif' );
-	var crateMaterial = new THREE.MeshBasicMaterial( { map: crateTexture } );
-	var crate = new THREE.Mesh( cubeGeometry, crateMaterial );
-	crate.position.set(60, 50, 0);
-	scene.add( crate );		
-	
-	var outlineMaterial2 = new THREE.MeshBasicMaterial( { color: 0x00ff00, side: THREE.BackSide } );
-	var outlineMesh2 = new THREE.Mesh( cubeGeometry, outlineMaterial2 );
-	outlineMesh2.position = crate.position;
-	outlineMesh2.scale.multiplyScalar(1.05);
-	scene.add( outlineMesh2 );
-	
 }
 
 function animate() 
@@ -150,6 +174,16 @@ function update()
 
 function render() 
 {
+	// move the CubeCamera to the position of the object
+	//    that has a reflective surface, "take a picture" in each direction
+	//    and apply it to the surface.
+	// need to hide surface before and after so that it does not
+	//    "get in the way" of the camera
+
+	refractSphere.visible = false;
+	refractSphereCamera.updateCubeMap( renderer, scene );
+	refractSphere.visible = true;
+	
 	renderer.render( scene, camera );
 }
 

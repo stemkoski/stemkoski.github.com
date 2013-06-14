@@ -141,7 +141,7 @@ a:hover .superImage
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 57. Last updated: 31 May 2013. Compatible with Three.js version 56.
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 63. Last updated: 14 June 2013. Compatible with Three.js version 56.
 <hr>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
 &bull; <a class="toc" href="#template">Template</a>
@@ -150,19 +150,23 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#wireframe">Wireframe</a>
 &bull; <a class="toc" href="#dashed-lines">Lines and Dashed Lines</a>
 &bull; <a class="toc" href="#dashed-3d">Multi-Wireframe Effect</a>
-&bull; <a class="toc" href="#vertex-colors">Vertex Colors</a>
+&bull; <a class="toc" href="#outline">Outline Effect</a>
+&bull; <a class="toc" href="#vertex-colors">Face/Vertex Colors</a>
 &bull; <a class="toc" href="#shapes">Shapes</a>
 &bull; <a class="toc" href="#extrusion">Extrusion</a>
-&bull; <a class="toc" href="#text3D">Text 3D</a>
+&bull; <a class="toc" href="#text3D">Text3D</a>
 &bull; <a class="toc" href="#textures">Textures</a>
 &bull; <a class="toc" href="#sprites">Sprites</a>
 &bull; <a class="toc" href="#texture-repeat">Texture - Repeat</a>
+&bull; <a class="toc" href="#texture-text3D">Texture - Text3D </a>
 &bull; <a class="toc" href="#subdivision-cube">Subdivision Modifier - Cube</a>
 &bull; <a class="toc" href="#skybox">SkyBox</a>
 &bull; <a class="toc" href="#translucence">Translucence</a>
 &bull; <a class="toc" href="#shadow">Shadow</a>
 &bull; <a class="toc" href="#reflection">Reflection</a>
+&bull; <a class="toc" href="#refraction">Refraction</a>
 &bull; <a class="toc" href="#particles">Particles</a>
+&bull; <a class="toc" href="#particlesystem-static">Particle System - Static</a>
 &bull; <a class="toc" href="#texture-from-canvas">Texture from Canvas</a>
 &bull; <a class="toc" href="#texture-animation">Texture Animation</a>
 &bull; <a class="toc" href="#mesh-movement">Mesh Movement</a>
@@ -174,6 +178,8 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#shader-simple">Shader - Simple</a>
 &bull; <a class="toc" href="#shader-explorer">Shader - Explorer</a>
 &bull; <a class="toc" href="#selective-glow">Selective Glow Effect using Shaders</a>
+&bull; <a class="toc" href="#sphere-unwrapping">Shader - Sphere Unwrapping</a>
+&bull; <a class="toc" href="#shader-attributes">Shader - Attributes</a>
 &bull; <a class="toc" href="#shader-animate">Shader - Animated Materials</a>
 &bull; <a class="toc" href="#shader-fireball">Shader - Animated Fireball</a>
 &bull; <a class="toc" href="#atmosphere">Atmosphere Effect using Shaders</a>
@@ -261,13 +267,20 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 <p class ="superText"> Demonstrates a neat effect to display a wireframe-style object where the obscured lines display different than the visible lines (e.g. dashed vs. solid). </p>
 </div>
 
+<div class="fancy">
+<a name="outline"></a>
+<a href="Outline.html" target="_blank">
+<img src="html-images/Outline.png" class="superImage" />
+<br/>Outline Effect</a>
+<p class ="superText"> Demonstrates an effect to display a solid outline around a mesh. </p>
+</div>
 
 <div class="fancy">
 <a name="vertex-colors"></a>
 <a href="Vertex-Colors.html" target="_blank">
 <img src="html-images/Vertex-Colors.png" class="superImage" />
-<br/>Vertex Colors</a>
-<p class ="superText"> Assigning colors to vertices to achieve special effects such as gradients and randomization. </p>
+<br/>Face/Vertex Colors</a>
+<p class ="superText"> Assigning colors to faces and vertices for gradient effects. </p>
 </div>
 
 <div class="fancy">
@@ -321,6 +334,14 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="texture-text3D"></a>
+<a href="Text3D-Textures.html" target="_blank">
+<img src="html-images/Text3D-Textures.png" class="superImage" />
+<br/>Texture - Text3D</a>
+<p class ="superText"> Applying a texture to 3D Text. (Requires repeating texture on surface.) </p>
+</div>
+
+<div class="fancy">
 <a name="subdivision-cube"></a>
 <a href="Subdivision-Cube.html" target="_blank">
 <img src="html-images/Subdivision-Cube.png" class="superImage" />
@@ -361,11 +382,27 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="refraction"></a>
+<a href="Refraction.html" target="_blank">
+<img src="html-images/Refraction.png" class="superImage" />
+<br/>Refraction</a>
+<p class ="superText"> Creating a glass-like material by projecting a refracted image of the surroundings onto a object. </p>
+</div>
+
+<div class="fancy">
 <a name="particles"></a>
 <a href="Particles.html" target="_blank">
 <img src="html-images/Particles.png" class="superImage" />
 <br/>Particles</a>
 <p class ="superText"> Create a particle effect using a group of sprites and alpha blending (or transparency). </p>
+</div>
+
+<div class="fancy">
+<a name="particlesystem-static"></a>
+<a href="ParticleSystem-Static.html" target="_blank">
+<img src="html-images/ParticleSystem-Static.png" class="superImage" />
+<br/>Particle System - Static</a>
+<p class ="superText"> Create a group of particles using the ParticleSystem object (for faster rendering). </p>
 </div>
 
 <div class="fancy">
@@ -464,6 +501,24 @@ orthographic cameras along the axis directions (similar to many 3D modeling soft
 <img src="html-images/Selective-Glow.png" class="superImage" />
 <br/>Selective Glow Effect using Shaders</a>
 <p class ="superText"> Demonstrates a selective glow effect using shaders. This approach requires the creation of two scenes - the base scene and a secondary scene containing copies of the base scene objects with either bright textures for glow effects or black textures. The secondary scene is blurred and then additively blended with the base scene.
+</p>
+</div>
+
+<div class="fancy">
+<a name="sphere-unwrapping"></a>
+<a href="Sphere-Unwrapping.html" target="_blank">
+<img src="html-images/Sphere-Unwrapping.png" class="superImage" />
+<br/>Shader - Sphere Unwrapping</a>
+<p class ="superText"> Demonstrates using a vertex shader to animate vertices, changing their positions according to their UV-coordinates; the result is a sphere that "flattens" into a plane.
+</p>
+</div>
+
+<div class="fancy">
+<a name="shader-attributes"></a>
+<a href="Shader-Attributes.html" target="_blank">
+<img src="html-images/Shader-Attributes.png" class="superImage" />
+<br/>Shader - Attributes</a>
+<p class ="superText"> Demonstrates using a vertex shader to animate vertices, using "attributes": a set of values associated to each vertex.
 </p>
 </div>
 
@@ -726,13 +781,6 @@ Uses the library at http://github.com/chandlerprall/ThreeCSG/</p>
 What are you doing, poking around in my HTML?  :p
 
 Notes to self (and nosy you):
-
-outline
-shader-halo -> replace atmosphere?
-text3d-textures
-particlesystem-static
-shader-attributes
-sphere-unwrapping
 
 nearly ready:
 Shader-Simple

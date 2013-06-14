@@ -45,7 +45,7 @@
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
-	Date: March 2013 (three.js v56)
+	Date: June 2013 (three.js v56)
  */
 
 // MAIN
@@ -117,19 +117,18 @@ function init()
 	// CUSTOM //
 	////////////
 
-	
 	// Font with textures applied:
-	var moonTexture = THREE.ImageUtils.loadTexture( 'images/Chrome.png' );
-	moonTexture.wrapS = moonTexture.wrapT = THREE.RepeatWrapping;
-	moonTexture.repeat.set( 0.5, 0.5 );
-	var moonMaterial = new THREE.MeshBasicMaterial( { map: moonTexture } );
+	var chromeTexture = THREE.ImageUtils.loadTexture( 'images/Chrome.png' );
+	chromeTexture.wrapS = chromeTexture.wrapT = THREE.RepeatWrapping;
+	chromeTexture.repeat.set( 0.5, 0.5 );
+	var chromeMaterial = new THREE.MeshBasicMaterial( { map: chromeTexture } );
 	
 	var lavaTexture = THREE.ImageUtils.loadTexture( 'images/lava.jpg' );
 	lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
 	lavaTexture.repeat.set( 0.05, 0.05 );
 	var lavaMaterial = new THREE.MeshBasicMaterial( { map: lavaTexture } );
 	
-	var materialArray = [ lavaMaterial, moonMaterial ];
+	var materialArray = [ lavaMaterial, chromeMaterial ];
 	var textGeom = new THREE.TextGeometry( "Textures!", 
 	{
 		size: 30, height: 4, curveSegments: 3,
@@ -149,8 +148,7 @@ function init()
 	textMesh.position.set( -0.5 * textWidth, 20, 100 );
 	textMesh.rotation.x = -Math.PI / 4;
 	scene.add(textMesh);
-	
-	
+
 }
 
 function animate() 

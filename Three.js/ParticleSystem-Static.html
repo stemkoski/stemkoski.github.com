@@ -31,7 +31,7 @@
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
-	Date: March 2013 (three.js v56)
+	Date: June 2013 (three.js v56)
  */
 
 // MAIN
@@ -80,7 +80,7 @@ function init()
 	container.appendChild( stats.domElement );
 	// LIGHT
 	var light = new THREE.PointLight(0xffffff);
-	light.position.set(0,150,100);
+	light.position.set(0,250,0);
 	scene.add(light);
 	// FLOOR
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
@@ -101,33 +101,14 @@ function init()
 	////////////
 	// CUSTOM //
 	////////////
-
-	var sphereGeometry = new THREE.SphereGeometry(50, 32, 16);
-	var moonTexture = THREE.ImageUtils.loadTexture( 'images/moon.jpg' );
-	var moonMaterial = new THREE.MeshLambertMaterial( { map: moonTexture } );
-	var moon = new THREE.Mesh( sphereGeometry, moonMaterial );
-	moon.position.set(-60, 50, 0);
-	scene.add( moon );		
-
-	var outlineMaterial1 = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.BackSide } );
-	var outlineMesh1 = new THREE.Mesh( sphereGeometry, outlineMaterial1 );
-	outlineMesh1.position = moon.position;
-	outlineMesh1.scale.multiplyScalar(1.05);
-	scene.add( outlineMesh1 );
 	
-	var cubeGeometry = new THREE.CubeGeometry( 80, 80, 80 );
-	var crateTexture = new THREE.ImageUtils.loadTexture( 'images/crate.gif' );
-	var crateMaterial = new THREE.MeshBasicMaterial( { map: crateTexture } );
-	var crate = new THREE.Mesh( cubeGeometry, crateMaterial );
-	crate.position.set(60, 50, 0);
-	scene.add( crate );		
+	var cubeGeometry = new THREE.CubeGeometry( 50, 50, 50, 20, 20, 20 );
+	var discTexture = THREE.ImageUtils.loadTexture( 'images/disc.png' );
+	var particleMaterial = new THREE.ParticleBasicMaterial({ map: discTexture, size: 12, color: 0xff0000, transparency: true, alphaTest: 0.5 });
+	var particleCube = new THREE.ParticleSystem( cubeGeometry, particleMaterial );
+	particleCube.position.set(0, 50, 0);
 	
-	var outlineMaterial2 = new THREE.MeshBasicMaterial( { color: 0x00ff00, side: THREE.BackSide } );
-	var outlineMesh2 = new THREE.Mesh( cubeGeometry, outlineMaterial2 );
-	outlineMesh2.position = crate.position;
-	outlineMesh2.scale.multiplyScalar(1.05);
-	scene.add( outlineMesh2 );
-	
+	scene.add( particleCube );
 }
 
 function animate() 
