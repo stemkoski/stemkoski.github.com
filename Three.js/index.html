@@ -141,7 +141,7 @@ a:hover .superImage
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 63. Last updated: 14 June 2013. Compatible with Three.js version 56.
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 64. Last updated: 14 June 2013. Compatible with Three.js version 56.
 <hr>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
 &bull; <a class="toc" href="#template">Template</a>
@@ -165,6 +165,7 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#shadow">Shadow</a>
 &bull; <a class="toc" href="#reflection">Reflection</a>
 &bull; <a class="toc" href="#refraction">Refraction</a>
+&bull; <a class="toc" href="#bubble">Bubble</a>
 &bull; <a class="toc" href="#particles">Particles</a>
 &bull; <a class="toc" href="#particlesystem-static">Particle System - Static</a>
 &bull; <a class="toc" href="#texture-from-canvas">Texture from Canvas</a>
@@ -387,6 +388,14 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 <img src="html-images/Refraction.png" class="superImage" />
 <br/>Refraction</a>
 <p class ="superText"> Creating a glass-like material by projecting a refracted image of the surroundings onto a object. </p>
+</div>
+
+<div class="fancy">
+<a name="bubble"></a>
+<a href="Bubble.html" target="_blank">
+<img src="html-images/Bubble.png" class="superImage" />
+<br/>Bubble</a>
+<p class ="superText"> Creating a bubble-like material (incorporates reflection, refraction, and chromatic abberation) using a Fresnel shader. </p>
 </div>
 
 <div class="fancy">
@@ -776,60 +785,3 @@ Uses the library at http://github.com/chandlerprall/ThreeCSG/</p>
 
 </body>
 </html>
-
-<!--
-What are you doing, poking around in my HTML?  :p
-
-Notes to self (and nosy you):
-
-nearly ready:
-Shader-Simple
-Skybox-Shader
-The Geometry-to-Lines method
-The Line-to-Cylinder method
-Fancy04
-Earth-Galaxy
-Multiple Models Loader
-
-Write:
-- Single triangle/square creation methods
-- Galaxy (Earth + Sun + Moon + Tweening + Shadows + Nightlights)
-
-Jerome's awesomeness:
-- Headtracker
-
-How to upload 3D things to Youtube?
-
-mathiness -
-implicit graph
-Calculus-y variations: 
-	tangent line, tangent plane, riemann prisms, ...
-Vector field (R^3 -> R^3), dropped particles flow, leave trails...
-Line integral - c(t) = <x(t),y(t)> & z = f(x,y)
-Flux through surface
-
-categorize table of contents...?
-
-Future goals:
-
-
-- model with subsurf
-- physics
-- tween
-- specific particle effects (smoke, fire, water, electricity/spark, explosion)
-- particle emitters (check jerome's work...)
-
-Fancy combo demos (not priority):
-Display video on a computer monitor/screen model 
-
-other recent thoughts:
-anaglyph-style effect
-convex hull of a point set
-
-http://mrdoob.com/projects/editor/
-dynamic terrain---
-http://alteredqualia.com/three/examples/webgl_terrain_dynamic2.html
-http://mrdoob.github.com/three.js/examples/webgl_trackballcamera_earth.html
-
-
--->
