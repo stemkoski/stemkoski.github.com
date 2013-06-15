@@ -268,11 +268,13 @@ function init()
 			i += 3;
 		}
 	}
-	 
+	
+	geometry.computeCentroids();
 	geometry.computeFaceNormals();
-	var colorMaterial =  new THREE.MeshNormalMaterial( {side: THREE.DoubleSide} );
+	geometry.computeVertexNormals();
+	
+	var colorMaterial =  new THREE.MeshLambertMaterial( {color: 0x0000ff, side: THREE.DoubleSide} );
 	var mesh = new THREE.Mesh( geometry, colorMaterial );
-	// mesh.doubleSided = true;
 	scene.add(mesh);
 }
 
