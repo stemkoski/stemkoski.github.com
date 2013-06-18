@@ -141,7 +141,7 @@ a:hover .superImage
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 66. Last updated: 15 June 2013. Compatible with Three.js version 56.
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 70. Last updated: 18 June 2013. Compatible with Three.js version 56.
 <hr>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
 &bull; <a class="toc" href="#template">Template</a>
@@ -166,8 +166,6 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#reflection">Reflection</a>
 &bull; <a class="toc" href="#refraction">Refraction</a>
 &bull; <a class="toc" href="#bubble">Bubble</a>
-&bull; <a class="toc" href="#particles">Particles</a>
-&bull; <a class="toc" href="#particlesystem-static">Particle System - Static</a>
 &bull; <a class="toc" href="#texture-from-canvas">Texture from Canvas</a>
 &bull; <a class="toc" href="#texture-animation">Texture Animation</a>
 &bull; <a class="toc" href="#mesh-movement">Mesh Movement</a>
@@ -184,6 +182,12 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#shader-animate">Shader - Animated Materials</a>
 &bull; <a class="toc" href="#shader-fireball">Shader - Animated Fireball</a>
 &bull; <a class="toc" href="#atmosphere">Atmosphere Effect using Shaders</a>
+&bull; <a class="toc" href="#particles">Particles</a>
+&bull; <a class="toc" href="#particlesystem-static">Particle System - Static</a>
+&bull; <a class="toc" href="#particlesystem-shader">Particle System - Shader</a>
+&bull; <a class="toc" href="#particlesystem-attributes">Particle System - Attributes</a>
+&bull; <a class="toc" href="#particlesystem-dynamic">Particle System - Dynamic</a>
+&bull; <a class="toc" href="#particlesystem-pathmovement">Particle System - Path Movement</a>
 &bull; <a class="toc" href="#video-texture">Video to Texture</a>
 &bull; <a class="toc" href="#webcam-test">Webcam Test</a>
 &bull; <a class="toc" href="#webcam-texture">Webcam to Texture</a>
@@ -400,21 +404,6 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 <p class ="superText"> Creating a bubble-like material (incorporates reflection, refraction, and chromatic abberation) using a Fresnel shader. </p>
 </div>
 
-<div class="fancy">
-<a name="particles"></a>
-<a href="Particles.html" target="_blank">
-<img src="html-images/Particles.png" class="superImage" />
-<br/>Particles</a>
-<p class ="superText"> Create a particle effect using a group of sprites and alpha blending (or transparency). </p>
-</div>
-
-<div class="fancy">
-<a name="particlesystem-static"></a>
-<a href="ParticleSystem-Static.html" target="_blank">
-<img src="html-images/ParticleSystem-Static.png" class="superImage" />
-<br/>Particle System - Static</a>
-<p class ="superText"> Create a group of particles using the ParticleSystem object (for faster rendering). </p>
-</div>
 
 <div class="fancy">
 <a name="texture-from-canvas"></a>
@@ -558,6 +547,54 @@ orthographic cameras along the axis directions (similar to many 3D modeling soft
 <br/>Atmosphere Effect using Shaders</a>
 <p class ="superText"> Demonstrates an atmosphere effect using shaders. This approach requires the creation of two scenes - the base scene and a secondary scene containing a spherical object with a gradient texture created using a shader. The secondary scene is then additively blended with the base scene.
 </p>
+</div>
+
+<div class="fancy">
+<a name="particles"></a>
+<a href="Particles.html" target="_blank">
+<img src="html-images/Particles.png" class="superImage" />
+<br/>Particles</a>
+<p class ="superText"> Create a particle effect using a group of sprites and alpha blending (or transparency). </p>
+</div>
+
+<div class="fancy">
+<a name="particlesystem-static"></a>
+<a href="ParticleSystem-Static.html" target="_blank">
+<img src="html-images/ParticleSystem-Static.png" class="superImage" />
+<br/>Particle System - Static</a>
+<p class ="superText"> Create a group of particles using the ParticleSystem object (for faster rendering). Each vertex in a given geometry corresponds to the position of a particle. </p>
+</div>
+
+<div class="fancy">
+<a name="particlesystem-shader"></a>
+<a href="ParticleSystem-Shader.html" target="_blank">
+<img src="html-images/ParticleSystem-Static.png" class="superImage" />
+<br/>Particle System - Shader</a>
+<p class ="superText"> The "Particle System - Static" demo rewritten using a shader-based material; will be useful in subsequent demos.</p>
+</div>
+
+<div class="fancy">
+<a name="particlesystem-attributes"></a>
+<a href="ParticleSystem-Attributes.html" target="_blank">
+<img src="html-images/ParticleSystem-Attributes.png" class="superImage" />
+<br/>Particle System - Attributes</a>
+<p class ="superText"> Builds upon "Particle System - Shader" demo, incorporating shader attributes, enabling each particle to have customized properties - in this case, each particle is assigned a different color. </p>
+</div>
+
+<div class="fancy">
+<a name="particlesystem-dynamic"></a>
+<a href="ParticleSystem-Dynamic.html" target="_blank">
+<img src="html-images/ParticleSystem-Dynamic.png" class="superImage" />
+<br/>Particle System - Dynamic</a>
+<p class ="superText"> Builds upon "Particle System - Attributes" demo, incorporating animation: particle sizes oscillate at different frequencies over time. </p>
+</div>
+
+<div class="fancy">
+<a name="particlesystem-pathmovement"></a>
+<a href="ParticleSystem-PathMovement.html" target="_blank">
+<img src="html-images/ParticleSystem-PathMovement.png" class="superImage" />
+<br/>Particle System - Path Movement</a>
+<p class ="superText"> A particle system with particles moving along a path.</p>
 </div>
 
 <div class="fancy">
