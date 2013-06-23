@@ -46,8 +46,6 @@
 var container, scene, camera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
-// custom global variables
-var cube;
 
 init();
 animate();
@@ -102,13 +100,12 @@ function init()
 	var skyBoxGeometry = new THREE.CubeGeometry( 4000, 4000, 4000 );
 	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, side: THREE.BackSide } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-    scene.add(skyBox);
+   	scene.add(skyBox);
 	
 	////////////
 	// CUSTOM //
 	////////////
 
-	
 	this.engine = new ParticleEngine();
 	engine.setValues( Examples.fountain );
 	engine.initialize();
@@ -181,36 +178,6 @@ function resetCamera()
 
 function update()
 {
-/*
-	if ( keyboard.pressed("1") ) 
-		restartEngine( fountain );
-	if ( keyboard.pressed("2") ) 
-		restartEngine( startunnel );
-	if ( keyboard.pressed("3") ) 
-		restartEngine( starfield );
-	if ( keyboard.pressed("4") ) 
-		restartEngine( fireflies );
-		
-	if ( keyboard.pressed("5") ) 
-		restartEngine( clouds );
-	if ( keyboard.pressed("6") ) 
-		restartEngine( smoke );
-		
-	if ( keyboard.pressed("7") ) 
-		restartEngine( fireball );
-	if ( keyboard.pressed("8") ) 
-		restartEngine( Examples.candle );
-		
-	if ( keyboard.pressed("9") ) 
-		restartEngine( rain );
-	if ( keyboard.pressed("0") ) 
-		restartEngine( snow );
-		
-	if ( keyboard.pressed("q") ) 
-		restartEngine( firework );
-	// also: reset camera angle
-*/
-	
 	controls.update();
 	stats.update();
 	
