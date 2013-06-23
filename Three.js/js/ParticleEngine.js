@@ -24,10 +24,10 @@ particleVertexShader =
 "varying float vAngle;",
 "void main()",
 "{",
-	"if ( customVisible > 0.5 )", 						// true
+	"if ( customVisible > 0.5 )", 				// true
 		"vColor = vec4( customColor, customOpacity );", //     set color associated to vertex; use later in fragment shader.
-	"else",												// false
-		"vColor = vec4(0.0, 0.0, 0.0, 0.0);", 			//     make particle invisible.
+	"else",							// false
+		"vColor = vec4(0.0, 0.0, 0.0, 0.0);", 		//     make particle invisible.
 		
 	"vAngle = customAngle;",
 
@@ -48,9 +48,9 @@ particleFragmentShader =
 	
 	"float c = cos(vAngle);",
 	"float s = sin(vAngle);",
-    "vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,", 
+	"vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,", 
 	                      "c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);",  // rotate UV coordinates to rotate texture
-    "vec4 rotatedTexture = texture2D( texture,  rotatedUV );",
+    	"vec4 rotatedTexture = texture2D( texture,  rotatedUV );",
 	"gl_FragColor = gl_FragColor * rotatedTexture;",    // sets an otherwise white particle texture to desired color
 "}"
 ].join("\n");
