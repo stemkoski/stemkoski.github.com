@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Template</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<script src="js/ParticleEngine.js"></script>
+<script src="js/ParticleEngineExamples.js"></script>
+
+<!-- GUI for experimenting with values -->		
+<script type='text/javascript' src='js/DAT.GUI.min.js'></script>
+
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: June 2013 (three.js v56)
+ */
+
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+// custom global variables
+var cube;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 2, FAR = 5000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,200,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { color: 0x444444, map: floorTexture, side: THREE.DoubleSide } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -10.5;
+	floor.rotation.x = Math.PI / 2;
+	scene.add(floor);
+	// SKYBOX/FOG
+	var skyBoxGeometry = new THREE.CubeGeometry( 4000, 4000, 4000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, side: THREE.BackSide } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+    scene.add(skyBox);
+	
+	////////////
+	// CUSTOM //
+	////////////
+
+	
+	this.engine = new ParticleEngine();
+	engine.setValues( Examples.fountain );
+	engine.initialize();
+	
+	// GUI for experimenting with parameters
+
+	gui = new dat.GUI();	
+	parameters = 
+	{
+		fountain:   function() { restartEngine( Examples.fountain   ); },
+		startunnel: function() { restartEngine( Examples.startunnel ); },		
+		starfield:  function() { restartEngine( Examples.starfield  ); },		
+		fireflies:  function() { restartEngine( Examples.fireflies  ); },		
+		clouds:     function() { restartEngine( Examples.clouds     ); },		
+		smoke:      function() { restartEngine( Examples.smoke      ); },		
+		fireball:   function() { restartEngine( Examples.fireball   ); },		
+		candle:     function() { restartEngine( Examples.candle     ); },		
+		rain:       function() { restartEngine( Examples.rain       ); },		
+		snow:       function() { restartEngine( Examples.snow       ); },		
+		firework:   function() { restartEngine( Examples.firework   ); }		
+	};
+
+	gui.add( parameters, 'fountain'   ).name("Star Fountain");
+	gui.add( parameters, 'startunnel' ).name("Star Tunnel");
+	gui.add( parameters, 'starfield'  ).name("Star Field");
+	gui.add( parameters, 'fireflies'  ).name("Fireflies");
+	gui.add( parameters, 'clouds'     ).name("Clouds");
+	gui.add( parameters, 'smoke'      ).name("Smoke");
+	gui.add( parameters, 'fireball'   ).name("Fireball");
+	gui.add( parameters, 'candle'     ).name("Candle");
+	gui.add( parameters, 'rain'       ).name("Rain");
+	gui.add( parameters, 'snow'       ).name("Snow");
+	gui.add( parameters, 'firework'   ).name("Firework");
+	
+	gui.open();	
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function restartEngine(parameters)
+{
+	resetCamera();
+	
+	engine.destroy();
+	engine = new ParticleEngine();
+	engine.setValues( parameters );
+	engine.initialize();
+}
+
+function resetCamera()
+{
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	//camera.up = new THREE.Vector3( 0, 0, 1 );
+	camera.position.set(0,200,400);
+	camera.lookAt(scene.position);	
+	scene.add(camera);
+	
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	THREEx.WindowResize(renderer, camera);
+}
+
+
+function update()
+{
+/*
+	if ( keyboard.pressed("1") ) 
+		restartEngine( fountain );
+	if ( keyboard.pressed("2") ) 
+		restartEngine( startunnel );
+	if ( keyboard.pressed("3") ) 
+		restartEngine( starfield );
+	if ( keyboard.pressed("4") ) 
+		restartEngine( fireflies );
+		
+	if ( keyboard.pressed("5") ) 
+		restartEngine( clouds );
+	if ( keyboard.pressed("6") ) 
+		restartEngine( smoke );
+		
+	if ( keyboard.pressed("7") ) 
+		restartEngine( fireball );
+	if ( keyboard.pressed("8") ) 
+		restartEngine( Examples.candle );
+		
+	if ( keyboard.pressed("9") ) 
+		restartEngine( rain );
+	if ( keyboard.pressed("0") ) 
+		restartEngine( snow );
+		
+	if ( keyboard.pressed("q") ) 
+		restartEngine( firework );
+	// also: reset camera angle
+*/
+	
+	controls.update();
+	stats.update();
+	
+	var dt = clock.getDelta();
+	engine.update( dt * 0.5 );	
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
