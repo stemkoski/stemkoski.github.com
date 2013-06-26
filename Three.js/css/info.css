@@ -1,0 +1,39 @@
+/* Customized CSS for jQuery UI: simple info button and box. */
+
+.ui-widget-content 
+{
+    font-size:12px;
+    font-family: georgia;
+}
+
+/* trim space around info button */
+.ui-button-text-only .ui-button-text 
+{  padding: 0px;  }
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default 
+{  border: 0px solid #000000;  }
+
+/* changing dialog close button */
+.ui-dialog-titlebar-close
+{
+	outline-width: 0px !important;
+	background-color: transparent !important;
+    background-image: url('../images/icon-close-16.png') !important;
+	background-repeat:no-repeat !important;
+}
+
+/* changing dialog close button */
+.ui-dialog-titlebar-close:hover,
+.ui-dialog-titlebar-close:focus 
+{
+    background-color: transparent !important;
+    background-image: url('../images/icon-close-16.png') !important;
+	background-repeat:no-repeat !important;
+}
+
+/* hide the default "x" close image */
+.ui-dialog-titlebar-close span 
+{  display:none !important;  }
+
+/* translucent background */
+.ui-dialog 
+{  opacity: .90;  }

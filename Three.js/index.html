@@ -1,138 +1,7 @@
 <html>
 <head>
 <title>Three.js - examples</title>
-
-<style>
-body 
-{
-	background-color: #eeeeee;
-	background-image: url("html-images/white-pixels.png");
-	background-repeat: repeat;      /* repeat, no-repeat */
-	background-attachment: fixed;   /* scroll, fixed */
-	background-position: top left;  /* for no-repeat setting: top/bottom, left/right */
-	margin: 2% 5% 0% 5%;            /* top, left, bottom, right or TRBL */
-	
-	font-family: Georgia, Serif;	/* list font names in order of preference */
-	font-weight: normal;            /* normal, bold */
-	font-style: normal;             /* normal, italic */
-	font-variant: normal;           /* normal, small-caps */
-	font-size: 16px;                /* font size */
-	color: #000000;                 /* hexadecimal RGB color code */
-	text-decoration: none;          /* none, underline, overline, line-through */
-	text-align: left;               /* left, right, center, justify */
-}
-
-.fancy
-{
-	min-height: 150px;
-	/* next two lines for elder IE compatibility */
-	height: auto !important; 
-	height: 150px; 
-	
-	/* Background color and gradients */
-	background: #eeeeee;
-	background: -moz-linear-gradient(top, #ffffff, #cccccc);
-	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#cccccc));
-	/* really nifty translucence */
-	background: -moz-linear-gradient(top, rgba(255, 255, 255, 0.8), rgba(200, 200, 200, 0.8) );
-	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from( rgba(255, 255, 255, 0.8) ), to( rgba(200, 200, 200, 0.8) ));
-	
-	/* Rounded corners */
-	-moz-border-radius: 15px 15px 15px 15px;
-	-webkit-border-radius: 15px 15px 15px 15px;
-	border-radius: 15px 15px 15px 15px;
-}
-
-/* Page text links */
-a 
-{
-	font-size: 20px;
-	font-weight: bold;
-	font-variantx: small-caps;
-	color:#00c;
-	text-shadow: 1px 1px 0px #aaa;
-	margin: 13px 0px 0px 0px;
-	text-decoration: none;
-	
-	-webkit-transition: all 300ms ease-in-out;
-	-moz-transition: all 300ms ease-in-out;
-	-o-transition: all 300ms ease-in-out;
-	-ms-transition: all 300ms ease-in-out;
-	transition: all 300ms ease-in-out; 
-}
-.toc
-{
-	font-size: 16px;
-}
-a:hover 
-{
-	color:#c00;
-	/*text-shadow: 1px 1px 0px #f00;
-	/* gradual change */
-	-webkit-transition: all 300ms ease-in-out;
-	-moz-transition: all 300ms ease-in-out;
-	-o-transition: all 300ms ease-in-out;
-	-ms-transition: all 300ms ease-in-out;
-	transition: all 300ms ease-in-out; 
-}
-
-.superText
-{
-	color: #000;
-	text-shadow: 1px 1px 0px #aaa;
-}
-
-a .superImage
-{  
-	height: 148px;
-	border: 1px solid #000000;
-	margin: 0px 20px 0px 0px;
-	float:left;
-	
-	/* Rounded corners */
-	-moz-border-radius: 15px 15px 15px 15px;
-	-webkit-border-radius: 15px 15px 15px 15px;
-	border-radius: 15px 15px 15px 15px;
-	
-	position: relative; 
-	
-	-webkit-transition: all 300ms ease-in-out;
-	-moz-transition: all 300ms ease-in-out;
-	-o-transition: all 300ms ease-in-out;
-	-ms-transition: all 300ms ease-in-out;
-	transition: all 300ms ease-in-out; 
-}  
-a:hover .superImage
-{  
-	top: -10px;  
-	
-	/* fallback on standard opaque colors */
-	-moz-box-shadow: 10px 10px 5px #888;
-	-webkit-box-shadow: 10px 10px 5px #888;
-	box-shadow: 10px 10px 5px #888;
-	/* translucent: the way shadows should be */
-	-moz-box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.5);
-	-webkit-box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.5);
-	box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.5);
-	
-	-webkit-transition: all 300ms ease-in-out;
-	-moz-transition: all 300ms ease-in-out;
-	-o-transition: all 300ms ease-in-out;
-	-ms-transition: all 300ms ease-in-out;
-	transition: all 300ms ease-in-out;
-}  
-
-.bigTitle
-{
-	font-size: 32px;
-	font-weight: bold;
-	font-variantx: small-caps;
-	color:#004;
-	text-align: center;
-	text-shadow: -1px -1px 2px #fff, 1px 1px 3px #000;	
-}
-</style>
-
+<link rel=stylesheet href="css/index.css"/>
 </head>
 <body>
 
@@ -141,10 +10,11 @@ a:hover .superImage
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 71. Last updated: 23 June 2013. Compatible with Three.js version 56.
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 72. Last updated: 26 June 2013. Compatible with Three.js version 56.
 <hr>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
 &bull; <a class="toc" href="#template">Template</a>
+&bull; <a class="toc" href="#infobox">Info Box</a>
 &bull; <a class="toc" href="#materials-solid">Materials - Solid</a>
 &bull; <a class="toc" href="#color-explorer">Color Explorer</a>
 &bull; <a class="toc" href="#wireframe">Wireframe</a>
@@ -233,6 +103,14 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 <img src="html-images/Template.png" class="superImage" />
 <br/>Template</a>
 <p class ="superText"> The "Hello World" code with most comments and meshes removed. </p>
+</div>
+
+<div class="fancy">
+<a name="infobox"></a>
+<a href="Infobox.html" target="_blank">
+<img src="html-images/Infobox.png" class="superImage" />
+<br/>Info Box</a>
+<p class ="superText"> The template code with minimal jQuery added to create a button that displays an information dialog box. </p>
 </div>
 
 <div class="fancy">
