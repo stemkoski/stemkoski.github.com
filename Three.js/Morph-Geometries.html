@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Three.js -- Template</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #ccccff;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<!-- ---------------- Custom Shader Code ------------------------ -->
+<script id="vertexShader" type="x-shader/x-vertex">
+uniform float mixAmount;
+attribute vec3 endPosition;
+attribute vec2 endUV;
+
+varying vec2 vUv;
+varying vec2 finalUV;
+
+void main() 
+{ 
+    vUv = uv;
+	finalUV = endUV; // to pass info to fragment shader
+    vec3 newPosition = mix( position, endPosition, mixAmount );
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+}
+</script>
+
+<!-- fragment shader a.k.a. pixel shader -->
+<script id="fragmentShader" type="x-shader/x-vertex"> 
+uniform float mixAmount;
+uniform sampler2D baseTexture;
+varying vec2 vUv;
+varying vec2 finalUV;
+void main() 
+{
+    // gl_FragColor = texture2D( baseTexture, vUv );
+    gl_FragColor = mix( texture2D( baseTexture, vUv ), texture2D( baseTexture, finalUV ), mixAmount );
+}  
+</script>
+<!-- ----------------------------------------------------------- -->
+
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: June 2013 (three.js v56)
+ */
+
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+
+// custom global variables
+var sphere;
+var targetList = [];
+var projector, mouse = { x: 0, y: 0 };
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -60.5;
+	floor.rotation.x = Math.PI / 2;
+	scene.add(floor);
+	// SKYBOX/FOG
+	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+	scene.add(skyBox);
+	
+	////////////
+	// CUSTOM //
+	////////////
+	
+	//////////////////////////////////////////////////////////////////////
+
+	// this material causes a mesh to use colors assigned to faces
+	this.wireframe1 = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true, transparent: true, side: THREE.BackSide } ); 
+	
+	this.wireframe2 = new THREE.MeshBasicMaterial( { color: 0x0000ff, wireframe: true, transparent: true, side: THREE.BackSide  } ); 
+	
+	// "smaller"
+	this.geometry1 = new THREE.SphereGeometry( 40, 6,4 ); // 3,2 minimal
+	THREE.GeometryUtils.triangulateQuads( geometry1 );
+	this.mesh1 = new THREE.Mesh( geometry1, wireframe1 );
+	scene.add(mesh1);
+	targetList.push(mesh1);
+	
+	// "larger"
+	this.geometry2 = new THREE.CubeGeometry( 90, 90, 90, 1,1,1 );
+	THREE.GeometryUtils.triangulateQuads( geometry2 );
+	this.mesh2 = new THREE.Mesh( geometry2, wireframe2 );
+	scene.add(mesh2);
+	targetList.push(mesh2);
+	
+	//////////////////////////////////////////////////////////////////////
+	
+	var ballTexture = new THREE.ImageUtils.loadTexture('images/uvgrid01.jpg');
+	// use "this." to create global object
+	this.customUniforms = 
+	{
+		baseTexture: { type: "t", value: ballTexture },
+		mixAmount: 	 { type: "f", value: 0.0 }
+	};
+	
+	this.customAttributes = 
+	{
+		endPosition: { type: "v3", value: [] },
+		endUV: { type: "v2", value: [] },
+	};
+	
+	console.log( geometry1.vertices.length );
+	console.log( geometry2.vertices.length );
+	// project vertices of geometry2 down into mesh1 and add them to geometry2; also requires subdivision of geometry2 faces and UVs.
+	for (var i=0; i < geometry2.vertices.length; i++)
+	{
+		var origin = geometry2.vertices[i].clone();
+		var direction = geometry2.vertices[i].clone().multiplyScalar(-1);
+		var ray = new THREE.Raycaster( origin, direction.normalize() );
+		var intersection = ray.intersectObject( mesh1 );
+		
+		if ( intersection.length > 0 )
+		{
+			var obj  = intersection[0].object; // should be mesh1
+			var face = intersection[0].face;
+			
+			if ( !(face instanceof THREE.Face3) )
+				console.log( " Surface not triangulated... :( " );
+			
+			var faceIndex = obj.geometry.faces.indexOf(face);
+			
+			// new vertex to add to geometry
+			var vn = intersection[ 0 ].point;
+
+			// create new geometry
+			var newGeometry = obj.geometry.clone();
+			
+			// indices of vertices on the face being subdivided
+			var iva = face['a'];
+			var ivb = face['b'];
+			var ivc = face['c'];
+			// vertices on the face being subdivided
+			var va  = obj.geometry.vertices[iva];
+			var vb  = obj.geometry.vertices[ivb];
+			var vc  = obj.geometry.vertices[ivc];
+			
+			
+			// add new vertex
+			newGeometry.vertices.push( vn );			
+			// index of new vertex
+			var ivn = newGeometry.vertices.length - 1;		
+
+			// remove old face
+			newGeometry.faces.splice( faceIndex, 1 );
+			// add new faces
+			newGeometry.faces.push( new THREE.Face3(iva,ivb,ivn) );
+			newGeometry.faces.push( new THREE.Face3(ivb,ivc,ivn) );
+			newGeometry.faces.push( new THREE.Face3(ivc,iva,ivn) );
+		
+			// vertex UVs of the face being subdivided
+			var uvArray = obj.geometry.faceVertexUvs[0][faceIndex];
+			var uva = uvArray[0];
+			var uvb = uvArray[1];
+			var uvc = uvArray[2];
+			
+			// interpolate new UV coordinates
+			var uvn = interpolateUV(va, vb, vc, vn, uva, uvb, uvc);
+				
+			// remove old UVs
+			newGeometry.faceVertexUvs[0].splice( faceIndex, 1 );
+			
+			// add new UVs
+			newGeometry.faceVertexUvs[0].push( [uva, uvb, uvn] );
+			newGeometry.faceVertexUvs[0].push( [uvb, uvc, uvn] );
+			newGeometry.faceVertexUvs[0].push( [uvc, uva, uvn] );
+
+			newGeometry.computeFaceNormals();
+			newGeometry.computeVertexNormals();
+			
+			// remove old scene data, add new scene data
+			scene.remove( mesh1 );
+			mesh1 = new THREE.Mesh( newGeometry, wireframe1 );
+			scene.add( mesh1 );
+		}
+		else
+		    console.log("Uh oh...", i);
+	}
+	
+	
+	// connect mesh1's geometry vertices to faces of mesh2
+	for (var i=0; i < mesh1.geometry.vertices.length; i++)
+	{
+		var origin = new THREE.Vector3(0,0,0);
+		var direction = mesh1.geometry.vertices[i].clone();
+		var ray = new THREE.Raycaster( origin, direction.normalize() );
+		var intersection = ray.intersectObject( mesh2 );
+		
+		if ( intersection.length > 0 )
+		{
+			var point = intersection[0].point;
+			customAttributes.endPosition.value[i] = point;
+
+			// Interpolate UVs.
+			var obj  = intersection[0].object;
+			var face = intersection[0].face;
+			// new vertex
+			var vn = intersection[ 0 ].point;
+			// indices of vertices on the face
+			var iva = face['a'];
+			var ivb = face['b'];
+			var ivc = face['c'];
+			// vertices on the face
+			var va  = obj.geometry.vertices[iva];
+			var vb  = obj.geometry.vertices[ivb];
+			var vc  = obj.geometry.vertices[ivc];
+			// vertex UVs of the face
+			var faceIndex = obj.geometry.faces.indexOf(face);
+			var uvArray = obj.geometry.faceVertexUvs[0][faceIndex];
+			var uva = uvArray[0];
+			var uvb = uvArray[1];
+			var uvc = uvArray[2];
+			customAttributes.endUV.value[i] = interpolateUV(va, vb, vc, vn, uva, uvb, uvc);
+		}
+		else // should never happen
+		{
+			console.log("oh noes", i);
+			customAttributes.endPosition.value[i] = geometry1.vertices[i].clone();
+			customAttributes.endUV.value[i] = new THREE.Vector2(0,0);
+		}
+	}
+	
+	
+	//////////////////////////////////////////////////////////////////////
+	
+	// create custom material from the shader code above
+	//   that is within specially labeled script tags
+	var customMaterial = new THREE.ShaderMaterial( 
+	{
+	    uniforms: customUniforms,
+		attributes: customAttributes,
+		vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+	}   );
+
+	var morpher = new THREE.Mesh( mesh1.geometry.clone(), customMaterial );
+	morpher.scale.multiplyScalar(0.99);
+	scene.add( morpher );
+	
+	//////////////////////////////////////////////////////////////////////
+
+}
+
+function interpolateUV(va, vb, vc, vn, uva, uvb, uvc)
+{
+	// calculate vectors from new vertex to triangle vertices
+	var vec1 = new THREE.Vector3().subVectors( va, vn );
+	var vec2 = new THREE.Vector3().subVectors( vb, vn );
+	var vec3 = new THREE.Vector3().subVectors( vc, vn );
+	
+	// calculate triangle areas, barycentric coordinates
+	var denom = ( new THREE.Vector3().crossVectors( 
+				  new THREE.Vector3().subVectors( vec1, vec2 ),
+				  new THREE.Vector3().subVectors( vec1, vec3 ) ) 
+				).length();
+	var bary1 = ( new THREE.Vector3().crossVectors(vec2, vec3) ).length() / denom; 
+	var bary2 = ( new THREE.Vector3().crossVectors(vec3, vec1) ).length() / denom; 
+	var bary3 = ( new THREE.Vector3().crossVectors(vec1, vec2) ).length() / denom; 
+	
+	// interpolate UV coordinates for new vertex
+	var uvn = new THREE.Vector3().addVectors( uva.clone().multiplyScalar(bary1), uvb.clone().multiplyScalar(bary2) ).add( uvc.clone().multiplyScalar(bary3) ); 
+	return uvn;
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+var pause = false;
+
+function update()
+{
+	if ( keyboard.pressed("z") )  
+		pause = true;
+	if ( keyboard.pressed("a") )  
+		pause = false;
+	
+	
+	if (!pause)
+	{
+		var t = clock.getElapsedTime();
+		customUniforms.mixAmount.value = 0.5 * (1.0 + Math.sin(t));
+	}
+	
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
