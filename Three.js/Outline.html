@@ -102,29 +102,27 @@ function init()
 	// CUSTOM //
 	////////////
 
+	var material = new THREE.MeshNormalMaterial();
+
 	var sphereGeometry = new THREE.SphereGeometry(50, 32, 16);
-	var moonTexture = THREE.ImageUtils.loadTexture( 'images/moon.jpg' );
-	var moonMaterial = new THREE.MeshLambertMaterial( { map: moonTexture } );
-	var moon = new THREE.Mesh( sphereGeometry, moonMaterial );
-	moon.position.set(-60, 50, 0);
-	scene.add( moon );		
+	var sphere = new THREE.Mesh( sphereGeometry, material );
+	sphere.position.set(-60, 55, 0);
+	scene.add( sphere );		
 
 	var outlineMaterial1 = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.BackSide } );
 	var outlineMesh1 = new THREE.Mesh( sphereGeometry, outlineMaterial1 );
-	outlineMesh1.position = moon.position;
+	outlineMesh1.position = sphere.position;
 	outlineMesh1.scale.multiplyScalar(1.05);
 	scene.add( outlineMesh1 );
 	
 	var cubeGeometry = new THREE.CubeGeometry( 80, 80, 80 );
-	var crateTexture = new THREE.ImageUtils.loadTexture( 'images/crate.gif' );
-	var crateMaterial = new THREE.MeshBasicMaterial( { map: crateTexture } );
-	var crate = new THREE.Mesh( cubeGeometry, crateMaterial );
-	crate.position.set(60, 50, 0);
-	scene.add( crate );		
+	var cube = new THREE.Mesh( cubeGeometry, material );
+	cube.position.set(60, 60, 0);
+	scene.add( cube );		
 	
 	var outlineMaterial2 = new THREE.MeshBasicMaterial( { color: 0x00ff00, side: THREE.BackSide } );
 	var outlineMesh2 = new THREE.Mesh( cubeGeometry, outlineMaterial2 );
-	outlineMesh2.position = crate.position;
+	outlineMesh2.position = cube.position;
 	outlineMesh2.scale.multiplyScalar(1.05);
 	scene.add( outlineMesh2 );
 	
