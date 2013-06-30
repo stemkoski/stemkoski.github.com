@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Spherical Projection</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel=stylesheet href="css/base.css"/>
+</head>
+<body>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<!-- Code to display an information button and box when clicked. -->
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<link rel=stylesheet href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+Spherical Projection demo, part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="z-index: 1; position: absolute; left:0px; top:0px"></div>
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: June 2013 (three.js v56)
+ */
+
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+// custom global variables
+var mesh;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.getElementById( 'ThreeJS' );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(100,250,100);
+	scene.add(light);
+	/* 
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide, transparent: true, opacity: 0.5 } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.rotation.x = Math.PI / 2;
+	scene.add(floor);
+	*/
+	// SKYBOX
+	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x6666cc, side: THREE.BackSide } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+	scene.add(skyBox);
+	
+	////////////
+	// CUSTOM //
+	////////////
+
+	var r = 50;
+	
+	scene.add( new THREE.AxisHelper(r * 1.5) );
+	
+	var geometry = new THREE.SphereGeometry( r, 32, 16 );
+	var material = new THREE.MeshLambertMaterial( { color: 0x888888 } );
+	this.sphere = new THREE.Mesh( geometry, material );
+	scene.add(sphere);
+
+	// to help orient
+	var N = new THREE.Vector3(0, r, 0);
+	var S1 = new THREE.Vector3(0.01, -r, 0);
+	var S2 = new THREE.Vector3(-0.01, -r, 0);
+	var S3 = new THREE.Vector3(0, -r, 0.01);
+	var S4 = new THREE.Vector3(0, -r, -0.01);
+	var E = new THREE.Vector3(r, 0, 0);
+	var W1 = new THREE.Vector3(-r, 0, 0.01);
+	var W2 = new THREE.Vector3(-r, 0, -0.01);	
+	drawCurve( createSphereArc(N,S1), new THREE.Color(0x0000ff) );
+	drawCurve( createSphereArc(N,S2), new THREE.Color(0x0000ff) );
+	drawCurve( createSphereArc(N,S3), new THREE.Color(0xff0000) );
+	drawCurve( createSphereArc(N,S4), new THREE.Color(0xff0000) );
+	drawCurve( createSphereArc(E,W1), new THREE.Color(0x00ff00) );
+	drawCurve( createSphereArc(E,W2), new THREE.Color(0x00ff00) );
+	
+	var geometry = new THREE.CubeGeometry( 120,120,120 );
+	// THREE.GeometryUtils.triangulateQuads( geometry );
+	var material = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: true, transparent: true } );
+	mesh2 = new THREE.Mesh( geometry, material );
+	scene.add(mesh2);
+	
+	// draw lines from mesh vertices to sphere
+	for (var i=0; i < mesh2.geometry.vertices.length; i++)
+	{
+		var origin = mesh2.geometry.vertices[i].clone();
+		var proj   = projectOntoMesh( origin, sphere );
+		drawLine( origin, proj, new THREE.Color(0xffcc00), true ); 
+	}
+		
+	// create a non-repeating array of edges
+	var edgeArray = [];
+	for (var i=0; i < mesh2.geometry.faces.length; i++)
+	{
+		var face = mesh2.geometry.faces[i];
+		// indices of vertices on the face
+		var iva = face['a'];
+		var ivb = face['b'];
+		var ivc = face['c'];
+		// vertices on the face
+		var va  = mesh2.geometry.vertices[iva];
+		var vb  = mesh2.geometry.vertices[ivb];
+		var vc  = mesh2.geometry.vertices[ivc];
+		
+		addEdgeToArray( edgeArray, [va,vb] );
+		addEdgeToArray( edgeArray, [vb,vc] );
+		
+		if (face instanceof THREE.Face3)
+		{
+			addEdgeToArray( edgeArray, [vc,va] );
+		}
+		else
+		{
+			var ivd = face['d'];
+			var vd  = mesh2.geometry.vertices[ivd];
+			addEdgeToArray( edgeArray, [vc,vd] );
+			addEdgeToArray( edgeArray, [vd,va] );
+		}
+	}
+	
+	// draw arc for each projected mesh edge
+	for (var i = 0; i < edgeArray.length; i++)
+	{
+		var P = projectOntoMesh( edgeArray[i][0], sphere );
+		var Q = projectOntoMesh( edgeArray[i][1], sphere );
+		drawCurve( createSphereArc(P,Q), new THREE.Color(0xffff00) );
+	}
+	
+	sphere.scale.multiplyScalar(0.99);
+
+} // end init()
+
+////////////////////////////////////////
+// some methods to create a set of edges
+
+// e1 = [a1, b1]; e2 = [a2, b2].
+// e1 == e2 iff {a1,b1} = {a2,b2}.
+function edgeEquals( e1, e2 )
+{
+    return ( e1[0].equals(e2[0]) && e1[1].equals(e2[1]) ) 
+	    || ( e1[0].equals(e2[1]) && e1[1].equals(e2[0]) );
+}
+
+function arrayContainsEdge( array, edge )
+{
+	for (var i = 0; i < array.length; i++ )
+		if (edgeEquals( array[i], edge )) return true;
+	
+	return false;
+}
+
+function addEdgeToArray( array, edge )
+{
+	if ( !arrayContainsEdge(array, edge) )
+		array.push( edge );
+}
+
+// some methods to create and draw great circles on a sphere
+
+function greatCircleFunction(P, Q)
+{
+	var angle = P.angleTo(Q);
+	return function(t)
+	{
+	    var X = new THREE.Vector3().addVectors(
+			P.clone().multiplyScalar(Math.sin( (1 - t) * angle )), 
+			Q.clone().multiplyScalar(Math.sin(      t  * angle )))
+			.divideScalar( Math.sin(angle) );
+	    return X;
+	};
+}
+
+function createSphereArc(P,Q)
+{
+	var sphereArc = new THREE.Curve();
+	sphereArc.getPoint = greatCircleFunction(P,Q);
+	return sphereArc;
+}
+
+function drawCurve(curve, color)
+{
+	var lineGeometry = new THREE.Geometry();
+	lineGeometry.vertices = curve.getPoints(100);
+	lineGeometry.computeLineDistances();
+	var lineMaterial = new THREE.LineBasicMaterial();
+	lineMaterial.color = color;
+	var line = new THREE.Line( lineGeometry, lineMaterial );
+	scene.add(line);
+}
+
+function drawLine(P,Q, color, dashed)
+{
+	var lineGeometry = new THREE.Geometry();
+	lineGeometry.vertices.push( P, Q );
+	lineGeometry.computeLineDistances();
+	if ( dashed === undefined || !dashed )
+		var lineMaterial = new THREE.LineBasicMaterial();
+	else // dashed = true
+		var lineMaterial = new THREE.LineDashedMaterial( { dashSize: 2, gapSize: 2 } );
+	lineMaterial.color = color;
+	var line = new THREE.Line( lineGeometry, lineMaterial );
+	scene.add(line);
+}	
+
+// draw a ray from point to origin and return point of intersection with mesh
+function projectOntoMesh(point, mesh)
+{
+	var origin = point.clone();
+	var direction = point.clone().multiplyScalar(-1);
+	var ray = new THREE.Raycaster( origin, direction.normalize() );
+	var intersection = ray.intersectObject( mesh );
+	if ( intersection.length > 0 )
+		return intersection[ 0 ].point;
+	else
+		// console.log( "No intersection?" );
+		return null;
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	if ( keyboard.pressed("z") )
+	
+	{ 
+		// do something
+	}
+	
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>

@@ -10,7 +10,7 @@
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 72. Last updated: 26 June 2013. Compatible with Three.js version 56.
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 76. Last updated: 29 June 2013. Compatible with Three.js version 56.
 <hr>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
 &bull; <a class="toc" href="#template">Template</a>
@@ -37,6 +37,7 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#refraction">Refraction</a>
 &bull; <a class="toc" href="#bubble">Bubble</a>
 &bull; <a class="toc" href="#texture-from-canvas">Texture from Canvas</a>
+&bull; <a class="toc" href="#sprite-text-labels">Sprite Text Labels</a>
 &bull; <a class="toc" href="#texture-animation">Texture Animation</a>
 &bull; <a class="toc" href="#mesh-movement">Mesh Movement</a>
 &bull; <a class="toc" href="#chase-camera">Chase Camera</a>
@@ -44,6 +45,7 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#camera-texture">Camera to Texture</a>
 &bull; <a class="toc" href="#viewports-dual">Viewports - Dual</a>
 &bull; <a class="toc" href="#viewports-quad">Viewports - Quad</a>
+<hr color="black"> SHADERS:
 &bull; <a class="toc" href="#shader-simple">Shader - Simple</a>
 &bull; <a class="toc" href="#shader-explorer">Shader - Explorer</a>
 &bull; <a class="toc" href="#selective-glow">Selective Glow Effect using Shaders</a>
@@ -52,6 +54,7 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#shader-animate">Shader - Animated Materials</a>
 &bull; <a class="toc" href="#shader-fireball">Shader - Animated Fireball</a>
 &bull; <a class="toc" href="#atmosphere">Atmosphere Effect using Shaders</a>
+<hr color="black"> PARTICLE SYSTEMS:
 &bull; <a class="toc" href="#particles">Particles</a>
 &bull; <a class="toc" href="#particlesystem-static">Particle System - Static</a>
 &bull; <a class="toc" href="#particlesystem-shader">Particle System - Shader</a>
@@ -59,6 +62,7 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#particlesystem-dynamic">Particle System - Dynamic</a>
 &bull; <a class="toc" href="#particlesystem-pathmovement">Particle System - Path Movement</a>
 &bull; <a class="toc" href="#particle-engine">Particle Engine</a>
+<hr color="black"> VIDEO AND WEBCAM:
 &bull; <a class="toc" href="#video-texture">Video to Texture</a>
 &bull; <a class="toc" href="#webcam-test">Webcam Test</a>
 &bull; <a class="toc" href="#webcam-texture">Webcam to Texture</a>
@@ -66,21 +70,26 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#motion-detection-texture">Motion Detection and Scene</a>
 &bull; <a class="toc" href="#many-cameras">Many Cameras</a>
 &bull; <a class="toc" href="#css3d">Embedded HTML</a>
+<hr color="black"> GAMEPAD:
 &bull; <a class="toc" href="#gamepad-test">Gamepad Test</a>
 &bull; <a class="toc" href="#mesh-movement-gamepad">Mesh Movement - Gamepad</a>
+
 &bull; <a class="toc" href="#gui">GUI</a>
 &bull; <a class="toc" href="#gui-controller">GUI Controller</a>
 &bull; <a class="toc" href="#mouse-sprite">Mouse Sprite</a>
 &bull; <a class="toc" href="#mouse-hovering">Mouse Hovering</a>
 &bull; <a class="toc" href="#mouse-tooltip">Mouse Tooltip</a>
+<hr color="black"> MODELS:
 &bull; <a class="toc" href="#model">Model</a>
 &bull; <a class="toc" href="#model-animation">Animated Model</a>
 &bull; <a class="toc" href="#model-animation-control">Animated Model with Controls</a>
 &bull; <a class="toc" href="#collision-detection">Collision Detection</a>
+<hr color="black"> MARCHING CUBES:
 &bull; <a class="toc" href="#marching-cubes">Marching Cubes Algorithm</a>
 &bull; <a class="toc" href="#metaballs">Metaballs</a>
 &bull; <a class="toc" href="#metabubbles">Metabubbles</a>
 &bull; <a class="toc" href="#csg">Constructive Solid Geometry</a>
+<hr color="black"> MATHEMATICS:
 &bull; <a class="toc" href="#graphulus-function">Function Grapher</a>
 &bull; <a class="toc" href="#graphulus-surface">Parametric Surface Grapher</a>
 &bull; <a class="toc" href="#graphulus-curve">Parametric Curve Grapher</a>
@@ -290,6 +299,22 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 <img src="html-images/Texture-From-Canvas.png" class="superImage" />
 <br/>Texture from Canvas</a>
 <p class ="superText"> Create a canvas element via JavaScript, draw text or images on it, and then use it as a texture for a mesh. </p>
+</div>
+
+<div class="fancy">
+<a name="sprite-text-labels"></a>
+<a href="Sprite-Text-Labels.html" target="_blank">
+<img src="html-images/Sprite-Text-Labels.png" class="superImage" />
+<br/>Sprite Text Labels</a>
+<p class ="superText"> Combines techniques from Sprite demo and Texture from Canvas demo, introducing a function to easily make customizable text labels.</p>
+</div>
+
+<div class="fancy">
+<a name="labeled-geometry"></a>
+<a href="Labeled-Geometry.html" target="_blank">
+<img src="html-images/Labeled-Geometry.png" class="superImage" />
+<br/>Labeled Geometry</a>
+<p class ="superText"> Application of the Sprite Text Labels demo to label all vertices and edges of a geometry with their index number.</p>
 </div>
 
 <div class="fancy">
@@ -685,7 +710,6 @@ http://learningthreejs.com/blog/2013/04/30/closing-the-gap-between-html-and-webg
 </p>
 </div>
 
-
 <div class="fancy">
 <a name="csg"></a>
 <a href="CSG.html" target="_blank">
@@ -695,7 +719,22 @@ http://learningthreejs.com/blog/2013/04/30/closing-the-gap-between-html-and-webg
 Uses the library at http://github.com/chandlerprall/ThreeCSG/</p>
 </div>
 
-<hr color="black">
+<div class="fancy">
+<a name="sphere-project"></a>
+<a href="Sphere-Project.html" target="_blank">
+<img src="html-images/Sphere-Project.png" class="superImage" />
+<br/>Sphere Project</a>
+<p class ="superText"> Projects a wireframe cube onto a sphere. Includes a method for drawing the arc between two points on a sphere. </p>
+</div>
+
+<div class="fancy">
+<a name="topology-data"></a>
+<a href="Topology-Data.html" target="_blank">
+<img src="html-images/Topology-Data.png" class="superImage" />
+<br/>Topology Data</a>
+<p class ="superText"> From a THREE.Geometry, creates a topological data structure consisting of vertices, edges, and faces, with incidence data for each. For this example, the corresponding geometry is labeled (including edges) and the data can be manually verified from the browser console. (Builds on Lebeled Geometry demo.)</p>
+</div>
+
 
 <div class="fancy">
 <a name="graphulus-function"></a>
