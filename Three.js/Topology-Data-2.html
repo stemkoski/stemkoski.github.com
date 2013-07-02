@@ -126,6 +126,7 @@ function init()
 	var edgeIndex  = topo.edgeIDWithFaces( faceIndex0, faceIndex1 );   // should = 18
 	topo.retriangulateEdge( 18, data[0].point.clone() );
 		
+	// need to recreate geometry to mirror changes in topology!
 	var geometry = topo.convertToGeometry();
 	
 	mesh = new THREE.Mesh( geometry, faceMaterial );
@@ -138,7 +139,6 @@ function init()
 	for (var i = 0; i < topo.vertex.length; i++)
 	{
 		var spritey = makeTextSprite( " " + i + " ", { fontsize: 24, backgroundColor: {r:255, g:100, b:100, a:1} } );
-		if ( topo.vertex[i] == null ) continue;
 		spritey.position = topo.vertex[i].vector3.clone().multiplyScalar(1.1);
 		scene.add( spritey );
 	}
@@ -146,7 +146,6 @@ function init()
 	for (var i = 0; i < topo.edge.length; i++)
 	{
 		var spritey = makeTextSprite( " " + i + " ", { fontsize: 24, backgroundColor: {r:100, g:255, b:100, a:1} } );
-		if ( topo.edge[i] == null ) continue;
 		spritey.position = topo.edge[i].center.clone().multiplyScalar(1.1);
 		scene.add( spritey );
 	}
@@ -154,19 +153,9 @@ function init()
 	for (var i = 0; i < topo.face.length; i++)
 	{
 		var spritey = makeTextSprite( " " + i + " ", { fontsize: 24, backgroundColor: {r:100, g:100, b:255, a:1} } );
-		if ( topo.face[i] == null ) continue;
 		spritey.position = topo.face[i].center.clone().multiplyScalar(1.1);
 		scene.add( spritey );
 	}
-	
-	
-	
-	
-	
-	// size intersection = 1: face, 2: edge, 3+: vertex.
-	
-	// inspect for correctness.
-	// console.log(topo);
 	
 }
 
