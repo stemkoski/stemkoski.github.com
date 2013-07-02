@@ -23,7 +23,7 @@
 <canvas id="videoImage" width="160" height="120" style="visibility: hidden; float:left;"></canvas>
 
 <script>
-navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.getUserMedia;
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 window.URL = window.URL || window.webkitURL;
 
 var camvideo = document.getElementById('monitor');
@@ -32,9 +32,9 @@ var camvideo = document.getElementById('monitor');
 	{
 		document.getElementById('errorMessage').innerHTML = 
 			'Sorry. <code>navigator.getUserMedia()</code> is not available.';
-		return;
+	} else {
+		navigator.getUserMedia({video: true}, gotStream, noStream);
 	}
-	navigator.getUserMedia({video: true}, gotStream, noStream);
 
 function gotStream(stream) 
 {
