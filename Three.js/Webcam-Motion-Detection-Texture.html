@@ -19,7 +19,7 @@
 <div id="messageArea" style="position: relative; left: 0px; top: 270px;"></div>
 <div id="container" style="z-index: 2; position: absolute; left:0px; top:0px"></div>
 <script>
-navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.getUserMedia;
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 window.URL = window.URL || window.webkitURL;
 
 var camvideo = document.getElementById('monitor');

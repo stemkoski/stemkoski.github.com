@@ -24,7 +24,7 @@ Video on left, Canvas on right.
 </script>
 
 <script>
-navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.getUserMedia;
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 window.URL = window.URL || window.webkitURL;
 
 var camvideo = document.getElementById('monitor');
