@@ -1,38 +1,50 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>Three.js -- Template</title>
+	<title>Model Animation with Movement Controls (Three.js)</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<style>
-		body 
-		{
-			font-family: Monospace;
-			font-weight: bold;
-			background-color: #ccccff;
-			margin: 0px;
-			overflow: hidden;
-		}
-	</style>
+	<link rel=stylesheet href="css/base.css"/>
 </head>
 <body>
-
-<div id="message"></div>
 
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
-<script src="js/TrackballControls.js"></script>
+<script src="js/OrbitControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
+<!-- Simplfied gamepad interaction (Chrome 22 patched) -->
+<script src="js/gamepad.js"></script>
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+Controls:
+<ul>
+<li>Up arrow: forwards
+<li>Down arrow: backwards
+<li>Left arrow: turn left
+<li>Right arrow: turn right
+</ul>
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
 <script>
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
-	Date: March 2013 (three.js v56)
- */
+	Date: July 2013 (three.js v59dev)
+*/
 
 // MAIN
 
@@ -75,14 +87,13 @@ function init()
 	else
 		renderer = new THREE.CanvasRenderer(); 
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-	container = document.createElement( 'div' );
-	document.body.appendChild( container );
+	container = document.getElementById( 'ThreeJS' );
 	container.appendChild( renderer.domElement );
 	// EVENTS
 	THREEx.WindowResize(renderer, camera);
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 	// CONTROLS
-	controls = new THREE.TrackballControls( camera );
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
 	// STATS
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -147,7 +158,35 @@ function update()
 	// delta = change in time since last call (seconds)
 	delta = clock.getDelta(); 
 	var moveDistance = 100 * delta;
+	walking = false;
 
+	if (Gamepad.supported) 
+	{
+		var pads = Gamepad.getStates();
+        var pad = pads[0]; // assume only 1 player.
+        if (pad) 
+		{
+			
+			// adjust for deadzone.
+			if (Math.abs(pad.leftStickX + pad.rightStickX) > 0.3)
+			{
+				android.rotation.y -= delta * (pad.leftStickX + pad.rightStickX);
+				walking = true;
+			}
+			if (Math.abs(pad.leftStickY + pad.rightStickY) > 0.2)
+			{
+				android.translateZ( -moveDistance * (pad.leftStickY + pad.rightStickY) );
+				walking = true;
+			}
+			if ( pad.faceButton0 || pad.faceButton1 || pad.faceButton2 || pad.faceButton3 || pad.select || pad.start )
+			{ 
+			    android.position.set(0,0,0);
+				android.rotation.set(0,0,0);
+			}
+			
+        }
+	}
+	
 	// move forwards / backwards
 	if ( keyboard.pressed("down") )
 		android.translateZ( -moveDistance );
@@ -159,7 +198,7 @@ function update()
 	if ( keyboard.pressed("right") )
 		android.rotation.y -= delta;
 	
-	walking = false;
+	
 	var walkingKeys = ["up", "down", "left", "right"];
 	for (var i = 0; i < walkingKeys.length; i++)
 	{

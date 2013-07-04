@@ -1,38 +1,49 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>Three.js: Viewports-Dual</title>
+	<title>Viewports - Dual (Three.js)</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<style>
-		body 
-		{
-			font-family: Monospace;
-			font-weight: bold;
-			background-color: #ccccff;
-			margin: 0px;
-			overflow: hidden;
-		}
-	</style>
+	<link rel=stylesheet href="css/base.css"/>
 </head>
 <body>
-
-<div id="message"></div>
 
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
-<script src="js/TrackballControls.js"></script>
+<script src="js/OrbitControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+Movement controls: <br/>
+<ul>
+<li>W/S: Translate Forward/Backward
+<li>A/D: Rotate Left/Right
+<li>Q/E: Translate Left/Right
+<li>R/F: Rotate Up/Down
+<li>Z: Reset position and rotation.
+</ul>
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
 <script>
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
-	Date: March 2013 (three.js v56)
- */
+	Date: July 2013 (three.js v59dev)
+*/
 
 // MAIN
 
@@ -70,15 +81,14 @@ function init()
 	else
 		renderer = new THREE.CanvasRenderer(); 
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-	container = document.createElement( 'div' );
-	document.body.appendChild( container );
+	container = document.getElementById( 'ThreeJS' );
 	container.appendChild( renderer.domElement );
 	// EVENTS
 	THREEx.WindowResize(renderer, topCamera);
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 
 	// CONTROLS
-	// controls = new THREE.TrackballControls( camera );
+	// controls = ...
 
 	// STATS
 	stats = new Stats();
@@ -189,18 +199,18 @@ function update()
 	// rotate left/right/up/down
 	var rotation_matrix = new THREE.Matrix4().identity();
 	if ( keyboard.pressed("A") )
-		rotation_matrix = new THREE.Matrix4().makeRotationY(rotateAngle);
+		MovingCube.rotateOnAxis( new THREE.Vector3(0,1,0), rotateAngle);
 	if ( keyboard.pressed("D") )
-		rotation_matrix = new THREE.Matrix4().makeRotationY(-rotateAngle);
+		MovingCube.rotateOnAxis( new THREE.Vector3(0,1,0), -rotateAngle);
 	if ( keyboard.pressed("R") )
-		rotation_matrix = new THREE.Matrix4().makeRotationX(rotateAngle);
+		MovingCube.rotateOnAxis( new THREE.Vector3(1,0,0), rotateAngle);
 	if ( keyboard.pressed("F") )
-		rotation_matrix = new THREE.Matrix4().makeRotationX(-rotateAngle);
-	if ( keyboard.pressed("A") || keyboard.pressed("D") || 
-	     keyboard.pressed("R") || keyboard.pressed("F") )
+		MovingCube.rotateOnAxis( new THREE.Vector3(1,0,0), -rotateAngle);
+	
+	if ( keyboard.pressed("Z") )
 	{
-		MovingCube.matrix.multiply(rotation_matrix);
-		MovingCube.rotation.setEulerFromRotationMatrix(MovingCube.matrix);
+		MovingCube.position.set(0,25.1,0);
+		MovingCube.rotation.set(0,0,0);
 	}
 	
 	var relativeCameraOffset = new THREE.Vector3(0,50,200+100);

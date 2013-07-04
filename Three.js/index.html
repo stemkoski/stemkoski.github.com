@@ -10,7 +10,7 @@
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: 76. Last updated: 29 June 2013. Compatible with Three.js version 56.
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: ?. Last updated: 4 July 2013. Compatible with Three.js version 58.
 <hr>
 <hr color="black"> <center><b><u>Basic Examples</u></b></center>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
@@ -20,7 +20,7 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#color-explorer">Color Explorer</a>
 &bull; <a class="toc" href="#wireframe">Wireframe</a>
 &bull; <a class="toc" href="#dashed-lines">Lines and Dashed Lines</a>
-&bull; <a class="toc" href="#dashed-3d">Multi-Wireframe Effect</a>
+&bull; <a class="toc" href="#helpers">Helpers</a>
 &bull; <a class="toc" href="#outline">Outline Effect</a>
 &bull; <a class="toc" href="#vertex-colors">Face/Vertex Colors</a>
 &bull; <a class="toc" href="#shapes">Shapes</a>
@@ -54,16 +54,16 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#viewports-dual">Viewports - Dual</a>
 &bull; <a class="toc" href="#viewports-quad">Viewports - Quad</a>
 &bull; <a class="toc" href="#css3d">Embedded HTML</a>
+&bull; <a class="toc" href="#anaglyph">Red/Blue Anaglyph</a>
 
 <hr color="black"> <center><b><u>Shader Examples</u></b></center>
 &bull; <a class="toc" href="#shader-simple">Shader - Simple</a>
 &bull; <a class="toc" href="#shader-explorer">Shader - Explorer</a>
-&bull; <a class="toc" href="#selective-glow">Selective Glow Effect using Shaders</a>
 &bull; <a class="toc" href="#sphere-unwrapping">Shader - Sphere Unwrapping</a>
 &bull; <a class="toc" href="#shader-attributes">Shader - Attributes</a>
 &bull; <a class="toc" href="#shader-animate">Shader - Animated Materials</a>
 &bull; <a class="toc" href="#shader-fireball">Shader - Animated Fireball</a>
-&bull; <a class="toc" href="#atmosphere">Atmosphere Effect using Shaders</a>
+&bull; <a class="toc" href="#shader-glow">Shader - Glow Effect</a>
 
 <hr color="black"> <center><b><u>Particle System Examples</u></b></center>
 &bull; <a class="toc" href="#particles">Particles</a>
@@ -88,6 +88,7 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 
 <hr color="black"> <center><b><u>Mouse Examples</u></b></center>
 &bull; <a class="toc" href="#mouse-sprite">Mouse Sprite</a>
+&bull; <a class="toc" href="#mouse-click">Mouse Click</a>
 &bull; <a class="toc" href="#mouse-hovering">Mouse Hovering</a>
 &bull; <a class="toc" href="#mouse-tooltip">Mouse Tooltip</a>
 
@@ -112,6 +113,7 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#csg">Constructive Solid Geometry</a>
 &bull; <a class="toc" href="#sphere-project">Sphere Project</a>
 &bull; <a class="toc" href="#topology-data">Topology Data</a>
+&bull; <a class="toc" href="#topology-data-2">Topology Data 2</a>
 &bull; <a class="toc" href="#graphulus-function">Function Grapher</a>
 &bull; <a class="toc" href="#graphulus-surface">Parametric Surface Grapher</a>
 &bull; <a class="toc" href="#graphulus-curve">Parametric Curve Grapher</a>
@@ -177,11 +179,11 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 </div>
 
 <div class="fancy">
-<a name="dashed-3d"></a>
-<a href="Dashed-3D.html" target="_blank">
-<img src="html-images/Dashed-3D.png" class="superImage" />
-<br/>Multi-Wireframe Effect</a>
-<p class ="superText"> Demonstrates a neat effect to display a wireframe-style object where the obscured lines display different than the visible lines (e.g. dashed vs. solid). </p>
+<a name="helpers"></a>
+<a href="Helpers.html" target="_blank">
+<img src="html-images/Helpers.png" class="superImage" />
+<br/>Helpers</a>
+<p class ="superText"> Demonstrates the use of AxisHelper, GridHelper, and ArrowHelper to easily create line-based objects. </p>
 </div>
 
 <div class="fancy">
@@ -414,6 +416,15 @@ http://learningthreejs.com/blog/2013/04/30/closing-the-gap-between-html-and-webg
 </div>
 
 <div class="fancy">
+<a name="anaglyph"></a>
+<a href="Anaglyph.html" target="_blank">
+<img src="html-images/Anaglyph.png" class="superImage" />
+<br/>Anaglyph</a>
+<p class ="superText"> Displays a scene rendered using an Anaglyph effect; use red/blue 3D glasses to view.
+</p>
+</div>
+
+<div class="fancy">
 <a name="shader-simple"></a>
 <a href="Shader-Simple.html" target="_blank">
 <img src="html-images/Shader-Simple.png" class="superImage" />
@@ -431,14 +442,6 @@ http://learningthreejs.com/blog/2013/04/30/closing-the-gap-between-html-and-webg
 </p>
 </div>
 
-<div class="fancy">
-<a name="selective-glow"></a>
-<a href="Selective-Glow.html" target="_blank">
-<img src="html-images/Selective-Glow.png" class="superImage" />
-<br/>Selective Glow Effect using Shaders</a>
-<p class ="superText"> Demonstrates a selective glow effect using shaders. This approach requires the creation of two scenes - the base scene and a secondary scene containing copies of the base scene objects with either bright textures for glow effects or black textures. The secondary scene is blurred and then additively blended with the base scene.
-</p>
-</div>
 
 <div class="fancy">
 <a name="sphere-unwrapping"></a>
@@ -477,6 +480,28 @@ http://learningthreejs.com/blog/2013/04/30/closing-the-gap-between-html-and-webg
 </div>
 
 <div class="fancy">
+<a name="shader-glow"></a>
+<a href="Shader-Glow.html" target="_blank">
+<img src="html-images/Shader-Glow.png" class="superImage" />
+<br/>Shader - Glow Effect</a>
+<p class ="superText"> Create a glow effect using shaders. Includes GUI to adjust shader parameters. Using front-face rendering can create glow or shell style effects; using back-face rendering can create halo or atmosphere style effects (see information in-demo for corresponding parameter values). </p>
+</div>
+
+<!--
+
+These two demos have been replaced by the Shader - Glow Effect demo,
+which is much more efficient and easier to understand than creating two scenes.
+
+<div class="fancy">
+<a name="selective-glow"></a>
+<a href="Selective-Glow.html" target="_blank">
+<img src="html-images/Selective-Glow.png" class="superImage" />
+<br/>Selective Glow Effect using Shaders</a>
+<p class ="superText"> Demonstrates a selective glow effect using shaders. This approach requires the creation of two scenes - the base scene and a secondary scene containing copies of the base scene objects with either bright textures for glow effects or black textures. The secondary scene is blurred and then additively blended with the base scene.
+</p>
+</div>
+
+<div class="fancy">
 <a name="atmosphere"></a>
 <a href="Atmosphere.html" target="_blank">
 <img src="html-images/Atmosphere.png" class="superImage" />
@@ -484,6 +509,7 @@ http://learningthreejs.com/blog/2013/04/30/closing-the-gap-between-html-and-webg
 <p class ="superText"> Demonstrates an atmosphere effect using shaders. This approach requires the creation of two scenes - the base scene and a secondary scene containing a spherical object with a gradient texture created using a shader. The secondary scene is then additively blended with the base scene.
 </p>
 </div>
+-->
 
 <div class="fancy">
 <a name="particles"></a>
@@ -635,6 +661,14 @@ Detects motion occuring over graphics regions, and changes texture on spinning c
 </div>
 
 <div class="fancy">
+<a name="mouse-click"></a>
+<a href="Mouse-Click.html" target="_blank">
+<img src="html-images/Mouse-Click.png" class="superImage" />
+<br/>Mouse Click</a>
+<p class ="superText"> Change the color of a face on a mesh when clicked. </p>
+</div>
+
+<div class="fancy">
 <a name="mouse-over"></a>
 <a href="Mouse-Over.html" target="_blank">
 <img src="html-images/Mouse-Over.png" class="superImage" />
@@ -755,6 +789,13 @@ Uses the library at http://github.com/chandlerprall/ThreeCSG/</p>
 <p class ="superText"> From a THREE.Geometry, creates a topological data structure consisting of vertices, edges, and faces, with incidence data for each. For this example, the corresponding geometry is labeled (including edges) and the data can be manually verified from the browser console. (Builds on Lebeled Geometry demo.)</p>
 </div>
 
+<div class="fancy">
+<a name="topology-data-2"></a>
+<a href="Topology-Data-2.html" target="_blank">
+<img src="html-images/Topology-Data-2.png" class="superImage" />
+<br/>Topology Data 2</a>
+<p class ="superText"> Builds upon Topology Data demo; illustrates edge and face subdivision and retriangulation functions and proper face coloring function.</p>
+</div>
 
 <div class="fancy">
 <a name="graphulus-function"></a>

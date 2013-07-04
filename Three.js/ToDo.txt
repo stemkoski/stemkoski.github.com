@@ -1,0 +1,150 @@
+update 59dev...
+
+FIX TITLE-- Hello World (Three.js)
+
+<link rel=stylesheet href="css/base.css"/>
+	
+<script src="js/OrbitControls.js"></script>
+
+REMOVE MESSAGE DIV
+
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: July 2013 (three.js v59dev)
+*/
+
+container = document.getElementById( 'ThreeJS' );
+
+controls = new THREE.OrbitControls( camera, renderer.domElement );
+	
+	
+REMOVE z-INDEX 1 if there is a GUI
+	
+
+selective glow
+
+-- group GUI opts into folders
+-- repost to blog (update style), tweet, check SO questions and reanswer
+
+atmosphere - also condense example? no more "two-scene"
+particle system dynamic, next two,
+many cameras -- .setClearColor()?
+motion detection texture?!?
+mouse tooltip -- update text label code
+metaballs, metabubbles
+
+CSG, CSS3D, Many-Cameras
+ require r58, r59dev fails for unknown reason.
+
+graphuluses -- use gridhelper
+
+
+
+gridhelper example? arrow helper? (done)
+
+
+I really want to surf inside 3D knots!!!
+create face-colored checkerboard
+SVG renderer example
+
+demo using accelerometer to rotate cube
+
+does Ludei export webgl now?!?!?!?!?
+
+Embed a youtube video in a scene
+
+planar surface water-style reflection?
+(1) reflection on a plane
+(2) reflection on a plane blended with image
+(3) reflection on a plane with partial transparency
+(4) combine (2) and (3) with water animation via shaders. voila!
+
+simulate real depth with head tracking
+
+
+rewrite demos involving text labels to use new code from Sprite-Text-Labels.html  (difference(s): uses raycasting, screen coordinates, dynamic label)
+use RayPicker class?
+
+math: spherical projection
+
+-------------------
+
+
+post normals question to SO regarding halo shader
+morph-geo-2 + blog post re morphing
+
+nearly ready:
+anaglyph
+morph-geo-1
+shader-halo -> replace atmosphere?
+webcam color tracking - how to smooth "on" pixels quickly? remove border points?
+webcam augmented reality
+webcam augmented reality cube
+Shader-Simple
+Skybox-Shader
+The Geometry-to-Lines method
+The Line-to-Cylinder method - include vertex to sphere? low-res version, use boxes instead for verts and edges.
+Fancy04 - maybe rewrite this in unity instead
+Earth-Galaxy
+Multiple Models Loader
+
+clean up marching-cubes using metaballs code variation
+read about metaballs optimization on github link.
+octant reduction -- only add values in 2*radius cube around center point.
+
+*** for sensor devices: create a cube that tilts in response to device orientation. must be canvas-friendly (no textures, just face colors?)
+*** (also a lead-in that gets that data)
+
+Write:
+- Single triangle/square creation methods
+- shader materials (texture only, lambert only, lambert+texture) -- might be too hard because requires light data (position/color)
+- Galaxy (Earth + Sun + Moon + Tweening + Shadows + Nightlights)
+
+Jerome's awesomeness:
+- Headtracker
+
+
+mathiness -
+implicit graph
+Calculus-y variations: 
+	tangent line, tangent plane, riemann prisms, ...
+Vector field (R^3 -> R^3), dropped particles flow, leave trails...
+Line integral - c(t) = <x(t),y(t)> & z = f(x,y)
+Flux through surface
+
+categorize table of contents...?
+
+Future goals:
+
+- model with subsurf
+- physics
+- tween
+
+other recent thoughts:
+dynamic terrain---
+http://alteredqualia.com/three/examples/webgl_terrain_dynamic2.html
+http://mrdoob.github.com/three.js/examples/webgl_trackballcamera_earth.html
+
+view-source:mrdoob.github.io/three.js/examples/webgl_geometry_convex.html
+what is THREE.ConvexGeometry?
+
+When you click on a plane, object faces it and moves toward it.
+(based on starcrafty SO question)
+
+check wunderlist also

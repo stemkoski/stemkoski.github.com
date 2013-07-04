@@ -1,19 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>three.js tutorial</title>
+	<title>Many Cameras (Three.js)</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<style>
-		body 
-		{
-			font-family: Monospace;
-			font-weight: bold;
-			background-color: #ccccff;
-			margin: 5px;
-			overflow: hidden;
-		}
-	</style>
+	<link rel=stylesheet href="css/base.css"/>
 </head>
 <body>
 
@@ -58,20 +49,40 @@ function noStream(e)
 }
 </script>
 
-<script src="js/Three.js"></script>
+<script src="js/Three58.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
-<script src="js/TrackballControls.js"></script>
+<script src="js/OrbitControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+Movement controls: <br/>
+<ul>
+<li>W/S: Translate Forward/Backward
+<li>A/D: Rotate Left/Right
+<li>Q/E: Translate Left/Right
+</ul>
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
 <script>
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
-	Date: March 2013 (three.js v56)
- */
+	Date: July 2013 (three.js v59dev)
+*/
 	
 // MAIN
 
@@ -218,9 +229,9 @@ function init()
 	topCamera.position.set(0,200+50,550+200);
 	topCamera.lookAt(scene.position);
 	
-	// other camera details
+	// other camera stuff
 	renderer.setSize( window.innerWidth, window.innerHeight );
-	renderer.setClearColorHex( 0x000000, 1 );
+	renderer.setClearColor( 0x000000, 1 );
 	renderer.autoClear = false;
 	
 }
@@ -251,22 +262,16 @@ function update()
 		camera.translateZ( -moveDistance );
 	if ( keyboard.pressed("S") )
 		camera.translateZ(  moveDistance );
-	if ( keyboard.pressed("A") )
+	if ( keyboard.pressed("Q") )
 		camera.translateX( -moveDistance );
-	if ( keyboard.pressed("D") )
+	if ( keyboard.pressed("E") )
 		camera.translateX(  moveDistance );	
 
-	// rotate left/right (local coordinates)
-	var rotation_matrix = new THREE.Matrix4().identity();
-	if ( keyboard.pressed("Q") )
-		rotation_matrix = new THREE.Matrix4().makeRotationY(rotateAngle);
-	if ( keyboard.pressed("E") )
-		rotation_matrix = new THREE.Matrix4().makeRotationY(-rotateAngle);
-	if ( keyboard.pressed("Q") || keyboard.pressed("E") )
-	{
-		camera.matrix.multiply(rotation_matrix);
-		camera.rotation.setEulerFromRotationMatrix(camera.matrix);
-	}
+	// rotate left/right/up/down
+	if ( keyboard.pressed("A") )
+		camera.rotateOnAxis( new THREE.Vector3(0,1,0), rotateAngle);
+	if ( keyboard.pressed("D") )
+		camera.rotateOnAxis( new THREE.Vector3(0,1,0), -rotateAngle);
 	
 	var d = camera.position.distanceTo( mirrorSphere.position );
 	if ( d > 500 || d < 60 )

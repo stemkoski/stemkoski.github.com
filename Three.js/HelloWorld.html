@@ -1,38 +1,42 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>Hello World -- Three.js</title>
+	<title>Hello World (Three.js)</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<style>
-		body 
-		{
-			font-family: Monospace;
-			font-weight: bold;
-			background-color: #ccccff;
-			margin: 0px;
-			overflow: hidden;
-		}
-	</style>
+    <link rel=stylesheet href="css/base.css"/>
 </head>
 <body>
-
-<div id="message"></div>
 
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
-<script src="js/TrackballControls.js"></script>
+<script src="js/OrbitControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="z-index: 1; position: absolute; left:0px; top:0px"></div>
 <script>
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
-	Date: March 2013 (three.js v56)
+	Date: July 2013 (three.js v59dev)
  */
+
 	
 //////////	
 // MAIN //
@@ -92,12 +96,13 @@ function init()
 		renderer = new THREE.CanvasRenderer(); 
 	
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-	// create a div element to contain the renderer
-	container = document.createElement( 'div' );
-	document.body.appendChild( container );
-	// alternatively: if you insert the div via HTML, access it using
-	//   container = document.getElementById( 'container' );
-
+	
+	// attach div element to variable to contain the renderer
+	container = document.getElementById( 'ThreeJS' );
+	// alternatively: to create the div at runtime, use:
+	//   container = document.createElement( 'div' );
+	//    document.body.appendChild( container );
+	
 	// attach renderer to the container div
 	container.appendChild( renderer.domElement );
 	
@@ -114,10 +119,10 @@ function init()
 	// CONTROLS //
 	//////////////
 
-	// move mouse and: left   click (or hold 'A') to rotate, 
-	//                 middle click (or hold 'S') to zoom, 
-	//                 right  click (or hold 'D') to pan
-	controls = new THREE.TrackballControls( camera );
+	// move mouse and: left   click to rotate, 
+	//                 middle click to zoom, 
+	//                 right  click to pan
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
 	
 	///////////
 	// STATS //
@@ -210,11 +215,10 @@ function init()
 	// BackSide: render faces from inside of the cube, instead of from outside (default).
 	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-	
 	// scene.add(skyBox);
 	
 	// fog must be added to scene before first render
-	scene.fog = new THREE.FogExp2( 0x999900, 0.00025 );
+	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
 }
 
 function animate() 

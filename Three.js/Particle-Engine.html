@@ -1,28 +1,17 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>Three.js -- Template</title>
+	<title>Particle Engine (Three.js)</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<style>
-		body 
-		{
-			font-family: Monospace;
-			font-weight: bold;
-			background-color: #ccccff;
-			margin: 0px;
-			overflow: hidden;
-		}
-	</style>
+	<link rel=stylesheet href="css/base.css"/>
 </head>
 <body>
-
-<div id="message"></div>
 
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
-<script src="js/TrackballControls.js"></script>
+<script src="js/OrbitControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
@@ -33,12 +22,26 @@
 <!-- GUI for experimenting with values -->		
 <script type='text/javascript' src='js/DAT.GUI.min.js'></script>
 
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
 <script>
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
-	Date: June 2013 (three.js v56)
- */
+	Date: July 2013 (three.js v59dev)
+*/
 
 // MAIN
 
@@ -46,6 +49,8 @@
 var container, scene, camera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
+// custom global variables
+var cube;
 
 init();
 animate();
@@ -68,14 +73,13 @@ function init()
 	else
 		renderer = new THREE.CanvasRenderer(); 
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-	container = document.createElement( 'div' );
-	document.body.appendChild( container );
+	container = document.getElementById( 'ThreeJS' );
 	container.appendChild( renderer.domElement );
 	// EVENTS
 	THREEx.WindowResize(renderer, camera);
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 	// CONTROLS
-	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
 	// STATS
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -100,12 +104,13 @@ function init()
 	var skyBoxGeometry = new THREE.CubeGeometry( 4000, 4000, 4000 );
 	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, side: THREE.BackSide } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-   	scene.add(skyBox);
+    scene.add(skyBox);
 	
 	////////////
 	// CUSTOM //
 	////////////
 
+	
 	this.engine = new ParticleEngine();
 	engine.setValues( Examples.fountain );
 	engine.initialize();
@@ -178,6 +183,36 @@ function resetCamera()
 
 function update()
 {
+/*
+	if ( keyboard.pressed("1") ) 
+		restartEngine( fountain );
+	if ( keyboard.pressed("2") ) 
+		restartEngine( startunnel );
+	if ( keyboard.pressed("3") ) 
+		restartEngine( starfield );
+	if ( keyboard.pressed("4") ) 
+		restartEngine( fireflies );
+		
+	if ( keyboard.pressed("5") ) 
+		restartEngine( clouds );
+	if ( keyboard.pressed("6") ) 
+		restartEngine( smoke );
+		
+	if ( keyboard.pressed("7") ) 
+		restartEngine( fireball );
+	if ( keyboard.pressed("8") ) 
+		restartEngine( Examples.candle );
+		
+	if ( keyboard.pressed("9") ) 
+		restartEngine( rain );
+	if ( keyboard.pressed("0") ) 
+		restartEngine( snow );
+		
+	if ( keyboard.pressed("q") ) 
+		restartEngine( firework );
+	// also: reset camera angle
+*/
+	
 	controls.update();
 	stats.update();
 	

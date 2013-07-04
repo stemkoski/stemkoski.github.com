@@ -1,38 +1,41 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<title>Three.js -- Template</title>
+	<title>Mouse Tooltip (Three.js)</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<style>
-		body 
-		{
-			font-family: Monospace;
-			font-weight: bold;
-			background-color: #ccccff;
-			margin: 0px;
-			overflow: hidden;
-		}
-	</style>
+	<link rel=stylesheet href="css/base.css"/>
 </head>
 <body>
-
-<div id="message"></div>
 
 <script src="js/Three.js"></script>
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
-<script src="js/TrackballControls.js"></script>
+<script src="js/OrbitControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
 <script>
 /*
 	Three.js "tutorials by example"
 	Author: Lee Stemkoski
-	Date: March 2013 (three.js v56)
- */
+	Date: July 2013 (three.js v59dev)
+*/
 
 // MAIN
 
@@ -68,14 +71,13 @@ function init()
 	else
 		renderer = new THREE.CanvasRenderer(); 
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-	container = document.createElement( 'div' );
-	document.body.appendChild( container );
+	container = document.getElementById( 'ThreeJS' );
 	container.appendChild( renderer.domElement );
 	// EVENTS
 	THREEx.WindowResize(renderer, camera);
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 	// CONTROLS
-	controls = new THREE.TrackballControls( camera );
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
 	// STATS
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -152,7 +154,7 @@ function onDocumentMouseMove( event )
 	// event.preventDefault();
 
 	// update sprite position
-	sprite1.position.set( event.clientX, event.clientY, 0 );
+	sprite1.position.set( event.clientX, event.clientY - 20, 0 );
 	
 	// update the mouse variable
 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
@@ -210,7 +212,6 @@ function update()
 				context1.fillRect( 2,2, width+4,20+4 );
 				context1.fillStyle = "rgba(0,0,0,1)"; // text color
 				context1.fillText( message, 4,20 );
-				// TODO: reposition texture so that not partially obscured by mouse pointer
 				texture1.needsUpdate = true;
 			}
 			else

@@ -4,16 +4,7 @@
 	<title>gamepad.js - test</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<style>
-		body 
-		{
-			font-family: Monospace;
-			font-weight: bold;
-			background-color: #ccccff;
-			margin: 10px;
-			overflow: hidden;
-		}
-	</style>
+	<link rel=stylesheet href="css/base.css"/>
 </head>
 <body>
 
@@ -33,6 +24,26 @@
 <script src="js/KeyboardState.js"></script>
 <!-- Simplfied gamepad interaction (patched version) -->
 <script src="js/gamepad.js"></script>
+
+
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+Uses a Gamepad (e.g. XBox controller) to move a square image around a canvas. Requires Chrome browser and connected gamepad to run. Uses gamepad.js library (patched) from http://github.com/inequation/gamepad.js.
+<ul>
+<li>Analog sticks and directional pad move square up/down/left/right. 
+<li>A/B/X/Y buttons change colors of square. 
+<li>Start/select buttons reset square to original position. 
+</ul>[Note: You may need to press one of A/B/X/Y buttons for controller to be recognized by the web browser.]
+</div>
+<!-- ------------------------------------------------------------ -->
+
+
 
 <script>
 

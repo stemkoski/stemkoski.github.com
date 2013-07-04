@@ -5,16 +5,7 @@
 	<!-- http://www.webrtc.org/ -->
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<style>
-		body 
-		{
-			font-family: Monospace;
-			font-weight: bold;
-			background-color: #ccccff;
-			margin: 5px;
-			overflow: hidden;
-		}
-	</style>
+	<link rel=stylesheet href="css/base.css"/>
 </head>
 <body>
 
@@ -81,7 +72,7 @@ videoImage = document.getElementById( 'videoImage' );
 videoImageContext = videoImage.getContext( '2d' );
 
 // background color if no video present
-videoImageContext.fillStyle = '#000000';
+videoImageContext.fillStyle = '#005337';
 videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );				
 
 // start the loop				
