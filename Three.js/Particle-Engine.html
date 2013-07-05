@@ -176,7 +176,7 @@ function resetCamera()
 	camera.lookAt(scene.position);	
 	scene.add(camera);
 	
-	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
 	THREEx.WindowResize(renderer, camera);
 }
 
