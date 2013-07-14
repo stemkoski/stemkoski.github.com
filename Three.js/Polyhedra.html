@@ -10,7 +10,6 @@
 
 <script src="js/Three58.js"></script>
 <script src="js/Detector.js"></script>
-
 <script src="js/TrackballControls.js"></script>
 <script src="js/THREEx.KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
@@ -28,6 +27,12 @@
 <script src="js/info.js"></script>
 <div id="infoButton"></div>
 <div id="infoBox" title="Demo Information">
+Controls: 
+<ul>
+<li>Rotate: Left Mouse Button
+<li>Zoom: Mouse Wheel 
+</ul>
+
 Data from the website "Virtual Polyhedra: The Encyclopedia of Polyhedra" by George W. Hart
 <a href="http://www.georgehart.com/virtual-polyhedra/vp.html">http://www.georgehart.com/virtual-polyhedra/vp.html</a>
 <br/><br/> 
@@ -79,28 +84,16 @@ function init()
 	container.appendChild( renderer.domElement );
 	// EVENTS
 	THREEx.WindowResize(renderer, camera);
-	// THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 	// CONTROLS
 	controls = new THREE.TrackballControls( camera, renderer.domElement );
 	controls.noPan = true;
 	// LIGHT
 	var light = new THREE.PointLight(0xffffff);
-	// light.position.set(100,250,100);
 	light.position = camera.position;
 	scene.add(light);
 	var light = new THREE.PointLight(0x888888);
 	light.position.set(-100,-250,-100);
 	scene.add(light);
-	// FLOOR
-	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
-	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
-	floorTexture.repeat.set( 10, 10 );
-	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
-	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
-	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-	floor.position.y = -100.5;
-	floor.rotation.x = Math.PI / 2;
-	//scene.add(floor);
 	// SKYBOX
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
 	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0xccccff, side: THREE.BackSide } );
@@ -110,16 +103,37 @@ function init()
 	////////////
 	// CUSTOM //
 	////////////
+	this.parameters = { transparent: false };
+	
+	this.polyhedronMesh = new THREE.Object3D(); 
+	this.titleSprite = new THREE.Object3D();	
+	this.titleSpriteParams = 
+	{ 
+	    fontsize: 24, 
+	    useScreenCoordinates: true, 
+	    borderThickness: 2,
+	    borderColor: {r:0, g:0, b:0, a:1.0}, 
+	    backgroundColor: {r:255, g:255, b:255, a:0.9}, 
+	    spriteAlignment: THREE.SpriteAlignment.topCenter 
+	}
 		
-	this.polyhedronMesh = polyhedronDataToMesh( POLYHEDRA.TruncatedIcosidodecahedron );
-	scene.add(polyhedronMesh);
+	displayPolyhedron( POLYHEDRA.TruncatedIcosidodecahedron );
+	//scene.add(polyhedronMesh);
 
 	/////////
 	// GUI //
 	/////////
-
+	console.log(polyhedronMesh);
 	gui = new dat.GUI();
-	parameters = {};
+	
+	gui.add( parameters, "transparent" )
+	   .name( "Toggle Transparency" )
+	   .onChange( function(value)
+		{
+			polyhedronMesh.children[2].material.transparent = value;
+			//polyhedronMesh.children[3].material.transparent = value;
+		});
+	
 	categoryFolders = {};
 	// check category[0]. if folder does not exist, create it, add it to that folder.
 	//   if category field DNE, just add it to the end.
@@ -140,18 +154,21 @@ function init()
 		.name( POLYHEDRA[arg].name )
 		.onChange( function(value)
 		{
-		   displayMesh( polyhedronDataToMesh( POLYHEDRA[this.property] ) );
+		   displayPolyhedron( POLYHEDRA[this.property] );
 		});
 	}
 	gui.open();	
 	
+	/*
 	// SPRITE GUI?
 	var ballTexture = THREE.ImageUtils.loadTexture( 'images/redball.png' );
 	var ballMaterial = new THREE.SpriteMaterial( { map: ballTexture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomLeft } );
 	var sprite = new THREE.Sprite( ballMaterial );
 	sprite.position.set( 5, window.innerHeight - 5, 0 );
-	sprite.scale.set( 64, 64, 1.0 ); // imageWidth, imageHeight
+	sprite.scale.set( 128, 128, 1.0 ); // imageWidth, imageHeight
 	scene.add( sprite );
+	*/
+	
 	
 	
 	
@@ -160,11 +177,16 @@ function init()
 
 var faces;
 
-function displayMesh(mesh)
+function displayPolyhedron(data)
 {
-scene.remove(polyhedronMesh);
-polyhedronMesh = mesh;
-scene.add(polyhedronMesh);
+	scene.remove(polyhedronMesh);
+	scene.remove(titleSprite);
+	polyhedronMesh = polyhedronDataToMesh(data);
+	titleSprite = makeTextSprite( "  " + data.name + "  ",
+	    titleSpriteParams );
+	titleSprite.position.set(window.innerWidth / 2, 10, 0);
+	scene.add(titleSprite);
+	scene.add(polyhedronMesh);
 }
 
 function polyhedronDataToMesh(data)
@@ -179,36 +201,37 @@ function polyhedronDataToMesh(data)
 	for (var i = 0; i < data.vertex.length; i++)
 		vertex.push( new THREE.Vector3( data.vertex[i][0], data.vertex[i][1], data.vertex[i][2] ).multiplyScalar(100) );
 
-	var vertexGeometry = new THREE.SphereGeometry( 6, 16, 8 );
+	var vertexGeometry = new THREE.SphereGeometry( 6, 12, 6 );
 	var vertexMaterial = new THREE.MeshLambertMaterial( { color: 0x222244 } );
-	var mesh = new THREE.Mesh( vertexGeometry, vertexMaterial );
+	var vertexSingleMesh = new THREE.Mesh( vertexGeometry );
 
+	var vertexAmalgam = new THREE.Geometry();
 	for (var i = 0; i < data.vertex.length; i++)
 	{
-		var vMesh = mesh.clone();
+		var vMesh = vertexSingleMesh.clone();
 		vMesh.position = vertex[i];
-		polyhedron.add(vMesh);
+		THREE.GeometryUtils.merge( vertexAmalgam, vMesh );
 	}
+	var vertexMesh = new THREE.Mesh( vertexAmalgam, vertexMaterial );
+	polyhedron.add( vertexMesh );
 	
 	// convert edge data to cylinders
 	var edgeMaterial = new THREE.MeshLambertMaterial( {color: 0x666666} );
+	var edgeAmalgam = new THREE.Geometry();
 	for (var i = 0; i < data.edge.length; i++)
 	{
 		var index0 = data.edge[i][0];
 		var index1 = data.edge[i][1];
 		var eMesh = cylinderMesh( vertex[index0], vertex[index1], edgeMaterial );
-		polyhedron.add(eMesh);
-		//var outline = eMesh.clone();
-		//outline.setMaterial( new THREE.MeshBasicMaterial({color:0x000000, side:THREE.BackSide}) );
-		//outline.scale.x = outline.scale.z = 1.5;
-		//scene.add(outline);
+		THREE.GeometryUtils.merge( edgeAmalgam, eMesh );
 	}
+	var edgeMesh = new THREE.Mesh( edgeAmalgam, edgeMaterial );
+	polyhedron.add( edgeMesh );
 	
 	// convert face data to a single (triangulated) geometry
-	var faceMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.FaceColors, side: THREE.DoubleSide, transparent:true, opacity:0.8 } );
+	var faceMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.FaceColors, side: THREE.FrontSide, transparent:parameters.transparent, opacity:0.8 } );
 	var faceColors = 
 	{
-		// cc0000 663300 cccc00 00cc00 0000cc 660066 brown-663300 
 	    3: new THREE.Color( 0xcc0000 ),
 	    4: new THREE.Color( 0x00cc00 ),
 	    5: new THREE.Color( 0x0000cc ),
@@ -236,7 +259,15 @@ function polyhedronDataToMesh(data)
 	geometry.computeVertexNormals();
 
 	faces = new THREE.Mesh(geometry, faceMaterial);
+	faces.scale.multiplyScalar(1.01);
 	polyhedron.add(faces);
+	
+	var interiorMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.FaceColors, side: THREE.BackSide } );
+	
+	var interiorFaces = new THREE.Mesh(geometry, interiorMaterial);
+	interiorFaces.scale.multiplyScalar(0.99);
+	polyhedron.add( interiorFaces );
+	
 	return polyhedron;
 }
 
@@ -266,12 +297,12 @@ function update()
 {
 	if ( keyboard.pressed("z") ) 
 	{	  
-		// do something
+		console.log("zzzz");
 	}
-	if (camera.position.length() < 150) //console.log(1234);
+	if (camera.position.length() < 150) 
 		camera.position.setLength(150); 
-	if (camera.position.length() > 400)
-		camera.position.setLength(400);
+	if (camera.position.length() > 500)
+		camera.position.setLength(500);
 	
 	controls.update();
 }
@@ -279,6 +310,96 @@ function update()
 function render() 
 {
 	renderer.render( scene, camera );
+}
+
+function makeTextSprite( message, parameters )
+{
+	if ( parameters === undefined ) parameters = {};
+	
+	var fontface = parameters.hasOwnProperty("fontface") ? 
+		parameters["fontface"] : "Arial";
+	
+	var fontsize = parameters.hasOwnProperty("fontsize") ? 
+		parameters["fontsize"] : 18;
+	
+	var borderThickness = parameters.hasOwnProperty("borderThickness") ? 
+		parameters["borderThickness"] : 4;
+	
+	var borderColor = parameters.hasOwnProperty("borderColor") ?
+		parameters["borderColor"] : { r:0, g:0, b:0, a:1.0 };
+	
+	var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?
+		parameters["backgroundColor"] : { r:255, g:255, b:255, a:1.0 };
+
+	var useScreenCoordinates = parameters.hasOwnProperty("useScreenCoordinates") ?
+		parameters["useScreenCoordinates"] : false;
+	
+	var spriteAlignment = parameters.hasOwnProperty("spriteAlignment") ?
+		parameters["spriteAlignment"] : THREE.SpriteAlignment.topLeft;
+		
+	// create canvas, resize later.
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('2d');
+	context.font = "Bold " + fontsize + "px " + fontface;
+    
+	// get size data (height depends only on font size)
+	var metrics = context.measureText( message );
+	var textWidth = metrics.width;
+	
+	// calculate correct dimensions of canvas and resize
+	var imageWidth = textWidth + borderThickness * 2;
+	var imageHeight = fontsize * 1.44 + borderThickness * 2;
+	canvas.width = imageWidth;
+	canvas.height = imageHeight;
+	// new canvas, new context.
+	context = canvas.getContext('2d');
+	context.font = "Bold " + fontsize + "px " + fontface;
+	
+	// background color
+	context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
+								  + backgroundColor.b + "," + backgroundColor.a + ")";
+	// border color
+	context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + ","
+								  + borderColor.b + "," + borderColor.a + ")";
+
+	context.lineWidth = borderThickness;
+	roundRect(context, borderThickness/2, borderThickness/2, textWidth + borderThickness, fontsize * 1.4 + borderThickness, 6);
+	// 1.4 is extra height factor for text below baseline: g,j,p,q.
+	
+	// text color
+	context.fillStyle = "rgba(0, 0, 0, 1.0)";
+
+	context.fillText( message, borderThickness, fontsize + borderThickness );
+	
+	// canvas contents will be used for a texture
+	var texture = new THREE.Texture(canvas) 
+	texture.needsUpdate = true;
+
+	var spriteMaterial = new THREE.SpriteMaterial( 
+		{ map: texture, useScreenCoordinates: useScreenCoordinates, alignment: spriteAlignment } );
+	var sprite = new THREE.Sprite( spriteMaterial );
+	sprite.scale.set(imageWidth, imageHeight, 1.0);
+	sprite.width = imageWidth;
+	sprite.height = imageHeight;
+	return sprite;	
+}
+
+// function for drawing rounded rectangles
+function roundRect(ctx, x, y, w, h, r) 
+{
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.lineTo(x+w-r, y);
+    ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+    ctx.lineTo(x+w, y+h-r);
+    ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+    ctx.lineTo(x+r, y+h);
+    ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+    ctx.lineTo(x, y+r);
+    ctx.quadraticCurveTo(x, y, x+r, y);
+    ctx.closePath();
+    ctx.fill();
+	ctx.stroke();   
 }
 
 </script>
