@@ -79,6 +79,7 @@ function init()
 	////////////
 		
 	this.polyhedronMesh = polyhedronDataToMesh( POLYHEDRA.TruncatedIcosidodecahedron );
+	polyhedronMesh.scale.multiplyScalar(0.95);
 	scene.add(polyhedronMesh);
 	
 	// SPRITE GUI?
@@ -115,16 +116,22 @@ function polyhedronDataToMesh(data)
 	for (var i = 0; i < data.vertex.length; i++)
 		vertex.push( new THREE.Vector3( data.vertex[i][0], data.vertex[i][1], data.vertex[i][2] ).multiplyScalar(100) );
 
+	// render vertices as spheres
 	var vertexGeometry = new THREE.SphereGeometry( 6, 16, 8 );
 	var vertexMaterial = new THREE.MeshLambertMaterial( { color: 0x222244 } );
 	var mesh = new THREE.Mesh( vertexGeometry, vertexMaterial );
 
+	var vertexAmalgam = new THREE.Geometry();
+	
 	for (var i = 0; i < data.vertex.length; i++)
 	{
 		var vMesh = mesh.clone();
 		vMesh.position = vertex[i];
-		polyhedron.add(vMesh);
+		THREE.GeometryUtils.merge( vertexAmalgam, vMesh );
+		// polyhedron.add(vMesh);
 	}
+	var vertexMesh = new THREE.Mesh( vertexAmalgam, vertexMaterial );
+	polyhedron.add( vertexMesh );
 	
 	// convert edge data to cylinders
 	var edgeMaterial = new THREE.MeshLambertMaterial( {color: 0x666666} );
