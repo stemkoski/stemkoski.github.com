@@ -79,12 +79,12 @@ function init()
 	////////////
 		
 	this.polyhedronMesh = polyhedronDataToMesh( POLYHEDRA.TruncatedIcosidodecahedron );
-	polyhedronMesh.scale.multiplyScalar(0.95);
+	polyhedronMesh.scale.multiplyScalar(0.90);
 	scene.add(polyhedronMesh);
 	
 	// SPRITE GUI?
 	var ballTexture = THREE.ImageUtils.loadTexture( 'images/redball.png' );
-	var ballMaterial = new THREE.SpriteMaterial( { map: ballTexture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomLeft } );
+	var ballMaterial = new THREE.SpriteMaterial( { color: 0x0000ff, map: ballTexture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomLeft } );
 	var sprite = new THREE.Sprite( ballMaterial );
 	sprite.position.set( 5, window.innerHeight - 5, 0 );
 	sprite.scale.set( 128, 128, 1.0 ); // imageWidth, imageHeight
@@ -117,12 +117,11 @@ function polyhedronDataToMesh(data)
 		vertex.push( new THREE.Vector3( data.vertex[i][0], data.vertex[i][1], data.vertex[i][2] ).multiplyScalar(100) );
 
 	// render vertices as spheres
-	var vertexGeometry = new THREE.SphereGeometry( 6, 16, 8 );
+	var vertexGeometry = new THREE.SphereGeometry( 6, 12, 6 );
 	var vertexMaterial = new THREE.MeshLambertMaterial( { color: 0x222244 } );
 	var mesh = new THREE.Mesh( vertexGeometry, vertexMaterial );
 
 	var vertexAmalgam = new THREE.Geometry();
-	
 	for (var i = 0; i < data.vertex.length; i++)
 	{
 		var vMesh = mesh.clone();
@@ -135,18 +134,21 @@ function polyhedronDataToMesh(data)
 	
 	// convert edge data to cylinders
 	var edgeMaterial = new THREE.MeshLambertMaterial( {color: 0x666666} );
+	var edgeAmalgam = new THREE.Geometry();
 	for (var i = 0; i < data.edge.length; i++)
 	{
 		var index0 = data.edge[i][0];
 		var index1 = data.edge[i][1];
 		var eMesh = cylinderMesh( vertex[index0], vertex[index1], edgeMaterial );
-		polyhedron.add(eMesh);
+		THREE.GeometryUtils.merge( edgeAmalgam, eMesh );
+		// polyhedron.add(eMesh);
 		//var outline = eMesh.clone();
 		//outline.setMaterial( new THREE.MeshBasicMaterial({color:0x000000, side:THREE.BackSide}) );
 		//outline.scale.x = outline.scale.z = 1.5;
 		//scene.add(outline);
 	}
-	
+	var edgeMesh = new THREE.Mesh( edgeAmalgam, edgeMaterial );
+	polyhedron.add( edgeMesh );
 	// convert face data to a single (triangulated) geometry
 	var faceMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.FaceColors }); //, side: THREE.DoubleSide  transparent:true, opacity:0.8 } );
 	var faceColors = 
