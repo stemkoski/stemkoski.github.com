@@ -12,29 +12,8 @@
 <script src="js/Detector.js"></script>
 
 <script src="js/TrackballControls.js"></script>
-<script src="js/THREEx.KeyboardState.js"></script>
-<script src="js/THREEx.FullScreen.js"></script>
-<script src="js/THREEx.WindowResize.js"></script>
 
 <script src="js/polyhedra.js"></script>
-<!-- GUI for experimenting with values -->		
-<script type='text/javascript' src='js/DAT.GUI.min.js'></script>
-
-<!-- Code to display an information button and box when clicked. -->
-<script src="js/jquery-1.9.1.js"></script>
-<script src="js/jquery-ui.js"></script>
-<link rel=stylesheet href="css/jquery-ui.css" />
-<link rel=stylesheet href="css/info.css"/>
-<script src="js/info.js"></script>
-<div id="infoButton"></div>
-<div id="infoBox" title="Demo Information">
-Data from the website "Virtual Polyhedra: The Encyclopedia of Polyhedra" by George W. Hart
-<a href="http://www.georgehart.com/virtual-polyhedra/vp.html">http://www.georgehart.com/virtual-polyhedra/vp.html</a>
-<br/><br/> 
-This three.js demo is part of a collection at
-<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
-</div>
-<!-- ------------------------------------------------------------ -->
 
 <div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
 <script>
@@ -48,8 +27,8 @@ This three.js demo is part of a collection at
 
 // standard global variables
 var container, scene, camera, renderer, controls, stats;
-var keyboard = new THREEx.KeyboardState();
-var clock = new THREE.Clock();
+
+// var clock = new THREE.Clock();
 
 // custom global variables
 var mesh;
@@ -77,9 +56,6 @@ function init()
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	container = document.getElementById( 'ThreeJS' );
 	container.appendChild( renderer.domElement );
-	// EVENTS
-	THREEx.WindowResize(renderer, camera);
-	// THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 	// CONTROLS
 	controls = new THREE.TrackballControls( camera, renderer.domElement );
 	controls.noPan = true;
@@ -91,16 +67,7 @@ function init()
 	var light = new THREE.PointLight(0x888888);
 	light.position.set(-100,-250,-100);
 	scene.add(light);
-	// FLOOR
-	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
-	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
-	floorTexture.repeat.set( 10, 10 );
-	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
-	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
-	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-	floor.position.y = -100.5;
-	floor.rotation.x = Math.PI / 2;
-	//scene.add(floor);
+	
 	// SKYBOX
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
 	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0xccccff, side: THREE.BackSide } );
@@ -113,45 +80,13 @@ function init()
 		
 	this.polyhedronMesh = polyhedronDataToMesh( POLYHEDRA.TruncatedIcosidodecahedron );
 	scene.add(polyhedronMesh);
-
-	/////////
-	// GUI //
-	/////////
-	/*
-	gui = new dat.GUI();
-	parameters = {};
-	categoryFolders = {};
-	// check category[0]. if folder does not exist, create it, add it to that folder.
-	//   if category field DNE, just add it to the end.
-	for (var arg in POLYHEDRA)
-	{
-		var guiSection = gui;
-		if ( POLYHEDRA[arg].hasOwnProperty("category") )
-		{
-			var category = POLYHEDRA[arg].category[0];
-			if ( !categoryFolders.hasOwnProperty(category) )
-				categoryFolders[category] = gui.addFolder(category);
-			guiSection = categoryFolders[category];
-		}
-		
-        parameters[arg] = function() {};
-		
-		guiSection.add( parameters, arg )
-		.name( POLYHEDRA[arg].name )
-		.onChange( function(value)
-		{
-		   displayMesh( polyhedronDataToMesh( POLYHEDRA[this.property] ) );
-		});
-	}
-	gui.open();	
-	*/
 	
 	// SPRITE GUI?
 	var ballTexture = THREE.ImageUtils.loadTexture( 'images/redball.png' );
 	var ballMaterial = new THREE.SpriteMaterial( { map: ballTexture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomLeft } );
 	var sprite = new THREE.Sprite( ballMaterial );
 	sprite.position.set( 5, window.innerHeight - 5, 0 );
-	sprite.scale.set( 64, 64, 1.0 ); // imageWidth, imageHeight
+	sprite.scale.set( 128, 128, 1.0 ); // imageWidth, imageHeight
 	scene.add( sprite );
 	
 	
@@ -206,7 +141,7 @@ function polyhedronDataToMesh(data)
 	}
 	
 	// convert face data to a single (triangulated) geometry
-	var faceMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.FaceColors, side: THREE.DoubleSide, transparent:true, opacity:0.8 } );
+	var faceMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, vertexColors: THREE.FaceColors }); //, side: THREE.DoubleSide  transparent:true, opacity:0.8 } );
 	var faceColors = 
 	{
 		// cc0000 663300 cccc00 00cc00 0000cc 660066 brown-663300 
@@ -265,10 +200,6 @@ function animate()
 
 function update()
 {
-	if ( keyboard.pressed("z") ) 
-	{	  
-		// do something
-	}
 	if (camera.position.length() < 150) //console.log(1234);
 		camera.position.setLength(150); 
 	if (camera.position.length() > 400)
