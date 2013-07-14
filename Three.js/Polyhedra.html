@@ -52,9 +52,7 @@ This three.js demo is part of a collection at
 // MAIN
 
 // standard global variables
-var container, scene, camera, renderer, controls, stats;
-var keyboard = new THREEx.KeyboardState();
-var clock = new THREE.Clock();
+var container, scene, camera, renderer, controls;
 
 // custom global variables
 var mesh;
@@ -91,11 +89,8 @@ function init()
 	var light = new THREE.PointLight(0xffffff);
 	light.position = camera.position;
 	scene.add(light);
-	var light = new THREE.PointLight(0x888888);
-	light.position.set(-100,-250,-100);
-	scene.add(light);
 	// SKYBOX
-	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	var skyBoxGeometry = new THREE.CubeGeometry( 8000, 8000, 8000 );
 	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0xccccff, side: THREE.BackSide } );
 	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
 	scene.add(skyBox);
@@ -103,10 +98,12 @@ function init()
 	////////////
 	// CUSTOM //
 	////////////
-	this.parameters = { transparent: false };
 	
+	this.parameters = { transparent: false };
 	this.polyhedronMesh = new THREE.Object3D(); 
 	this.titleSprite = new THREE.Object3D();	
+	scene.add(polyhedronMesh);
+	scene.add(titleSprite);
 	this.titleSpriteParams = 
 	{ 
 	    fontsize: 24, 
@@ -118,12 +115,11 @@ function init()
 	}
 		
 	displayPolyhedron( POLYHEDRA.TruncatedIcosidodecahedron );
-	//scene.add(polyhedronMesh);
 
 	/////////
 	// GUI //
 	/////////
-	console.log(polyhedronMesh);
+
 	gui = new dat.GUI();
 	
 	gui.add( parameters, "transparent" )
@@ -131,7 +127,6 @@ function init()
 	   .onChange( function(value)
 		{
 			polyhedronMesh.children[2].material.transparent = value;
-			//polyhedronMesh.children[3].material.transparent = value;
 		});
 	
 	categoryFolders = {};
@@ -159,20 +154,6 @@ function init()
 	}
 	gui.open();	
 	
-	/*
-	// SPRITE GUI?
-	var ballTexture = THREE.ImageUtils.loadTexture( 'images/redball.png' );
-	var ballMaterial = new THREE.SpriteMaterial( { map: ballTexture, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomLeft } );
-	var sprite = new THREE.Sprite( ballMaterial );
-	sprite.position.set( 5, window.innerHeight - 5, 0 );
-	sprite.scale.set( 128, 128, 1.0 ); // imageWidth, imageHeight
-	scene.add( sprite );
-	*/
-	
-	
-	
-	
-	
 } // end of function init()
 
 var faces;
@@ -193,9 +174,6 @@ function polyhedronDataToMesh(data)
 {
 	var polyhedron = new THREE.Object3D();
 	
-	//var chromeTexture = new THREE.ImageUtils.loadTexture( 'images/Chrome.png' );
-	//var chromeMaterial = new THREE.MeshBasicMaterial( { color:0x999900, map: chromeTexture} );
-		 
 	// convert vertex data to THREE.js vectors
 	var vertex = [] 
 	for (var i = 0; i < data.vertex.length; i++)
@@ -295,10 +273,6 @@ function animate()
 
 function update()
 {
-	if ( keyboard.pressed("z") ) 
-	{	  
-		console.log("zzzz");
-	}
 	if (camera.position.length() < 150) 
 		camera.position.setLength(150); 
 	if (camera.position.length() > 500)
