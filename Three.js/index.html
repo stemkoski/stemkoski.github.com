@@ -10,7 +10,7 @@
 The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
 <a class="toc" href="https://github.com/mrdoob/three.js/">Three.js.</a> The source code for each page contains detailed comments.
 <hr>
-Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: ?. Last updated: 4 July 2013. Compatible with Three.js version 58.
+Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com">GitHub</a>. Total examples: <b>83</b>. Last updated: 23 August 2013. Compatible with Three.js version 60.
 <hr>
 <hr color="black"> <center><b><u>Basic Examples</u></b></center>
 &bull; <a class="toc" href="#hello-world">Hello World</a>
@@ -46,6 +46,13 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#sprite-text-labels">Sprite Text Labels</a>
 &bull; <a class="toc" href="#labeled-geometry">Labeled Geometry</a>
 
+<hr color="black"> <center><b><u>Mouse and Keyboard Examples</u></b></center>
+&bull; <a class="toc" href="#mouse-sprite">Mouse Sprite</a>
+&bull; <a class="toc" href="#mouse-click">Mouse Click</a>
+&bull; <a class="toc" href="#mouse-hovering">Mouse Hovering</a>
+&bull; <a class="toc" href="#mouse-tooltip">Mouse Tooltip</a>
+&bull; <a class="toc" href="#keyboard-events">Keyboard Events</a>
+
 <hr color="black"> <center><b><u>Camera/Renderer Examples</u></b></center>
 &bull; <a class="toc" href="#mesh-movement">Mesh Movement</a>
 &bull; <a class="toc" href="#chase-camera">Chase Camera</a>
@@ -64,6 +71,7 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#shader-animate">Shader - Animated Materials</a>
 &bull; <a class="toc" href="#shader-fireball">Shader - Animated Fireball</a>
 &bull; <a class="toc" href="#shader-glow">Shader - Glow Effect</a>
+&bull; <a class="toc" href="#simple-glow">Simple Glow (non-shader)</a>
 
 <hr color="black"> <center><b><u>Particle System Examples</u></b></center>
 &bull; <a class="toc" href="#particles">Particles</a>
@@ -86,20 +94,16 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#gui">GUI</a>
 &bull; <a class="toc" href="#gui-controller">GUI Controller</a>
 
-<hr color="black"> <center><b><u>Mouse Examples</u></b></center>
-&bull; <a class="toc" href="#mouse-sprite">Mouse Sprite</a>
-&bull; <a class="toc" href="#mouse-click">Mouse Click</a>
-&bull; <a class="toc" href="#mouse-hovering">Mouse Hovering</a>
-&bull; <a class="toc" href="#mouse-tooltip">Mouse Tooltip</a>
-
-<hr color="black"> <center><b><u>Gamepad Examples</u></b></center>
+<hr color="black"> <center><b><u>Gamepad and Leapmotion Controller Examples</u></b></center>
 &bull; <a class="toc" href="#gamepad-test">Gamepad Test</a>
 &bull; <a class="toc" href="#mesh-movement-gamepad">Mesh Movement - Gamepad</a>
+&bull; <a class="toc" href="#leapmotion-visualization">LeapMotion Visualization</a>
 
 <hr color="black"> <center><b><u>Model Examples</u></b></center>
 &bull; <a class="toc" href="#model">Model</a>
 &bull; <a class="toc" href="#model-animation">Animated Model</a>
 &bull; <a class="toc" href="#model-animation-control">Animated Model with Controls</a>
+<!-- incl. example w/texture? -->
 
 <hr color="black"> <center><b><u>Collision Detection Examples</u></b></center>
 &bull; <a class="toc" href="#collision-detection">Collision Detection</a>
@@ -109,14 +113,20 @@ Hosted at <a class="toc" href="https://github.com/stemkoski/stemkoski.github.com
 &bull; <a class="toc" href="#metaballs">Metaballs</a>
 &bull; <a class="toc" href="#metabubbles">Metabubbles</a>
 
-<hr color="black"> <center><b><u>Mathematics Examples</u></b></center>
+<hr color="black"> <center><b><u>Mathematical Examples</u></b></center>
 &bull; <a class="toc" href="#csg">Constructive Solid Geometry</a>
-&bull; <a class="toc" href="#sphere-project">Sphere Project</a>
+&bull; <a class="toc" href="#sphere-project">Sphere Projection</a>
 &bull; <a class="toc" href="#topology-data">Topology Data</a>
 &bull; <a class="toc" href="#topology-data-2">Topology Data 2</a>
+&bull; <a class="toc" href="#polyhedra-viewer">Polyhedra Viewer</a>
 &bull; <a class="toc" href="#graphulus-function">Function Grapher</a>
 &bull; <a class="toc" href="#graphulus-surface">Parametric Surface Grapher</a>
 &bull; <a class="toc" href="#graphulus-curve">Parametric Curve Grapher</a>
+
+<hr color="black"> <center><b><u>Other Examples</u></b></center>
+&bull; <a class="toc" href="#voxel-painter">Voxel Painter</a>
+
+
 &bull;
 <hr/>
 <br/><br/>
@@ -350,6 +360,46 @@ They can either appear in the 3D scene (useful as part of a particle effect) or 
 </div>
 
 <div class="fancy">
+<a name="mouse-sprite"></a>
+<a href="Mouse-Sprite.html" target="_blank">
+<img src="html-images/Mouse-Sprite.png" class="superImage" />
+<br/>Mouse Sprite</a>
+<p class ="superText"> Display a sprite at the current position of the mouse. (May be useful for targeting icon or mouse pointer icon.) </p>
+</div>
+
+<div class="fancy">
+<a name="mouse-click"></a>
+<a href="Mouse-Click.html" target="_blank">
+<img src="html-images/Mouse-Click.png" class="superImage" />
+<br/>Mouse Click</a>
+<p class ="superText"> Change the color of a face on a mesh when clicked. </p>
+</div>
+
+<div class="fancy">
+<a name="mouse-over"></a>
+<a href="Mouse-Over.html" target="_blank">
+<img src="html-images/Mouse-Over.png" class="superImage" />
+<br/>Mouse Hovering</a>
+<p class ="superText"> Change the color of an object in the scene when the mouse hovers over it. </p>
+</div>
+
+<div class="fancy">
+<a name="mouse-tooltip"></a>
+<a href="Mouse-Tooltip.html" target="_blank">
+<img src="html-images/Mouse-Tooltip.png" class="superImage" />
+<br/>Mouse Tooltip</a>
+<p class ="superText"> Create a tooltip-style effect to display mesh names when mouse hovers. (Uses ideas from examples: Mouse Sprite, Mouse Hovering, and Texture from Canvas.) </p>
+</div>
+
+<div class="fancy">
+<a name="keyboard-events"></a>
+<a href="Keyboard.html" target="_blank">
+<img src="html-images/Template.png" class="superImage" />
+<br/>Keyboard Events</a>
+<p class ="superText"> Demonstrates use of KeyboardState.js to respond to key down/pressed/up events. </p>
+</div>
+
+<div class="fancy">
 <a name="mesh-movement"></a>
 <a href="Mesh-Movement.html" target="_blank">
 <img src="html-images/Mesh-Movement.png" class="superImage" />
@@ -485,6 +535,14 @@ http://learningthreejs.com/blog/2013/04/30/closing-the-gap-between-html-and-webg
 <img src="html-images/Shader-Glow.png" class="superImage" />
 <br/>Shader - Glow Effect</a>
 <p class ="superText"> Create a glow effect using shaders. Includes GUI to adjust shader parameters. Using front-face rendering can create glow or shell style effects; using back-face rendering can create halo or atmosphere style effects (see information in-demo for corresponding parameter values). </p>
+</div>
+
+<div class="fancy">
+<a name="simple-glow"></a>
+<a href="Simple-Glow.html" target="_blank">
+<img src="html-images/Simple-Glow.png" class="superImage" />
+<br/>Simple Glow (non-shader)</a>
+<p class ="superText"> Create a glow effect *without* using custom shader material -- uses a additively blended sprite. (Only works well with spherical objects.) </p>
 </div>
 
 <!--
@@ -652,37 +710,6 @@ Detects motion occuring over graphics regions, and changes texture on spinning c
 <p class ="superText"> Create a graphical user interface (using the DAT.GUI library) that controls the appearance of a cube mesh. </p>
 </div>
 
-<div class="fancy">
-<a name="mouse-sprite"></a>
-<a href="Mouse-Sprite.html" target="_blank">
-<img src="html-images/Mouse-Sprite.png" class="superImage" />
-<br/>Mouse Sprite</a>
-<p class ="superText"> Display a sprite at the current position of the mouse. (May be useful for targeting icon or mouse pointer icon.) </p>
-</div>
-
-<div class="fancy">
-<a name="mouse-click"></a>
-<a href="Mouse-Click.html" target="_blank">
-<img src="html-images/Mouse-Click.png" class="superImage" />
-<br/>Mouse Click</a>
-<p class ="superText"> Change the color of a face on a mesh when clicked. </p>
-</div>
-
-<div class="fancy">
-<a name="mouse-over"></a>
-<a href="Mouse-Over.html" target="_blank">
-<img src="html-images/Mouse-Over.png" class="superImage" />
-<br/>Mouse Hovering</a>
-<p class ="superText"> Change the color of an object in the scene when the mouse hovers over it. </p>
-</div>
-
-<div class="fancy">
-<a name="mouse-tooltip"></a>
-<a href="Mouse-Tooltip.html" target="_blank">
-<img src="html-images/Mouse-Tooltip.png" class="superImage" />
-<br/>Mouse Tooltip</a>
-<p class ="superText"> Create a tooltip-style effect to display mesh names when mouse hovers. (Uses ideas from examples: Mouse Sprite, Mouse Hovering, and Texture from Canvas.) </p>
-</div>
 
 <div class="fancy">
 <a name="gamepad-test"></a>
@@ -701,6 +728,16 @@ Detects motion occuring over graphics regions, and changes texture on spinning c
 <p class ="superText"> Uses a Gamepad (e.g. XBox controller) to move a cube around a Three.js scene, similar to Mesh-Movement example above. Requires Chrome browser and connected gamepad to run. Left analog stick moves cube forward/backward and turns left/right.  Directional pad moves cube forward/backward/left/right.  Right analog stick only turns cube left/right.  Right shoulder buttons double speed of movement/turns. Start/select buttons reset cube to original position and rotation.
 </p>
 </div>
+
+<div class="fancy">
+<a name="leapmotion-visualization"></a>
+<a href="LeapMotion.html" target="_blank">
+<img src="html-images/LeapMotion.png" class="superImage" />
+<br/>LeapMotion - Visualization</a>
+<p class ="superText"> Visualize hand/finger position data from LeapMotion device. <br/> <a href="http://www.leapmotion.com">LeapMotion website</a>
+</p>
+</div>
+
 
 <div class="fancy">
 <a name="model"></a>
@@ -777,7 +814,7 @@ Uses the library at http://github.com/chandlerprall/ThreeCSG/</p>
 <a name="sphere-project"></a>
 <a href="Sphere-Project.html" target="_blank">
 <img src="html-images/Sphere-Project.png" class="superImage" />
-<br/>Sphere Project</a>
+<br/>Sphere Projection</a>
 <p class ="superText"> Projects a wireframe cube onto a sphere. Includes a method for drawing the arc between two points on a sphere. </p>
 </div>
 
@@ -795,6 +832,14 @@ Uses the library at http://github.com/chandlerprall/ThreeCSG/</p>
 <img src="html-images/Topology-Data-2.png" class="superImage" />
 <br/>Topology Data 2</a>
 <p class ="superText"> Builds upon Topology Data demo; illustrates edge and face subdivision and retriangulation functions and proper face coloring function.</p>
+</div>
+
+<div class="fancy">
+<a name="polyhedra-viewer"></a>
+<a href="Polyhedra.html" target="_blank">
+<img src="html-images/Polyhedra.png" class="superImage" />
+<br/>Polyhedra Viewer</a>
+<p class ="superText"> Interactive viewer of polyhedra (Platonic, Archimedean, Prisms, Antiprisms, Johnson Solids).</p>
 </div>
 
 <div class="fancy">
@@ -820,6 +865,15 @@ Uses the library at http://github.com/chandlerprall/ThreeCSG/</p>
 <br/>Parametric Curve Grapher</a>
 <p class ="superText"> Graph a parametric curve of the form <i>x = f( t ), y = g( t ), z = h( t )</i>. </p>
 </div>
+
+<div class="fancy">
+<a name="voxel-painter"></a>
+<a href="Voxel-Painter.html" target="_blank">
+<img src="html-images/Voxel-Painter.png" class="superImage" />
+<br/>Voxel Painter</a>
+<p class ="superText"> Paint with voxels, Minecraft-style! (Think: 3D pixel editor.) </p>
+</div>
+
 
 <!--
 <div class="fancy">

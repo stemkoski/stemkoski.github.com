@@ -36,4 +36,7 @@
 
 /* translucent background */
 .ui-dialog 
-{  opacity: .90;  }
+{  
+	opacity: .90;  
+	width:600px !important;
+}

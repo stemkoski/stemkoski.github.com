@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Voxel Painter (Three.js)</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel=stylesheet href="css/base.css"/>
+</head>
+<body>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<!-- Code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information" width=500>
+Scene navigation (first-person style):
+<ul>
+<li>W/S/A/D/R/F: move forwards/backwards/left/right/up/down
+<li>Q/E: turn left/right; hold both to face positive X direction
+<li>T/G: look up/down; hold both to center look at horizon
+<li>O/P: reset position and view to origin/birds-eye
+<li>M: toggle browser full screen mode
+</ul>
+Voxel painting:
+<ul>
+<li>Z/X/C: set brush mode to add/delete/(re)color
+<li>0 through 9: set brush color
+<li>V or Mouse Click: perform brush action
+<li>B: delete most recently added brick
+</ul>
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: August 2013 (three.js v60)
+
+	Based on examples by mrdoob:
+
+	http://threejs.org/examples/#webgl_interactive_voxelpainter
+	*and*
+	http://www.mrdoob.com/projects/voxels/
+
+*/
+
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new KeyboardState();
+var clock = new THREE.Clock();
+
+// custom global variables
+var mesh;
+var person;
+
+function viewSet(n)
+{
+	if (n == 1) // on ground near origin
+	{
+		person.position.set(-3, 3, 6);
+		person.rotation.set(0, -Math.PI / 2.0, 0); 
+		camera.rotation.set(-Math.PI / 16.0, 0, 0); 
+	}
+	if (n == 2) // birds-eye view
+	{
+		person.position.set(16, 42, 16);
+		person.rotation.set(0, -Math.PI / 2.0, 0); 
+		camera.rotation.set(-1.48, 0, 0); 
+	}
+}
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 2000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+
+	// First Person Camera Controls
+	person = new THREE.Object3D();
+	person.add(camera);
+	camera.position.set(0, 1.0, 4.0); // first-person view
+	viewSet(2);
+	scene.add(person);
+	
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.getElementById( 'ThreeJS' );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(100,250,100);
+	scene.add(light);
+	// SKYBOX
+	var skyBoxGeometry = new THREE.CubeGeometry( 1000, 1000, 1000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0xffffee, side: THREE.BackSide } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+	scene.add(skyBox);
+	
+	////////////
+	// CUSTOM //
+	////////////
+	
+	var axis = new THREE.AxisHelper(33);
+	axis.position.y = 0.01;
+	scene.add(axis);
+	
+	var squareT = new THREE.ImageUtils.loadTexture("images/square-thick.png");
+	squareT.wrapS = squareT.wrapT = THREE.RepeatWrapping;
+	squareT.repeat.set(32,32);
+	this.planeGeo = new THREE.PlaneGeometry(32,32);
+	this.planeMat = new THREE.MeshBasicMaterial({map:squareT, color:0xbbbbbb});
+	this.basePlane = new THREE.Mesh(planeGeo, planeMat);
+	basePlane.rotation.x = -Math.PI / 2;
+	basePlane.position.set(16,0,16);
+	basePlane.base = true;
+	scene.add(basePlane);
+
+	this.cubeGeo = new THREE.CubeGeometry(1,1,1);
+	
+	var squareTexture     = new THREE.ImageUtils.loadTexture("images/square-thick.png");
+	var squareTextureX    = new THREE.ImageUtils.loadTexture("images/square-X.png");
+	var squareTextureO    = new THREE.ImageUtils.loadTexture("images/square-O.png");
+	var squareTexturePlus = new THREE.ImageUtils.loadTexture("images/square-plus.png");
+		
+	this.offset = [ 
+		new THREE.Vector3(1,0,0), new THREE.Vector3(-1,0,0),
+		new THREE.Vector3(0,1,0), new THREE.Vector3(0,-1,0),
+		new THREE.Vector3(0,0,1), new THREE.Vector3(0,0,-1) ];
+		
+	this.colors = [ new THREE.Color(0x66FFFF), new THREE.Color(0xff0000), new THREE.Color(0xff8800), new THREE.Color(0xffff00), new THREE.Color(0x00cc00),
+	                new THREE.Color(0x0000ff), new THREE.Color(0x8800ff), new THREE.Color(0x804000), new THREE.Color(0x222222), new THREE.Color(0xFF66FF) ];	
+
+	this.materials = { "solid":[], "add":[], "delete":[], "color":[] };
+	for (var i = 0; i < colors.length; i++)
+	{
+		materials["solid"][i]   = new THREE.MeshBasicMaterial( {map: squareTexture,     color: colors[i]} );
+		materials["add"][i]     = new THREE.MeshBasicMaterial( {map: squareTexturePlus, color: colors[i], transparent:true, opacity:0.75} );
+		materials["delete"][i]  = new THREE.MeshBasicMaterial( {map: squareTextureX,    color: colors[i], transparent:true, opacity:0.75} );
+		materials["color"][i]   = new THREE.MeshBasicMaterial( {map: squareTextureO,    color: colors[i], transparent:true, opacity:0.75} );
+	}
+
+	this.brush = new THREE.Mesh( cubeGeo.clone(), materials["add"][1] );	
+	brush.ignore = true;    // ignored by raycaster
+	brush.visible = false;  
+	brush.mode = "add";
+	brush.colorIndex = 1;
+
+	scene.add( brush );
+
+	this.cubeNames = [];
+	
+	this.projector = new THREE.Projector();
+	this.mouse2D = new THREE.Vector3( 0, 0, 0.5 );
+	
+	// when the mouse moves, call the given function
+	document.addEventListener( 'mousemove', mouseMove,  false );
+	document.addEventListener( 'mousedown', mouseClick, false );
+
+}
+
+function mouseMove( event ) 
+{
+	// update the mouse variable
+	mouse2D.x =   ( event.clientX / window.innerWidth  ) * 2 - 1;
+	mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;	
+}
+
+function mouseClick( event ) 
+{	
+	brushAction();
+}
+
+function brushAction()
+{
+	if (brush.mode == "add")
+	{
+		var cube = new THREE.Mesh( cubeGeo );
+		cube.material = materials["solid"][ brush.colorIndex ];
+		cube.position = brush.position.clone();
+		cube.name = brush.addName;
+		cube.colorIndex = brush.colorIndex;
+		scene.add( cube );
+		cubeNames.push( cube.name );
+	}
+	
+	if (brush.mode == "delete")
+	{
+		var cube = scene.getObjectByName( brush.targetName );
+		scene.remove( cube );		
+		var index = cubeNames.indexOf( brush.targetName ); 
+		if ( index != -1 ) cubeNames.splice( index, 1 );	
+	}
+
+	if (brush.mode == "color")
+	{
+		var cube = scene.getObjectByName( brush.targetName );
+		if (cube)
+		{
+			cube.material = materials["solid"][ brush.colorIndex ];
+			cube.colorIndex = brush.colorIndex;
+		}
+	}
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+
+function update()
+{
+	var delta = clock.getDelta();
+	var moveDistance = 5 * delta; 			// 5 units per second
+	var rotateAngle = Math.PI / 4 * delta;	// pi/4 radians (45 degrees) per second
+	
+	keyboard.update();
+	
+	// move forwards/backwards
+	if (keyboard.pressed("W"))
+		person.translateZ( -moveDistance );
+	if (keyboard.pressed("S"))
+		person.translateZ(  moveDistance );
+	// move left/right (strafe)
+	if ( keyboard.pressed("A") )
+		person.translateX( -moveDistance );
+	if ( keyboard.pressed("D") )
+		person.translateX(  moveDistance );
+	// move up/down (fly)
+	if ( keyboard.pressed("R") )
+		person.translateY(  moveDistance );
+	if ( keyboard.pressed("F") )
+		person.translateY( -moveDistance );
+	// turn left/right
+	if (keyboard.pressed("Q"))
+		person.rotateY(  rotateAngle );
+	if (keyboard.pressed("E"))
+		person.rotateY( -rotateAngle );
+	// look up/down
+	if ( keyboard.pressed("T") )
+		camera.rotateX(  rotateAngle );
+	if ( keyboard.pressed("G") )
+		camera.rotateX( -rotateAngle );
+	// limit camera to +/- 45 degrees (0.7071 radians) or +/- 60 degrees (1.04 radians) or 85 (1.48)
+	camera.rotation.x = THREE.Math.clamp( camera.rotation.x, -1.48, 1.48 );
+	// pressing both buttons moves look angle to original position
+	var factor = (Math.abs(person.rotation.x) < 0.0001) ? -1 : 1;
+	if ( keyboard.pressed("Q") && keyboard.pressed("E") )
+		person.rotateY( -6 * (-Math.PI / 2.0 - person.rotation.y) * rotateAngle * factor );
+	if ( keyboard.pressed("T") && keyboard.pressed("G") )
+		camera.rotateX( -6 * camera.rotation.x * rotateAngle );
+
+	// set view to Origin
+	if (keyboard.down("O"))
+		viewSet(1);
+	// set view to bird's-eye-view (Pigeon's-eye-view?)
+	if (keyboard.down("P"))
+		viewSet(2);
+
+	
+	// voxel painting controls
+	
+	// when digit is pressed, change brush color data
+	for (var i = 0; i < 10; i++)
+	if ( keyboard.down( i.toString() ) ) 
+		brush.colorIndex = i;
+	
+	brush.material = materials["add"][ brush.colorIndex ];
+
+	// brush modes
+	if ( keyboard.down("Z") )
+		brush.mode = "add";
+	if ( keyboard.down("X") )
+		brush.mode = "delete";
+	if ( keyboard.down("C") )
+		brush.mode = "color";
+
+	// perform brush action
+	if ( keyboard.down("V") )
+		brushAction();
+	// delete last cube entered
+	if ( keyboard.down("B") && cubeNames.length > 0 )
+		scene.remove( scene.getObjectByName( cubeNames.pop() ) );
+	
+	///////////////////////////////////////////////////////////////////////////
+	
+	var raycaster = projector.pickingRay( mouse2D.clone(), camera );
+	var intersectionList = [];
+	intersectionList = raycaster.intersectObjects( scene.children );
+	var result = null;
+	for ( var i = 0; i < intersectionList.length; i++ ) 
+	{
+		if ( (result == null) && (intersectionList[i].object instanceof THREE.Mesh) && !(intersectionList[i].object.ignore) ) 
+			result = intersectionList[i];
+	}
+	
+	// brush will only be visible only in "add" mode, when mouse hovers over plane/cube
+	brush.visible = false;
+
+	// restore appearance of potential delete/(re)color target cube
+	var targetCube = scene.getObjectByName( brush.targetName );
+	if ( targetCube )
+		targetCube.material = materials["solid"][ targetCube.colorIndex ];
+	brush.targetName = null;
+		
+	if ( result )
+	{	
+		if ( (brush.mode == "add") && result.object.base ) // place cube on basePlane
+		{
+			brush.visible = true;
+			var intPosition = new THREE.Vector3( Math.floor(result.point.x), 0, Math.floor(result.point.z) );
+			brush.position = intPosition.clone().add( new THREE.Vector3(0.5, 0.5, 0.5) );
+			brush.addName = "X" + intPosition.x + "Y" + intPosition.y + "Z" + intPosition.z;	
+		}
+
+		if ( (brush.mode == "add") && !result.object.base ) // place cube on another cube
+		{
+			brush.visible = true;
+			var faceIndex = Math.floor(result.faceIndex / 2);
+			brush.position = result.object.position.clone().add( offset[faceIndex] );
+			brush.addName = "X" + Math.floor(brush.position.x) + "Y" + Math.floor(brush.position.y) 
+				+ "Z" + Math.floor(brush.position.z);	
+		}
+
+		if ( (brush.mode == "delete") && !result.object.base ) // delete cube
+		{
+			brush.visible = false;
+			var intPosition = new THREE.Vector3( Math.floor(result.object.position.x), 
+				Math.floor(result.object.position.y), Math.floor(result.object.position.z) );
+			brush.targetName = "X" + intPosition.x + "Y" + intPosition.y + "Z" + intPosition.z;	
+			var targetCube = scene.getObjectByName( brush.targetName );
+			targetCube.material = materials["delete"][ targetCube.colorIndex ];
+		}
+
+		if ( (brush.mode == "color") && !result.object.base ) // (re)color cube
+		{
+			brush.visible = false;
+			var intPosition = new THREE.Vector3( Math.floor(result.object.position.x), 
+				Math.floor(result.object.position.y), Math.floor(result.object.position.z) );
+			brush.targetName = "X" + intPosition.x + "Y" + intPosition.y + "Z" + intPosition.z;	
+			var targetCube = scene.getObjectByName( brush.targetName );
+			targetCube.material = materials["color"][ brush.colorIndex ];
+		}
+
+	}
+	
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
