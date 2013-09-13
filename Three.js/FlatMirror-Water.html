@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Water Shader (Three.js)</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel=stylesheet href="css/base.css"/>
+</head>
+<body>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+<script src="js/ShaderWater.js"></script>
+
+<!-- Code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: July 2013 (three.js v59dev)
+ */
+
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new KeyboardState();
+var clock = new THREE.Clock();
+
+// custom global variables
+var mesh;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.getElementById( 'ThreeJS' );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(100,250,100);
+	scene.add(light);
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 100, 100);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.rotation.x = Math.PI / 2;
+	//scene.add(floor);
+	// SKYBOX
+	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+	scene.add(skyBox);
+	
+	////////////
+	// CUSTOM //
+	////////////
+	
+	var geometry = new THREE.SphereGeometry( 30, 32, 16 );
+	// var material = new THREE.MeshLambertMaterial( { color: 0x000088 } );
+	var material = new THREE.MeshNormalMaterial();
+	mesh = new THREE.Mesh( geometry, material );
+	mesh.position.set(0,40,0);
+	scene.add(mesh);
+	
+	var noiseTexture = new THREE.ImageUtils.loadTexture( 'images/cloud.png' );
+	noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping; 
+
+	// MIRORR plane
+	verticalMirror = new THREE.FlatMirror(renderer, camera, {
+		clipBias: 0.003, 
+		textureWidth: 800, textureHeight: 600, 
+		color:0x333366, 
+		baseTexture: THREE.ImageUtils.loadTexture("images/water.jpg"),
+		baseSpeed: 1.15,
+		noiseTexture: noiseTexture,
+		noiseScale: 0.2,
+		alpha: 	0.8,
+		time: 	0.0,
+	});
+	
+    this.verticalMirrorMesh = new THREE.Mesh(
+		new THREE.PlaneGeometry(400, 400, 100, 100), 
+		verticalMirror.material 
+	);
+	verticalMirrorMesh.add(verticalMirror);
+	// verticalMirror.material.side = THREE.DoubleSide;
+	verticalMirrorMesh.position.set(0,100,-100);
+	scene.add(verticalMirrorMesh);	
+
+	// add some knots
+	var wireMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } ); 
+	// torus knot
+	var colorMaterial = new THREE.MeshPhongMaterial( { color: 0xff3333 } );
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.TorusKnotGeometry( 30, 6, 160, 10, 2, 5 ), [ colorMaterial, wireMaterial ] );
+	shape.position.set(-200, 50, -200);
+	scene.add( shape );
+	// torus knot
+	var colorMaterial = new THREE.MeshPhongMaterial( { color: 0x33ff33 } );
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.TorusKnotGeometry( 30, 6, 160, 10, 3, 2 ), [ colorMaterial, wireMaterial ] );
+	shape.position.set(200, 50, -200);
+	scene.add( shape );
+	// torus knot
+	var colorMaterial = new THREE.MeshPhongMaterial( { color: 0xffff33 } );
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.TorusKnotGeometry( 30, 6, 160, 10, 4, 3 ), [ colorMaterial, wireMaterial ] );
+	shape.position.set(200, 50, 200);
+	scene.add( shape );
+	// torus knot
+	var colorMaterial = new THREE.MeshPhongMaterial( { color: 0x3333ff } );
+	var shape = THREE.SceneUtils.createMultiMaterialObject( 
+		new THREE.TorusKnotGeometry( 30, 6, 160, 10, 3, 4 ), [ colorMaterial, wireMaterial ] );
+	shape.position.set(-200, 50, 200);
+	scene.add( shape );
+
+	
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	verticalMirror.render();
+	render();		
+	update();
+}
+
+function update()
+{
+	keyboard.update();
+	if ( keyboard.pressed("A") ) 
+		mesh.position.x -= 1;
+	if ( keyboard.pressed("D") ) 
+		mesh.position.x += 1;
+	
+	var delta = clock.getDelta();
+	verticalMirror.material.uniforms.time.value += delta;
+
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
