@@ -618,7 +618,7 @@ ShaderParticleGroup.shaders = {
                 // Hide particle and set its position to the (maybe) glsl
                 // equivalent of Number.POSITIVE_INFINITY
                 'vColor = vec4( colorStart, 0.0 );',
-                'gl_Position = vec4(1e20, 1e20, 1e20, 0);',
+                'gl_Position = vec4(100000.0, 100000.0, 100000.0, 0.0);',
             '}',
         '}',
     ].join('\n'),
