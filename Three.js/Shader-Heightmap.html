@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Template (Three.js)</title>
+    <title>Shader - Height Map (Three.js)</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link rel=stylesheet href="css/base.css"/>
@@ -15,6 +15,39 @@
 <script src="js/KeyboardState.js"></script>
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
+
+<!-- ---------------- Custom Shader Code ------------------------ -->
+<script id="vertexShader" type="x-shader/x-vertex">
+uniform sampler2D bumpTexture;
+uniform float bumpScale;
+
+varying float vAmount;
+
+void main() 
+{ 
+	vec4 bumpData = texture2D( bumpTexture, uv );
+	
+	vAmount = bumpData.r; // assuming map is grayscale it doesn't matter if you use r, g, or b.
+	
+	// move the position along the normal
+    vec3 newPosition = position + normal * bumpScale * vAmount;
+	
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+}
+</script>
+
+<!-- fragment shader a.k.a. pixel shader -->
+<script id="fragmentShader" type="x-shader/x-vertex"> 
+
+varying float vAmount;
+
+void main() 
+{
+	gl_FragColor = vec4(0.0, vAmount, 0.0, 1.0);
+}  
+</script>
+<!-- ----------------------------------------------------------- -->
+
 
 <!-- Code to display an information button and box when clicked. -->
 <script src="js/jquery-1.9.1.js"></script>
@@ -41,7 +74,7 @@ This three.js demo is part of a collection at
 
 // standard global variables
 var container, scene, camera, renderer, controls, stats;
-var keyboard = new THREEx.KeyboardState();
+var keyboard = new KeyboardState();
 var clock = new THREE.Clock();
 
 // custom global variables
@@ -60,7 +93,7 @@ function init()
 	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
 	scene.add(camera);
-	camera.position.set(0,150,400);
+	camera.position.set(0,100,400);
 	camera.lookAt(scene.position);	
 	// RENDERER
 	if ( Detector.webgl )
@@ -94,7 +127,7 @@ function init()
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
 	floor.position.y = -0.5;
 	floor.rotation.x = Math.PI / 2;
-	scene.add(floor);
+	//scene.add(floor);
 	// SKYBOX
 	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
 	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
@@ -105,11 +138,34 @@ function init()
 	// CUSTOM //
 	////////////
 	
-	var geometry = new THREE.SphereGeometry( 30, 32, 16 );
-	var material = new THREE.MeshLambertMaterial( { color: 0x000088 } );
-	mesh = new THREE.Mesh( geometry, material );
-	mesh.position.set(0,40,0);
-	scene.add(mesh);
+	// texture used to generate "bumpiness"
+	var bumpTexture = new THREE.ImageUtils.loadTexture( 'images/heightmap.png' );
+	bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping; 
+	// magnitude of normal displacement
+	var bumpScale   = 200.0;
+	
+	// use "this." to create global object
+	this.customUniforms = {
+		bumpTexture:	{ type: "t", value: bumpTexture },
+		bumpScale:	    { type: "f", value: bumpScale },
+	};
+	
+	// create custom material from the shader code above
+	//   that is within specially labelled script tags
+	var customMaterial = new THREE.ShaderMaterial( 
+	{
+	    uniforms: customUniforms,
+		vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+		side: THREE.DoubleSide
+	}   );
+		
+	var planeGeo = new THREE.PlaneGeometry( 1000, 1000, 100, 100 );
+	var plane = new THREE.Mesh(	planeGeo, customMaterial );
+	plane.rotation.x = -Math.PI / 2;
+	plane.position.y = -100;
+	scene.add( plane );
+
 	
 }
 
