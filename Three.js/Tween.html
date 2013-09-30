@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Template (Three.js)</title>
+    <title>Tween (Three.js)</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link rel=stylesheet href="css/base.css"/>
@@ -16,7 +16,9 @@
 <script src="js/THREEx.FullScreen.js"></script>
 <script src="js/THREEx.WindowResize.js"></script>
 
-<!-- Code to display an information button and box when clicked. -->
+<script src="js/Tween.js"></script>
+
+<!-- Code to display an information button and box when clicked. "525 831 3225" -->
 <script src="js/jquery-1.9.1.js"></script>
 <script src="js/jquery-ui.js"></script>
 <link rel=stylesheet href="css/jquery-ui.css" />
@@ -24,7 +26,9 @@
 <script src="js/info.js"></script>
 <div id="infoButton"></div>
 <div id="infoBox" title="Demo Information">
-This three.js demo is part of a collection at
+Demo of integrating the Tween.js library from https://github.com/sole/tween.js/ with Three.js.
+<br/>
+This Three.js demo is part of a collection at
 <a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
 </div>
 <!-- ------------------------------------------------------------ -->
@@ -92,7 +96,7 @@ function init()
 	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
 	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-	floor.position.y = -0.5;
+	floor.position.y = -50;
 	floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
 	// SKYBOX
@@ -105,11 +109,46 @@ function init()
 	// CUSTOM //
 	////////////
 	
-	var geometry = new THREE.SphereGeometry( 30, 32, 16 );
-	var material = new THREE.MeshLambertMaterial( { color: 0x000088 } );
+	var geometry = new THREE.SphereGeometry( 50, 32, 16 );
+	var material = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture("images/uvgrid01.jpg") } );
 	mesh = new THREE.Mesh( geometry, material );
-	mesh.position.set(0,40,0);
+	mesh.position.set(-100,0,0);
 	scene.add(mesh);
+		
+	var values1 = {t: 0}; // the variable that changes, set to initial values
+	var target1 = {t: 1};
+	var tween1 = new TWEEN.Tween(values1).to(target1, 3000);
+	tween1.onUpdate( function()
+	{
+		mesh.position.z = 0;
+		mesh.position.y = 150 * (Math.sin( Math.PI * values1.t ) );
+		mesh.position.x = 100 * (-1 + 2 * values1.t);
+	});
+	tween1.delay(1000);
+	tween1.onComplete( function()
+	{
+		// all done!
+	});
+	
+	var values2 = {x: 100, y: 0, z: 0, t: 0};
+	var target2 = {x:-100, y: 0, z: 0, t: 2 * Math.PI};
+	var tween2 = new TWEEN.Tween(values2).to(target2, 2000);
+	tween2.onUpdate( function()
+	{
+		mesh.position.x = values2.x;
+		mesh.position.y = values2.y;
+		mesh.position.z = values2.z;
+		mesh.rotation.z = values2.t;
+	});
+	tween2.onComplete( function()
+	{
+		// all done!
+	});
+	tween2.easing(TWEEN.Easing.Sinusoidal.InOut)
+	
+	tween1.chain(tween2);
+	// tween2.chain(tween1); // for cyclic behaviour. however, need to reset values object
+	tween1.start();
 	
 }
 
@@ -122,6 +161,10 @@ function animate()
 
 function update()
 {
+	keyboard.update();
+	
+	TWEEN.update();
+	
 	if ( keyboard.pressed("z") ) 
 	{	  
 		// do something
