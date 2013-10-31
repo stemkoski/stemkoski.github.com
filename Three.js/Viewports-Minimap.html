@@ -48,7 +48,7 @@ var clock = new THREE.Clock();
 var MovingCube;
 var perspectiveCamera;
 
-var mapCamera, mapRenderer, mapWidth = 240, mapHeight = 160; // w/h should match div dimensions
+var mapCamera, mapWidth = 240, mapHeight = 160; // w/h should match div dimensions
 
 init();
 animate();
@@ -82,15 +82,9 @@ function init()
 	
 	// RENDERER
 	if ( Detector.webgl )
-	{
 		renderer = new THREE.WebGLRenderer( {antialias:true} );
-		mapRenderer = new THREE.WebGLRenderer( {antialias:true} );
-	}
 	else
-	{
 		renderer = new THREE.CanvasRenderer(); 
-		mapRenderer = new THREE.CanvasRenderer(); 
-	}
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	container = document.getElementById( 'ThreeJS' );
 	container.appendChild( renderer.domElement );
