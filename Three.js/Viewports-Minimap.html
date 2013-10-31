@@ -89,10 +89,6 @@ function init()
 	container = document.getElementById( 'ThreeJS' );
 	container.appendChild( renderer.domElement );
 	
-	mapRenderer.setSize(mapWidth, mapHeight);
-	var mapContainer = document.getElementById( 'mapCanvas' );
-	mapContainer.appendChild( mapRenderer.domElement );
-	
 	// EVENTS
 	THREEx.WindowResize(renderer, mapCamera);
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
