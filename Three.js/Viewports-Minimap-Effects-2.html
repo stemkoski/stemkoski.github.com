@@ -247,14 +247,14 @@ function render()
 	renderer.clear();
 	
 	// full display
-	renderer.render( scene, camera );
-	// composer.render();
+	// renderer.render( scene, camera );
+	composer.render();
 	
 	// minimap (overhead orthogonal camera)
 	//  lower_left_x, lower_left_y, viewport_width, viewport_height
 	renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight );
-	// mapComposer.render();
-	renderer.render( scene, mapCamera );
+	mapComposer.render();
+	// renderer.render( scene, mapCamera );
 
 }
 	
