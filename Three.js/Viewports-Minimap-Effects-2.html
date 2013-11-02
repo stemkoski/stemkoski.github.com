@@ -48,7 +48,7 @@ var clock = new THREE.Clock();
 var MovingCube;
 var camera;
 
-var mapCamera, mapWidth = 240, mapHeight = 160, mapComposer; // w/h should match div dimensions
+var mapCamera, mapWidth = 256, mapHeight = 256, mapComposer; // w/h should match div dimensions
 
 init();
 animate();
@@ -70,10 +70,10 @@ function init()
 
 	// orthographic cameras
 	mapCamera = new THREE.OrthographicCamera(
-    -800,		// Left
-    800,		// Right
-    400,		// Top
-    -400,		// Bottom
+    -1000,		// Left
+    1000,		// Right
+    1000,		// Top
+    -1000,		// Bottom
     1,            			// Near 
     1000 );           			// Far 
 	mapCamera.up = new THREE.Vector3(0,0,-1);
@@ -184,16 +184,19 @@ function init()
 	composer.addPass( effectFXAA );
 	// composer.addPass( effectCopy );
 	
-	// var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: true };
 	// composer for minimap
+	var parameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: false };
 	mapComposer = new THREE.EffectComposer( renderer, new THREE.WebGLRenderTarget(512,512) );
-	mapComposer.setSize( 512, 512 );
+	mapComposer.setSize( 512,512 );
 	var renderModel2 = new THREE.RenderPass( scene, mapCamera );
 	mapComposer.addPass( renderModel2 );
 	var effectFXAA2 = new THREE.ShaderPass( THREE.FXAAShader );
-	effectFXAA2.uniforms[ 'resolution' ].value.set( 1 / width, 1 / height );
-	effectFXAA2.renderToScreen = true;	
+	effectFXAA2.uniforms[ 'resolution' ].value.set( 1 / 512, 1 / 512 );
+	// effectFXAA2.renderToScreen = true;	
 	mapComposer.addPass( effectFXAA2 );
+	var effectCopy2 = new THREE.ShaderPass( THREE.CopyShader );
+	effectCopy2.renderToScreen = true;
+	mapComposer.addPass( effectCopy2 );
 }
 
 function animate() 
@@ -252,7 +255,7 @@ function render()
 	renderer.clear( false, true, false ); // clear the depth buffer -- thanks @WestLangley!
 
 	// minimap (overhead orthogonal camera)
-	renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight );
+	renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight);
 	// renderer.render( scene, mapCamera );
 	mapComposer.render();
 	
