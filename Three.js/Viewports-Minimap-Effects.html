@@ -70,14 +70,15 @@ function init()
 
 	// orthographic cameras
 	mapCamera = new THREE.OrthographicCamera(
-    window.innerWidth / -2,		// Left
-    window.innerWidth / 2,		// Right
-    window.innerHeight / 2,		// Top
-    window.innerHeight / -2,	// Bottom
-    -5000,            			// Near 
-    10000 );           			// Far 
+    -800,		// Left
+    800,		// Right
+    400,		// Top
+    -400,		// Bottom
+    1,            			// Near 
+    1000 );           			// Far 
 	mapCamera.up = new THREE.Vector3(0,0,-1);
 	mapCamera.lookAt( new THREE.Vector3(0,-1,0) );
+	mapCamera.position.y = 500;
 	scene.add(mapCamera);
 	
 	// RENDERER
@@ -90,7 +91,7 @@ function init()
 	container.appendChild( renderer.domElement );
 	
 	// EVENTS
-	THREEx.WindowResize(renderer, mapCamera);
+	// THREEx.WindowResize(renderer, camera);
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 
 	// STATS
@@ -106,12 +107,12 @@ function init()
 	// FLOOR
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/uvgrid01.jpg' );
 	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
-	floorTexture.repeat.set( 10, 10 );
-	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	floorTexture.repeat.set( 1, 1 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.FrontSide } );
 	var floorGeometry = new THREE.PlaneGeometry(2000, 2000, 10, 10);
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
 	floor.position.y = -0.5;
-	floor.rotation.x = Math.PI / 2;
+	floor.rotation.x = -Math.PI / 2;
 	scene.add(floor);
 	
 	////////////
@@ -164,7 +165,7 @@ function init()
 	
 	renderer.autoClear = false;
 	renderer.setSize( window.innerWidth, window.innerHeight );
-	renderer.setClearColor( 0xccccff, 0.5 );
+	renderer.setClearColor( 0xccccff, 1 );
 	
 	// composer for main scene
 	composer = new THREE.EffectComposer( renderer );
@@ -183,10 +184,10 @@ function init()
 	composer.addPass( effectFXAA );
 	// composer.addPass( effectCopy );
 	
-	
-	
+	// var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: true };
 	// composer for minimap
-	mapComposer = new THREE.EffectComposer( renderer );
+	mapComposer = new THREE.EffectComposer( renderer, new THREE.WebGLRenderTarget(512,512) );
+	mapComposer.setSize( 512, 512 );
 	var renderModel2 = new THREE.RenderPass( scene, mapCamera );
 	mapComposer.addPass( renderModel2 );
 	var effectFXAA2 = new THREE.ShaderPass( THREE.FXAAShader );
@@ -242,23 +243,21 @@ function render()
 
 	// setViewport parameters:
 	//  lower_left_x, lower_left_y, viewport_width, viewport_height
-
-	renderer.setViewport( 0, 0, w, h );
-	renderer.clear();
 	
 	// full display
-	renderer.render( scene, camera );
-	// composer.render();
-	
-	// minimap (overhead orthogonal camera)
-	//  lower_left_x, lower_left_y, viewport_width, viewport_height
-	renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight );
-	// mapComposer.render();
-	renderer.render( scene, mapCamera );
+	renderer.setViewport( 0, 0, w, h );
+	// renderer.render( scene, camera );
+	composer.render();
 
+	renderer.clear( false, true, false ); // clear the depth buffer -- thanks @WestLangley!
+
+	// minimap (overhead orthogonal camera)
+	renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight );
+	renderer.render( scene, mapCamera );
+	// mapComposer.render();
+	
 }
 	
-
 </script>
 
 </body>
