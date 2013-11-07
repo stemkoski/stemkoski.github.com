@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Shader - Attributes (Three.js)</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel=stylesheet href="css/base.css"/>
+</head>
+<body>
+
+<script src="js/Three62.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
+<script src="js/KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<!-- ---------------- Custom Shader Code -----------vec3 newPosition = mix( position, endPosition, mixAmount );------------- -->
+<script id="vertexShader" type="x-shader/x-vertex">
+uniform float width;
+uniform float height;
+
+uniform vec3 point1;
+uniform vec3 point2;
+
+varying vec2 vUV;
+varying vec4 color;
+varying float mixAmount;
+
+void main() 
+{
+	vUV = uv;
+	vec4 P0 = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+	vec4 P1 = projectionMatrix * modelViewMatrix * vec4( point1, 1.0 );
+	vec4 P2 = projectionMatrix * modelViewMatrix * vec4( point2, 1.0 );
+	vec2 W0 = vec2( 0.5 * P0.x/P0.z + 0.5, 0.5 * P0.y/P0.z + 0.5) * vec2(width, height);
+	vec2 W1 = vec2( 0.5 * P1.x/P1.z + 0.5, 0.5 * P1.y/P1.z + 0.5) * vec2(width, height);
+	vec2 W2 = vec2( 0.5 * P2.x/P2.z + 0.5, 0.5 * P2.y/P2.z + 0.5) * vec2(width, height);
+	float pixelDistance = length( cross(vec3(W0 - W1, 0.0), vec3(W0 - W2, 0.0)) ) / length( W2 - W1 );
+	color = (pixelDistance < 1.5) ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.2, 0.2, 0.2, 1.0);
+	gl_Position = P0;
+}
+</script>
+
+<!-- fragment shader a.k.a. pixel shader -->
+<script id="fragmentShader" type="x-shader/x-vertex"> 
+varying vec4 color;
+
+void main() 
+{
+    gl_FragColor = color;
+}  
+</script>
+<!-- ----------------------------------------------------------- -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: November 2013 (three.js v62)
+*/
+
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new KeyboardState();
+var clock = new THREE.Clock();
+
+var customUniforms, customAttributes;
+
+// custom global variables
+var cube;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,100,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:false} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.getElementById( 'ThreeJS' );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	// FLOOR
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -50;
+	floor.rotation.x = Math.PI / 2;
+	scene.add(floor);
+	// SKYBOX/FOG
+	// scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+	
+	////////////
+	// CUSTOM //
+	////////////
+	
+	var planeGeometry = new THREE.PlaneGeometry( 100, 100, 100, 100 );
+	
+	/*
+	// using a callback
+	var imageTexture = THREE.ImageUtils.loadTexture('images/uvgrid01.jpg', new THREE.UVMapping(), 
+	function finished()
+	{
+		var planeMaterial = new THREE.ShaderMaterial( 
+		{
+			uniforms:
+			{
+				width:  { type: "f", value: window.innerWidth },
+				height: { type: "f", value: window.innerHeight },
+				image:  { type: "t", value: imageTexture }
+			},
+			vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+			fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+		});
+		
+		var plane = new THREE.Mesh( planeGeometry, planeMaterial );
+		plane.position.set(0, 0, 0);
+		scene.add( plane );
+	});
+	*/
+	
+	var planeMaterial = new THREE.ShaderMaterial( 
+	{
+		uniforms:
+		{
+			width:  { type: "f", value: window.innerWidth },
+			height: { type: "f", value: window.innerHeight },
+			point1: { type: "v3", value: new THREE.Vector3(-50, 20, 0) },
+			point2: { type: "v3", value: new THREE.Vector3( 50, 20, 0) }, // diagonal lines should correspond to rotated quads
+		},
+		vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+		transparent:true,
+		side: THREE.DoubleSide
+	});
+	
+	var plane = new THREE.Mesh( planeGeometry, planeMaterial );
+	plane.position.set(0, 0, 0);
+	scene.add( plane );
+
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	keyboard.update();
+	
+	if ( keyboard.pressed("z") ) 
+	{ 
+		// do something
+	}
+	
+	//var t = clock.getElapsedTime();
+	//customUniforms.mixAmount.value = 0.5 * (1.0 + Math.sin(t));
+	controls.update();
+	stats.update();
+}
+
+function render() 
+{
+	renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
