@@ -312,9 +312,9 @@ function animate()
 
 function update()
 {
-	if ( keyboard.pressed("z") ) 
+	if ( keyboard.pressed("p") ) 
 	{ 
-		var myStlString = stlFromGeometry( graphGeometry, {download:true, useObjectPosition:true} ) // maybe a proper button too?
+		var myStlString = stlFromGeometry( graphGeometry, {download:true, useObjectPosition:false} ) // maybe a proper button too?
 	}
 	
 	controls.update();
