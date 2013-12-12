@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>80 Days in Three.js</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body 
+		{
+			font-family: Monospace;
+			font-weight: bold;
+			background-color: #FFFFFF;
+			margin: 0px;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="js/Three63min.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/TrackballControls.js"></script>
+<script src="js/KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<script src="js/Tween.js"></script>
+
+<!-- ----------------------------------------------------------- -->
+
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+ */
+
+// MAIN
+
+// standard global variables
+var container, scene, camera, light, renderer, controls, stats;
+
+var itinerary, marker;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() 
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	
+	// code from: http://stackoverflow.com/questions/19865537/three-js-set-background-image
+	// load the background texture
+    var texture = THREE.ImageUtils.loadTexture( 'images/nebula-ypos.png' );
+    var backgroundMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(2, 2, 0),
+        new THREE.MeshBasicMaterial({ map: texture }));
+    backgroundMesh.material.depthTest = false;
+    backgroundMesh.material.depthWrite = false;
+    // create background scene (global variables)
+    this.backgroundScene = new THREE.Scene();
+    this.backgroundCamera = new THREE.Camera();
+    backgroundScene.add(backgroundCamera);
+    backgroundScene.add(backgroundMesh);
+	
+	////////////
+	// CUSTOM //
+	////////////
+
+    var sphereGeo = new THREE.SphereGeometry(100, 64, 32);
+	
+    // Create the Earth with texture
+	var colors = THREE.ImageUtils.loadTexture( "images/earth-day.jpg" );
+
+	var earthMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, map: colors } );
+
+    this.earthSphere = new THREE.Mesh( sphereGeo, earthMaterial ); 
+    scene.add(earthSphere);	
+	
+	itinerary = 
+	[ {"loc": "London, England",               "lat":51.5, "lon":-0.1,   "date":"October 2, 1872"},
+	  {"loc": "Paris, France",                 "lat":48.9, "lon":2.4,    "date": "October 3, 1872"},
+	  {"loc": "Turin, Italy",                  "lat":45.1, "lon":7.7,    "date":"October 4, 1872"},
+	  {"loc": "Brindisi, Italy",               "lat":40.6, "lon":17.9,   "date":"October 5, 1872"},
+	  {"loc": null,                            "lat":35.0, "lon":23.2,   "date":"October 7, 1872"},
+	  {"loc": "Suez, Egypt",                   "lat":30.0, "lon":32.5,   "date":"October 9, 1872"},
+	  {"loc": null,                            "lat":12.3, "lon":43.7,   "date":"October 13, 1872"},
+	  {"loc": "Aden, Yemen",                   "lat":12.8, "lon":45.0,   "date":"October 14, 1872"},
+	  {"loc": "Bombay, India",                 "lat":19.1, "lon":72.9,   "date":"October 20, 1872"},
+	  {"loc": "Kholby, India",                 "lat":23.3, "lon":78.7,   "date":"October 22, 1872"},
+	  {"loc": "Allahabad, India",              "lat":25.4, "lon":81.8,   "date":"October, 24, 1872"},
+	  {"loc": "Calcutta, India",               "lat":22.6, "lon":88.4,   "date":"October 25, 1872"},
+	  {"loc": "Strait of Malacca",             "lat":4.7,  "lon":99.5,   "date":"October 30, 1872"},
+	  {"loc": null,                            "lat":-0.2,  "lon":104.4,  "date":"October 31, 1872"},
+	  {"loc": "Victoria, Hong Kong",           "lat":22.3, "lon":114.2,  "date":"6:00 AM, November 6, 1872"},
+	  {"loc": null,                            "lat":22.3, "lon":116.5,  "date":"3:00 PM, November 6, 1872"},
+	  {"loc": "Yokohama, Japan",               "lat":35.4, "lon":139.6,  "date":"November 13, 1872"},
+	  {"loc": "San Francisco, United States",  "lat":37.8, "lon":-122.4, "date":"December 3, 1872"},
+	  {"loc": "Salt Lake City, United States", "lat":40.8, "lon":-111.9, "date":"December 6, 1872"},
+	  {"loc": "Chicago, United States",        "lat":41.9, "lon":-87.6,  "date":"December 10, 1872"},
+	  {"loc": "New York City, United States",  "lat":40.7, "lon":-74.0,  "date":"December 11, 1872"},
+	  {"loc": null,                            "lat":43.4, "lon":-53.1,  "date":"December 14, 1872"},
+	  {"loc": null,                            "lat":51.2, "lon":-6.0,   "date":"12:01 AM, December 21, 1872"},
+	  {"loc": "Liverpool, England",            "lat":53.4, "lon":-3.0,   "date":"11:40 AM, December 21, 1872"},
+	  {"loc": "London, England",               "lat":51.5, "lon":-0.1,   "date":"11:59 AM, December 21, 1872"}
+	];
+	
+	var n = itinerary.length;
+	var duration = Date.parse( itinerary[n-1].date ) - Date.parse( itinerary[0].date );
+	console.log(duration / (1000 * 60 * 60 * 24)); // > 80 LOL dateline
+	
+	// process the itinerary data
+	for (var i = 0; i < itinerary.length; i++)
+	{
+		itinerary[i].vec3     = convertLatLonToVec3( itinerary[i].lat, itinerary[i].lon ).multiplyScalar(100.5);
+		itinerary[i].duration = (i == n-1) ? 0 : Date.parse(itinerary[i+1].date) - Date.parse(itinerary[i].date);
+		itinerary[i].percent  = ( Date.parse(itinerary[i].date) - Date.parse(itinerary[0].date) ) / duration;	
+	}
+	for (var i = 0; i < itinerary.length; i++)
+	{
+		itinerary[i].arcFunc = (i < n-1) ? 
+			greatCircleFunction(itinerary[i].vec3, itinerary[i+1].vec3) :
+			function(t)	{ return itinerary[i].vec3; };
+	}
+	
+	var spriteMaterial = new THREE.SpriteMaterial( 
+		{ map: THREE.ImageUtils.loadTexture("images/glow.png"), transparent:true, blending:THREE.AdditiveBlending } );
+	marker = new THREE.Sprite( spriteMaterial );
+	marker.scale.set(16, 16, 1.0);
+	marker.position = itinerary[0].vec3.clone().multiplyScalar(1.0);
+	scene.add( marker );
+		
+	// debug
+	// console.table( itinerary );
+	
+	// draw destinations
+	for (var i = 0; i < itinerary.length; i++)
+	{
+		var item = itinerary[i];
+		if (item.loc != null)
+			addMarker( item.lat, item.lon, 0xFF8800 );
+	}
+	
+	// draw arcs
+	for (var i = 0; i < itinerary.length - 1; i++)
+	{
+		var start = convertLatLonToVec3( itinerary[i].lat,   itinerary[i].lon ).multiplyScalar(100.5);
+		var   end = convertLatLonToVec3( itinerary[i+1].lat, itinerary[i+1].lon ).multiplyScalar(100.5);
+		drawCurve( createSphereArc(start,end), 0xFFFF00 );
+	}
+	
+	// TWEEN for animation
+	var values1 = {t: 0}; // the variable that changes, set to initial values
+	var target1 = {t: 1};
+	this.tween1 = new TWEEN.Tween(values1).to(target1, 80000);
+	tween1.onUpdate( function()
+	{
+		moveMarker(values1.t);
+		lookAtMarker();
+	});
+	tween1.delay(1000);
+	tween1.onComplete( function()
+	{
+		// all done!
+		values1.t = 0;
+	});
+	tween1.chain(tween1);
+	tween1.start();
+	
+	lookAtMarker();
+}
+
+function moveMarker(percentTime)
+{
+	var index = 0;
+	var newPosition = new THREE.Vector3(0,0,0);
+	
+	for (var i = 0; i < itinerary.length - 1; i++)
+	{
+		if (itinerary[i].percent <= percentTime && percentTime <= itinerary[i+1].percent)
+		{
+			var localPercent = (percentTime - itinerary[i].percent) / (itinerary[i+1].percent - itinerary[i].percent);
+			newPosition = itinerary[i].arcFunc(localPercent);
+		}
+	}
+	marker.position = newPosition;
+}
+
+function lookAtMarker()
+{
+	camera.position = marker.position.clone().setLength(400);
+	camera.up = new THREE.Vector3(0,1,0);
+	camera.lookAt( new THREE.Vector3(0,0,0) );
+	camera.updateProjectionMatrix();
+}
+
+function addMarker(lat, lon, colory)
+{
+	var radius = 100;
+	var markery = new THREE.Mesh( new THREE.SphereGeometry(1, 12, 6), new THREE.MeshLambertMaterial({color:colory}) );
+	markery.position = convertLatLonToVec3(lat,lon).multiplyScalar(radius);
+	scene.add(markery)
+}
+
+function convertLatLonToVec3(lat,lon)
+{
+	lat =  lat * Math.PI / 180.0;
+	lon = -lon * Math.PI / 180.0;
+	return new THREE.Vector3( 
+		Math.cos(lat) * Math.cos(lon), 
+		Math.sin(lat), 
+		Math.cos(lat) * Math.sin(lon) );
+}
+
+function greatCircleFunction(P, Q)
+{
+	var angle = P.angleTo(Q);
+	return function(t)
+	{
+	    var X = new THREE.Vector3().addVectors(
+			P.clone().multiplyScalar(Math.sin( (1 - t) * angle )), 
+			Q.clone().multiplyScalar(Math.sin(      t  * angle )))
+			.divideScalar( Math.sin(angle) );
+	    return X;
+	};
+}
+
+function createSphereArc(P,Q)
+{
+	var sphereArc = new THREE.Curve();
+	sphereArc.getPoint = greatCircleFunction(P,Q);
+	return sphereArc;
+}
+
+function drawCurve(curve, color)
+{
+	var lineGeometry = new THREE.Geometry();
+	lineGeometry.vertices = curve.getPoints(100);
+	lineGeometry.computeLineDistances();
+	// var lineMaterial = new THREE.LineBasicMaterial();
+	var lineMaterial = new THREE.LineDashedMaterial( { dashSize: 1, gapSize: 1 } );
+	lineMaterial.color = (typeof(color) === "undefined") ? new THREE.Color(0xFF0000) : new THREE.Color(color);
+	var line = new THREE.Line( lineGeometry, lineMaterial );
+	scene.add(line);
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	TWEEN.update();
+	controls.update();
+	stats.update();
+	light.position = camera.position;
+}
+
+function render() 
+{
+	renderer.autoClear = false;
+    renderer.clear();
+	renderer.render(backgroundScene, backgroundCamera);
+    renderer.render(scene, camera);
+}
+
+</script>
+
+</body>
+</html>
