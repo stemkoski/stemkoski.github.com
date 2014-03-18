@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>PeerJS Receive Test</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel=stylesheet href="css/base.css"/>
+</head>
+<body>
+
+<!-- stats display here -->
+<div id="graphics"></div> 
+
+<!-- graphics here -->
+<center>
+<canvas id="myCanvas" width="480" height="320"></canvas> 
+</center>
+
+<!-- requestAnimationFrame cross-browser compatibility -->
+<script src="js/RequestAnimationFrame.js"></script>
+<!-- Uses Peer.JS for networking 
+<script src="http://cdn.peerjs.com/0.3/peer.js"></script>
+-->
+<script src="js/peer.js"></script>
+
+
+<script>
+
+// declare global variables (if any) here
+var prevTime, currTime, dt;
+var playerColor = "#888888";
+
+// assign variables to page elements for easy access
+var graphicsArea = document.getElementById('graphics');     // stats here
+var displayCanvas  = document.getElementById('myCanvas');
+var displayContext = displayCanvas.getContext('2d');
+
+// create a second canvas to implement double buffering
+var bufferCanvas = document.createElement('canvas');
+bufferCanvas.width = displayCanvas.width;
+bufferCanvas.height = displayCanvas.height;
+var bufferContext = bufferCanvas.getContext('2d');
+	
+var playerPosX, playerPosY, playerVelX, playerVelY;
+
+// global variables
+var peer = null; // me
+var conn = null; // the other one
+var rectangleTouch = {};
+
+//////////
+// MAIN //
+//////////
+
+initialize();
+window.requestAnimationFrame( render );
+setTimeout( update, 1000 / 60 );
+
+///////////////
+// FUNCTIONS //
+///////////////	
+
+function initialize() 
+{	
+	// player variables
+	playerVelX = playerVelY = 0;
+	playerPosX = 50;
+	playerPosY = 150;
+	
+	// Receive data / Listen for connection
+	// Passive. Needs preset peer ID so initiator knows who to call.
+	console.log("Receiver, starting up...");
+	
+	// setup PeerJS
+	peer = new Peer("insertPeerNameHere", {key: 'insertKeyHere'});
+	peer.on('open', function(id) 
+	{ 
+		console.log("My name is: " + id); 
+	});
+		
+	peer.on('connection', function(conn)
+	{
+		console.log("Someone has connected...");
+
+		// whenever data is received, do this:
+		conn.on('data', function(data)
+		{
+			rectangleTouch = data;
+		});
+	});
+
+} // end of function initialize()
+
+
+// game logic functions appear here
+function update()
+{
+	// calculate delta (time elapsed since last update)
+	currTime = new Date().getTime();        // update time
+    dt = currTime - (prevTime || currTime); // dt = 0 during first loop
+    prevTime = currTime;                    // store for next dt calculation
+	
+	playerVelX = 0;
+	playerVelY = 0;
+
+	if ( rectangleTouch.up )
+		playerVelY -= 150;
+	if ( rectangleTouch.down )
+		playerVelY += 150;
+	if ( rectangleTouch.left )
+		playerVelX -= 150;
+	if ( rectangleTouch.right )
+		playerVelX += 150;
+	
+	if ( rectangleTouch.A )
+		playerColor = "#00cc00";
+	else if ( rectangleTouch.B )
+		playerColor = "#cc0000";
+	else if ( rectangleTouch.X )
+		playerColor = "#0000cc";
+	else if ( rectangleTouch.Y )
+		playerColor = "#cccc00";
+	else
+		playerColor = "#888888";
+		
+	playerPosX += playerVelX * (dt / 1000);
+	playerPosY += playerVelY * (dt / 1000);
+	
+	var updateTime = 0; // adjust for time used to execute code in update method
+	// loop @ 60 frames per second
+    setTimeout( update, 1000 / 60 - updateTime );
+}
+
+function render() 
+{
+	// clear screen
+	bufferCanvas.width = bufferCanvas.width;
+	var groundHeight = 100;
+	// draw "sky"
+	bufferContext.fillStyle = "#8888ff";
+	bufferContext.fillRect(0, 0, displayCanvas.width, displayCanvas.height);
+	// draw "grass"
+	bufferContext.fillStyle = "#44ff44";
+	// top left (x,y) and dimensions (w,h)
+	bufferContext.fillRect(0, bufferCanvas.height - groundHeight, bufferCanvas.width, groundHeight);
+	// draw "player"
+	bufferContext.fillStyle = playerColor;
+	bufferContext.fillRect(playerPosX, playerPosY, 80, 80);
+	
+	displayContext.drawImage(bufferCanvas, 0, 0);
+
+	// loop @ next possible update time
+	window.requestAnimationFrame( render );
+}
+
+</script>
+
+</body>
+</html>

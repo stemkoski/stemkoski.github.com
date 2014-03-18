@@ -1,0 +1,149 @@
+<html>
+<head>
+<title>
+TouchEvent Test
+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+</head>
+<body>
+
+This is a test.
+
+<div id="outputDiv" style=" border:2px solid; ">Another test.</div>
+
+<!--
+<div id="red"   name="button" gridx=0 gridy=1 imgname="SquareRed"></div>
+<div id="green" name="button" gridx=2 gridy=2 imgname="SquareGreen"></div>
+<div id="blue"  name="button" gridx=4 gridy=1 imgname="SquareBlue"></div>
+-->
+<div id="up"    name="button" gridx=1 gridy=1 imgname="up-C"></div>
+<div id="left"  name="button" gridx=0 gridy=2 imgname="left-C"></div>
+<div id="down"  name="button" gridx=1 gridy=3 imgname="down-C"></div>
+<div id="right" name="button" gridx=2 gridy=2 imgname="right-C"></div>
+<div id="A"     name="button" gridx=5 gridy=3 imgname="A-button"></div>
+<div id="B"     name="button" gridx=6 gridy=2 imgname="B-button"></div>
+<div id="X"     name="button" gridx=4 gridy=2 imgname="X-button"></div>
+<div id="Y"     name="button" gridx=5 gridy=1 imgname="Y-button"></div>
+
+
+
+<script>
+var output = document.getElementById("outputDiv");
+
+var pointData = [];
+
+// var touchRegionIDs = ["redButton", "greenButton", "blueButton"];
+
+var rectangleData  = {};
+var rectangleTouch = {};
+
+onResize();
+window.addEventListener("resize", onResize, true)
+function onResize()
+{
+	// (re)initialize/size div buttons
+	var buttonDivs = document.getElementsByName("button");
+	var maxGridX = 7;
+	var maxGridY = 5;
+	var w = window.innerWidth;
+	var h = window.innerHeight;
+	var imagePrefix = "images/";
+	var imageSuffix = ".png";
+	var unit = Math.min( w / maxGridX, h / maxGridY );
+	var offsetX = (w - maxGridX * unit) / 2; // for horizontal centering
+
+	var a = buttonDivs[0];
+
+	for (var i = 0; i < buttonDivs.length; i++)
+	{
+		// set position and size of div
+		var element = buttonDivs[i];
+		var gridx = element.getAttribute("gridx");
+		var gridy = element.getAttribute("gridy");
+		element.style.position = "absolute";
+		element.style.left   = (offsetX + unit * gridx) + "px";
+		element.style.top    = (unit * gridy) + "px";
+		element.style.width  = unit + "px";
+		element.style.height = unit + "px";
+		element.innerHTML = "<img src='" + imagePrefix + element.getAttribute("imgname") + imageSuffix + "' width=100% height=100%>";
+		
+		// initialize touch data
+		var name = element.id;
+		rectangleTouch[ name ] = false;
+		
+		rectangleData[name] = 
+		{ 
+			"name" : name,
+			x: parseInt(element.style.left),
+			y: parseInt(element.style.top),
+			w: parseInt(element.style.width),
+			h: parseInt(element.style.height),
+			"containsPoint" : function(pointX, pointY) 
+			{ 
+				return ( (this.x < pointX) && (pointX < (this.x + this.w))
+					  && (this.y < pointY) && (pointY < (this.y + this.h)) );
+			},
+			"containsAnyPoint" : function( pointArray )
+			{
+				for (var i = 0; i < pointArray.length; i++)
+				{
+					var pointX = pointArray[i][0];
+					var pointY = pointArray[i][1];
+					if ( this.containsPoint(pointX, pointY) )
+						return true;
+				}
+				return false;
+			}
+		};	
+	}
+}
+	
+function updateTouchData()
+{
+	for (var rectangleName in rectangleData)
+		rectangleTouch[ rectangleName ] = rectangleData[rectangleName].containsAnyPoint(pointData);	
+}
+
+document.addEventListener("touchstart", helloTouch, false);
+document.addEventListener("touchmove",  helloTouch, false);
+document.addEventListener("touchend",   helloTouch, false);
+function helloTouch(e)
+{
+	// Android bug? http://uihacker.blogspot.tw/2011/01/android-touchmove-event-bug.html
+	e.preventDefault();
+	
+	var t = e.touches;
+	pointData = [];
+	for (var i = 0; i < t.length; i++)
+		pointData.push( [ t[i].pageX, t[i].pageY ] );
+}
+
+var n = 0;
+loop();
+function loop()
+{
+	updateTouchData();
+	
+	output.innerText = toString(rectangleTouch) + " N=" + n;
+	n++;
+	setTimeout(loop, 50);
+}
+
+function toString(obj)
+{
+	var s = "{ ";
+	for (var key in obj)
+	{
+		var value = obj[key];
+		s += key + ":" + value + " ";
+	}
+	s += "}";
+	return s;
+}
+
+</script>
+
+
+</body>
+</html>

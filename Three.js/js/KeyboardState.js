@@ -1,6 +1,17 @@
 /**
  * @author Lee Stemkoski
- * August 2013
+ *
+ * Usage: 
+ * (1) create a global variable:
+ *      var keyboard = new KeyboardState();
+ * (2) during main loop:
+ *       keyboard.update();
+ * (3) check state of keys:
+ *       keyboard.down("A")    -- true for one update cycle after key is pressed
+ *       keyboard.pressed("A") -- true as long as key is being pressed
+ *       keyboard.up("A")      -- true for one update cycle after key is released
+ * 
+ *  See KeyboardState.k object data below for names of keys whose state can be polled
  */
  
 // initialization
