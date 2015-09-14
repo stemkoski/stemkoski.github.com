@@ -88,7 +88,7 @@ Knot = THREE.Curve.create(
 	{
 		// default:    0 < t < 1
 		//    want: tMin < t < tMax
-        tRange = tMax - tMin;
+		tRange = tMax - tMin;
 		t = t * tRange + tMin;
 		return new THREE.Vector3(xFunc(t), yFunc(t), zFunc(t)).multiplyScalar(1);
 	}
