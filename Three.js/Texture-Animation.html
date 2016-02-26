@@ -188,7 +188,7 @@ function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDurat
 			var currentColumn = this.currentTile % this.tilesHorizontal;
 			texture.offset.x = currentColumn / this.tilesHorizontal;
 			var currentRow = Math.floor( this.currentTile / this.tilesHorizontal );
-			texture.offset.y = currentRow / this.tilesVertical;
+			texture.offset.y = ( - currentRow - 1 ) / this.tilesVertical;
 		}
 	};
 }		
