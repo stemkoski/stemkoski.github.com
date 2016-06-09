@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MathBox - 2D Grapher</title>
+  <script src="mathbox-bundle.js"></script>
+  <script src="dat.gui.js"></script>
+  
+<!-- http://silentmatt.com/javascript-expression-evaluator/ -->
+<script src="parser.js"></script>
+
+  <link rel="stylesheet" href="mathbox.css">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+</head>
+<body>
+  <script>
+    var mathbox = mathBox({
+      plugins: ['core', 'controls', 'cursor', 'mathbox'],
+      controls: {klass: THREE.OrbitControls}
+    });
+    if (mathbox.fallback) throw "WebGL not supported"
+
+    var three = mathbox.three;
+    three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
+
+	var graphData, view;
+	
+	var functionText = "sin(a*x + b)";
+	var a = 1, b = 1;
+	var	xMin = -3, xMax = 3, yMin = -1,	yMax = 1;
+	
+	var updateGraphFunc = function() 
+	{ 
+		var yFunc = Parser.parse( functionText ).toJSFunction( ['x'] );
+		graphData.set("expr", 
+		    function (emit, x, i, t) 
+			{ 
+			    emit( x, yFunc(x) );
+			}
+		);
+		view.set("range", [[xMin, xMax], [yMin, yMax]]); 
+	}
+	
+	var updateGraph = function() { updateGraphFunc(); };
+	
+	// 1. camera looking at...
+	// 2. coordinate system that contains...
+	// 3. geometric data represented via...
+	// 4. choice of shape to draw it as...
+	
+	// setting proxy:true allows interactive controls to override base position
+	var camera = mathbox.camera( { proxy: true, position: [0, 0, 3] } );
+
+	 // save as variable to adjust later
+    view = mathbox.cartesian(
+	  {
+        range: [[xMin, xMax], [yMin, yMax]],
+        scale: [2,1],
+      }
+	);
+
+	// Axes + grid
+    // axes include tick marks and labels
+	view.axis( {axis: 1, width: 5, detail: 40, color:"red"} );
+    view.scale( {axis: 1, divide: 10} );
+    view.ticks( {width: 5, size: 15, color: "red", zBias:1} );
+    view.format( {digits: 2, weight: 'bold'} );
+    view.label( {color: 'red', zIndex: 1} );
+	
+	view.axis( {axis: 2, width: 5, detail: 40, color:"green"} );
+    view.scale( {axis: 2, divide: 5} );
+    view.ticks( {width: 5, size: 15, color: "green", zBias:2} );
+    view.format( {digits: 2, weight: 'bold'} );
+    view.label( {color: "green", zIndex: 1} );
+	
+	// TODO: Label axes?
+	// view.text( {data: ["x","y"]} );
+	
+	view.grid( {width: 2, divideX: 20, divideY: 10, opacity:0.25} );
+	
+	
+	var graphData = view.interval({
+        expr: function (emit, x, i, t)
+		{
+          emit( x, x*x );
+        },
+        width: 256,	
+        channels: 2,
+    });
+	  	
+	updateGraphFunc();
+	
+    // format data display
+    view.line( {width: 4, color: "blue"} );
+	// alternatively, view as points
+    // view.point( {size: 6, color: "blue"});
+	  
+	  
+    // GUI controls
+	
+	var gui = new dat.GUI();
+	
+	gui.add( this, 'functionText' ).name('y = f(x) = ');
+	
+	var folder0 = gui.addFolder('Parameters');
+	var aGUI = folder0.add( this, 'a' ).min(0).max(5).step(0.01).name('a = ');
+	var bGUI = folder0.add( this, 'b' ).min(0).max(5).step(0.01).name('b = ');
+	folder0.open();
+	
+	var folder1 = gui.addFolder('Window Range');
+	var xMinGUI = folder1.add( this, 'xMin' );
+	var xMaxGUI = folder1.add( this, 'xMax' );
+	var yMinGUI = folder1.add( this, 'yMin' );
+	var yMaxGUI = folder1.add( this, 'yMax' );
+	folder1.open();
+	
+	gui.add( this, 'updateGraph' ).name("Update Graph");
+	
+	// onChange or onFinishChange
+	aGUI.onChange( updateGraphFunc );
+	bGUI.onChange( updateGraphFunc );
+	xMinGUI.onChange( updateGraphFunc );
+	xMaxGUI.onChange( updateGraphFunc );
+	yMinGUI.onChange( updateGraphFunc );
+	yMaxGUI.onChange( updateGraphFunc );
+	
+	gui.open();
+	</script>
+</body>
+</html>
