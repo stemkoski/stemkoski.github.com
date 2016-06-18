@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MathBox - 2D Grapher</title>
+  <script src="mathbox-bundle.js"></script>
+  <script src="dat.gui.js"></script>
+  
+<!-- http://silentmatt.com/javascript-expression-evaluator/ -->
+<script src="parser.js"></script>
+
+  <link rel="stylesheet" href="mathbox.css">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+</head>
+<body>
+  <script>
+    var mathbox = mathBox({
+      plugins: ['core', 'controls', 'cursor', 'mathbox'],
+      controls: {klass: THREE.OrbitControls}
+    });
+    if (mathbox.fallback) throw "WebGL not supported"
+
+    var three = mathbox.three;
+    three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
+
+	var graphData, graphColors, tracePoint, tracePointView, view;
+	
+	var functionText = "x*cos(a*x + b)";
+	var traceX = 0.01;
+	var traceVisible = false;
+	var a = 1.01, b = 0.01;
+	var	xMin = -12, xMax = 12, yMin = -1, yMax = 1, yAutofit = false;
+	
+	var updateGraphFunc = function() 
+	{ 
+		var yFunc = Parser.parse( functionText ).toJSFunction( ['x'] );
+		
+		graphData.set("expr", 
+		    function (emit, x, i, t) 
+			{ 
+			    var y = yFunc(x);
+				emit( x, y );
+			}
+		);
+		
+		tracePoint.set( "data", [ [traceX, yFunc(traceX)] ] );
+
+		var traceXDisp = Math.round(traceX * 100) / 100;
+		var traceYDisp = Math.round(yFunc(traceX) * 100) / 100;
+		traceText.set( "data", ["( " + traceXDisp + " , " + traceYDisp + " )"] );
+
+		if (yAutofit)
+		{
+			var xStep = (xMax - xMin) / 512;
+			var ySmallest = yFunc(xMin);
+			var yBiggest  = yFunc(xMin);
+			for (var x = xMin; x <= xMax; x += xStep)
+			{
+				var y = yFunc(x);
+				if (y < ySmallest) ySmallest = y;
+				if (y > yBiggest)  yBiggest  = y;
+			}			
+			yMin = ySmallest;
+			yMax = yBiggest;
+			yMinGUI.setValue(yMin);
+			yMaxGUI.setValue(yMax);		
+		}
+		
+		view.set("range", [[xMin, xMax], [yMin, yMax]]); 
+		
+		xLabelPoint.set("data", [[xMax,0]]);
+		yLabelPoint.set("data", [[0,yMax]]);
+		
+		traceGUI.min( xMin ).max( xMax );
+		if (traceX > xMax) traceX = xMax;
+		if (traceX < xMin) traceX = xMin;
+
+		tracePointView.set("visible", traceVisible);
+		traceTextView.set("visible", traceVisible);
+	}
+	
+	var updateGraph = function() { updateGraphFunc(); };
+	
+	// setting proxy:true allows interactive controls to override base position
+	var camera = mathbox.camera( { proxy: true, position: [0, 0, 3] } );
+
+    view = mathbox.cartesian( {range: [[xMin, xMax], [yMin, yMax]], scale: [2,1]} );
+
+	// axes
+	var xAxis = view.axis( {axis: 1, width: 8, detail: 40, color:"red"} );
+    var xScale = view.scale( {axis: 1, divide: 10, nice:true, zero:true} );
+    var xTicks = view.ticks( {width: 5, size: 15, color: "red", zBias:2} );
+    var xFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: xScale} );
+    var xTicksLabel = view.label( {color: "red", zIndex: 1, offset:[0,-20], points: xScale, text: xFormat} );
+	
+	var yAxis = view.axis( {axis: 2, width: 8, detail: 40, color:"green"} );
+    var yScale = view.scale( {axis: 2, divide: 5, nice:true, zero:false} );
+    var yTicks = view.ticks( {width: 5, size: 15, color: "green", zBias:2} );
+    var yFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: yScale} );
+    var yTicksLabel = view.label( {color: "green", zIndex: 1, offset:[0,0], points: yScale, text: yFormat} );
+	
+	// grid
+	var grid = view.grid( {width: 2, divideX: 20, divideY: 10, opacity:0.25} );
+	
+	// axis labels
+	var xLabelText = view.text( {width:1, data:["x"], font: "Helvetica", weight: "bold", style: "normal"} );
+	var xLabelPoint = view.array( {width:1, channels:2, data:[ [xMax,0] ]} );
+	var xLabelDisplay = view.label( {text: xLabelText, points: xLabelPoint,
+      size: 24, color: "red", outline: 1, background: "black", offset: [16, 0], zIndex: 1} );
+	  
+    var yLabelText = view.text( {width:1, data:["y"], font: "Helvetica", weight: "bold", style: "normal"} );
+	var yLabelPoint = view.array( {width:1, channels:2, data:[ [0,yMax] ]} );
+	var yLabelDisplay = view.label( {text: yLabelText, points: yLabelPoint,
+      size: 24, color: "green", outline: 1, background: "black", offset: [0, 28], zIndex: 1} );
+
+	// function graph
+	
+	graphData = view.interval({
+        expr: function (emit, x, i, t)
+		{
+          emit( x, x*x );
+        },
+        width: 256,	
+        channels: 2,
+    });
+	
+	var graphView = view.line( {width: 4, color: "blue", points:graphData} );
+	
+	tracePoint = view.array( {width:1, channels:2, data:[ [0,0] ]} );
+	tracePointView = view.point( {size: 20, color: "blue", points:tracePoint, visible: true});
+	var traceText = view.text( {width:1, data:["(1,2)"], font: "Helvetica", weight: "bold", style: "normal"} );
+	var traceTextView = view.label( {text: traceText, points: tracePoint,
+      size: 16, color: "blue", outline: 6, background: "rgb(230,230,230)", offset: [0,-24], zIndex: 2} );
+	  
+	  
+    // GUI controls
+	
+	var gui = new dat.GUI();
+	
+	gui.add( this, 'functionText' ).name('y = f(x) = ');
+	
+	var folder0 = gui.addFolder('Trace Value');
+	var traceVis = folder0.add( this, 'traceVisible' ).name('view trace point');
+	var traceGUI = folder0.add( this, 'traceX' ).min( xMin ).max( xMax ).step(0.01).name('trace value');
+	folder0.open();
+	
+	var folder1 = gui.addFolder('Parameters');
+	var aGUI = folder1.add( this, 'a' ).min(0).max(5).step(0.01).name('a = ');
+	var bGUI = folder1.add( this, 'b' ).min(0).max(5).step(0.01).name('b = ');
+	folder1.open();
+	
+	var folder2 = gui.addFolder('Window Range');
+	var xMinGUI = folder2.add( this, 'xMin' ).step(0.01);
+	var xMaxGUI = folder2.add( this, 'xMax' ).step(0.01);
+	var yMinGUI = folder2.add( this, 'yMin' ).step(0.01);
+	var yMaxGUI = folder2.add( this, 'yMax' ).step(0.01);
+	var yFitGUI = folder2.add( this, 'yAutofit' );
+	folder2.open();
+	
+	gui.add( this, 'updateGraph' ).name("Update Graph");
+	
+	// onChange or onFinishChange
+	aGUI.onChange( updateGraphFunc );
+	bGUI.onChange( updateGraphFunc );
+	traceGUI.onChange( updateGraphFunc );
+	traceVis.onChange( updateGraphFunc );
+	
+	gui.open();
+	
+	// do this last so all structures are set up, all parameters defined
+	yAutofit = true;
+	updateGraphFunc();
+	yAutofit = false;
+	</script>
+</body>
+</html>

@@ -22,9 +22,39 @@
 
     var three = mathbox.three;
     three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
-
-	var graphData, view;
+	var camera = mathbox.camera( { proxy: true, position: [0, 0, 3] } );
 	
+	// save the view as a variable to simplify accessing it later
+    var view = mathbox.cartesian( {range: [[xMin, xMax], [yMin, yMax]], scale: [2,1]} );
+
+	// axes
+	var xAxis = view.axis( {axis: 1, width: 8, detail: 40, color:"red"} );
+    var xScale = view.scale( {axis: 1, divide: 10, nice:true, zero:true} );
+    var xTicks = view.ticks( {width: 5, size: 15, color: "red", zBias:2} );
+    var xFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: xScale} );
+    var xTicksLabel = view.label( {color: "red", zIndex: 1, offset:[0,-20], points: xScale, text: xFormat} );
+	
+	var yAxis = view.axis( {axis: 2, width: 8, detail: 40, color:"green"} );
+    var yScale = view.scale( {axis: 2, divide: 5, nice:true, zero:false} );
+    var yTicks = view.ticks( {width: 5, size: 15, color: "green", zBias:2} );
+    var yFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: yScale} );
+    var yTicksLabel = view.label( {color: "green", zIndex: 1, offset:[0,0], points: yScale, text: yFormat} );
+	
+	// grid
+	var grid = view.grid( {width: 2, divideX: 20, divideY: 10, opacity:0.25} );
+	
+	var graphData = view.interval({
+        expr: function (emit, x, i, t)
+		{
+          emit( x, x*x );
+        },
+		width: 256,	
+		channels: 2,
+    });
+	
+    var graphView = view.line( {width: 4, color: "blue"} );
+	  
+	// parameters used by dat.gui
 	var functionText = "sin(a*x + b)";
 	var a = 1, b = 1;
 	var	xMin = -3, xMax = 3, yMin = -1,	yMax = 1;
@@ -35,7 +65,8 @@
 		graphData.set("expr", 
 		    function (emit, x, i, t) 
 			{ 
-			    emit( x, yFunc(x) );
+			    var y = yFunc(x);
+				emit( x, y );
 			}
 		);
 		view.set("range", [[xMin, xMax], [yMin, yMax]]); 
@@ -43,59 +74,6 @@
 	
 	var updateGraph = function() { updateGraphFunc(); };
 	
-	// 1. camera looking at...
-	// 2. coordinate system that contains...
-	// 3. geometric data represented via...
-	// 4. choice of shape to draw it as...
-	
-	// setting proxy:true allows interactive controls to override base position
-	var camera = mathbox.camera( { proxy: true, position: [0, 0, 3] } );
-
-	 // save as variable to adjust later
-    view = mathbox.cartesian(
-	  {
-        range: [[xMin, xMax], [yMin, yMax]],
-        scale: [2,1],
-      }
-	);
-
-	// Axes + grid
-    // axes include tick marks and labels
-	view.axis( {axis: 1, width: 5, detail: 40, color:"red"} );
-    view.scale( {axis: 1, divide: 10} );
-    view.ticks( {width: 5, size: 15, color: "red", zBias:1} );
-    view.format( {digits: 2, weight: 'bold'} );
-    view.label( {color: 'red', zIndex: 1} );
-	
-	view.axis( {axis: 2, width: 5, detail: 40, color:"green"} );
-    view.scale( {axis: 2, divide: 5} );
-    view.ticks( {width: 5, size: 15, color: "green", zBias:2} );
-    view.format( {digits: 2, weight: 'bold'} );
-    view.label( {color: "green", zIndex: 1} );
-	
-	// TODO: Label axes?
-	// view.text( {data: ["x","y"]} );
-	
-	view.grid( {width: 2, divideX: 20, divideY: 10, opacity:0.25} );
-	
-	
-	var graphData = view.interval({
-        expr: function (emit, x, i, t)
-		{
-          emit( x, x*x );
-        },
-        width: 256,	
-        channels: 2,
-    });
-	  	
-	updateGraphFunc();
-	
-    // format data display
-    view.line( {width: 4, color: "blue"} );
-	// alternatively, view as points
-    // view.point( {size: 6, color: "blue"});
-	  
-	  
     // GUI controls
 	
 	var gui = new dat.GUI();
@@ -125,6 +103,10 @@
 	yMaxGUI.onChange( updateGraphFunc );
 	
 	gui.open();
+	
+	// do this last so all structures are set up, all parameters defined
+	updateGraphFunc();
+	
 	</script>
 </body>
 </html>
