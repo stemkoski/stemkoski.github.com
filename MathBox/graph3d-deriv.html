@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MathBox - 3D Grapher</title>
+  <script src="mathbox-bundle.js"></script>
+  <script src="dat.gui.js"></script>
+  
+<!-- http://silentmatt.com/javascript-expression-evaluator/ -->
+<script src="parser.js"></script>
+
+  <link rel="stylesheet" href="mathbox.css">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+</head>
+<body>
+  <script>
+    var mathbox = mathBox({
+      plugins: ['core', 'controls', 'cursor', 'mathbox'],
+      controls: {klass: THREE.OrbitControls}
+    });
+    if (mathbox.fallback) throw "WebGL not supported"
+
+    var three = mathbox.three;
+    three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
+
+	var graphData, view;
+	
+	var functionText = "sin(a*x*x + b*y*y)";
+	
+	var pointText = "(1,1)";
+	var traceX = 1, traceY = 1, traceZ = 1;
+	
+	var a = 1, b = 1;
+	var	xMin = -3, xMax = 3, yMin = -3,	yMax = 3, zMin = -3, zMax = 3;
+	
+	var theta = 0.78;
+	
+	var gradient = [1,1];
+	
+	// start of updateGraph function ==============================================================
+	var updateGraphFunc = function() 
+	{ 
+		var zFunc = Parser.parse( functionText ).toJSFunction( ['x','y'] );
+		graphData.set("expr", 
+		    function (emit, x, y, i, j, t) 
+			{ 
+			    emit( x, zFunc(x,y), y );
+			}
+		);
+		
+		// use regular expression to trim out "\(" or "\)" globally in the string (replace it with "").
+		var tempString = pointText.replace(/\(|\)/g, " ");
+		var tempArray = tempString.split(",");
+		// number is a global JS function that converts String to Number
+		traceX = Number(tempArray[0]);
+		traceY = Number(tempArray[1]);
+		traceZ = zFunc(traceX, traceY);
+		tracePointData.set("data", [ [traceX, traceZ, traceY] ] );
+
+		xCurveData.set("expr", 
+		    function (emit, x, i, t) 
+			{ 
+			    emit( x, zFunc(x,traceY), traceY );
+			}
+		);
+
+		yCurveData.set("expr", 
+		    function (emit, y, j, t) 
+			{ 
+			    emit( traceX, zFunc(traceX,y), y );
+			}
+		);
+		
+		view.set("range", [[xMin, xMax], [yMin, yMax], [zMin,zMax]]); 
+
+		// calculate partial derivatives
+		
+		// valid for all vectors
+		var vectorTail = [traceX, traceZ, traceY];
+		
+		// amount to scale slope vector by
+		var scale = 0.5;
+		
+		// partial derivative for x (y held constant)
+		var dx = 0.00001;
+		var dy = 0; // held constant for now
+		var dz = zFunc(traceX + dx, traceY + dy) - zFunc(traceX, traceY);
+		// slope vector is [dx/dx, dy/dx, dz/dx] = [1,0,dz/dx]. Don't forget to switch y&z in graph.
+		var xVectorHead = [traceX + scale * dx/dx, traceZ + scale * dz/dx, traceY + scale * dy/dx];
+		xDerivData.set( "data", [xVectorHead,vectorTail] );
+		var slopeX = dz/dx;
+		
+		// calculate partial derivative for y (x held constant)
+		dx = 0;
+		dy = 0.00001;
+		dz = zFunc(traceX + dx, traceY + dy) - zFunc(traceX, traceY);
+		// slope vector is [dx/dx, dy/dx, dz/dx] = [0,1,dz/dy]. Don't forget to switch y&z in graph.
+		var yVectorHead = [traceX + scale * dx/dy, traceZ + scale * dz/dy, traceY + scale * dy/dy];
+		yDerivData.set( "data", [yVectorHead,vectorTail] );
+		var slopeY = dz/dy;
+		
+		// calculate tangent plane function
+		tangentPlaneData.set("expr", 
+		    function (emit, x, y, i, j, t) 
+			{ 
+				var z = slopeX*(x - traceX) + slopeY*(y - traceY) + traceZ;
+			    emit( x, z, y );
+			}
+		);
+		
+		gradient = [slopeX, slopeY, -1];
+		
+		dx = Math.cos(theta);
+		dy = Math.sin(theta);
+		dz = gradient[0] * dx + gradient[1] * dy;
+		var dirVectorHead = [traceX + scale * dx, traceZ + scale * dz, traceY + scale * dy];
+		dirDerivData.set( "data", [dirVectorHead,vectorTail] );
+		
+		
+		var gradientAngle = Math.atan2(slopeY, slopeX);
+		dx = Math.cos(gradientAngle);
+		dy = Math.sin(gradientAngle);
+		dz = gradient[0] * dx + gradient[1] * dy;
+		var gradientVectorHead = [traceX + dx * scale, traceZ + dz * scale, traceY + dy * scale];
+		gradientData.set( "data", [gradientVectorHead, vectorTail] );
+
+	} 
+	// end of updateGraph function ==============================================================
+	
+	
+	var updateGraph = function() { updateGraphFunc(); };
+
+	
+	// setting proxy:true allows interactive controls to override base position
+	var camera = mathbox.camera( { proxy: true, position: [2, 1, 2], eulerOrder:"xzy" } );
+
+	 // save as variable to adjust later
+    view = mathbox.cartesian(
+	  {
+        range: [[xMin, xMax], [yMin, yMax], [zMin,zMax]],
+        scale: [2,1,2],
+		// eulerOrder: ""xzy,
+      }
+	);
+
+	// axes
+	var xAxis = view.axis( {axis: 1, width: 8, detail: 40, color:"red"} );
+    var xScale = view.scale( {axis: 1, divide: 10, nice:true, zero:true} );
+    var xTicks = view.ticks( {width: 5, size: 15, color: "red", zBias:2} );
+    var xFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: xScale} );
+    var xTicksLabel = view.label( {color: "red", zIndex: 0, offset:[0,-20], points: xScale, text: xFormat} );
+	
+	var yAxis = view.axis( {axis: 3, width: 8, detail: 40, color:"green"} );
+    var yScale = view.scale( {axis: 3, divide: 5, nice:true, zero:false} );
+    var yTicks = view.ticks( {width: 5, size: 15, color: "green", zBias:2} );
+    var yFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: yScale} );
+    var yTicksLabel = view.label( {color: "green", zIndex: 0, offset:[0,0], points: yScale, text: yFormat} );
+	
+	var zAxis = view.axis( {axis: 2, width: 8, detail: 40, color:"blue"} );
+    var zScale = view.scale( {axis: 2, divide: 5, nice:true, zero:false} );
+    var zTicks = view.ticks( {width: 5, size: 15, color: "blue", zBias:2} );
+    var zFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: zScale} );
+    var zTicksLabel = view.label( {color: "blue", zIndex: 0, offset:[0,0], points: zScale, text: zFormat} );
+	
+	view.grid( {axes:[1,3], width: 2, divideX: 20, divideY: 20, opacity:0.25} );
+	
+	var graphData = view.area({
+		axes: [1,3], channels: 3, width: 64, height: 64,
+        expr: function (emit, x, y, i, j, t)
+		{
+		  var z = x*y;
+          emit( x, z, y );
+        },
+    });
+	
+	// create graph in two parts, because want solid and wireframe to be different colors
+	// shaded:false for a solid color (curve appearance provided by mesh)
+	// width: width of line mesh
+	var graphVisible = true;
+	var graphViewSolid = view.surface({
+		points:graphData, 
+		color:"#8888FF", shaded:false, fill:true, lineX:false, lineY:false, visible:graphVisible, width:0
+	});
+	var graphViewWire = view.surface({
+		points: graphData,
+		color:"#000088", shaded:false, fill:false, lineX:true, lineY:true, visible:graphVisible, width:2
+    });
+	
+	// plot a point on the graph.
+	
+	// use data: instead of expr: because it is a single value, no need to calculate via expr.
+	// actual value of data set later (requires zFunction to be parsed)
+	var tracePointData = view.array({
+		width: 1, channels: 3,		
+		data: [ [1,2,3] ],
+    });  
+	  
+	// TODO (maybe): replace this by a small sphere for easier visibility?
+	var tracePointView = view.point( {size: 20, color: "black", points:tracePointData, visible: true} );
+	
+	// draw curves on surface, in a plane parallel to axis, through trace point.
+	// view is an area; to get just one coordinate, set axis:value.
+	// expr: will be set later (require zFunction to be parsed)
+	var xCurveData = view.interval({
+		axis: 1, channels: 3, width: 64,
+	});
+    var yCurveData = view.interval({
+		axis: 3, channels: 3, width: 64,
+	});
+	
+	var xCurveVisible = false;
+	var xCurveView = view.line({
+		points: xCurveData,
+		color: "red", width: 16, visible: xCurveVisible,
+	});
+	var yCurveVisible = false;
+	var yCurveView = view.line({
+		points: yCurveData,
+		color: "green", width: 16, visible: yCurveVisible,
+	});
+	
+	// draw planes through surface, parallel to axis, through trace point
+	// small width/height values because it is a flat rectangle; no high resolution needed
+	// x,z variable; y constant.
+	var xPlaneData = view.area({
+        axes: [1,3], channels: 3, width: 2, height: 2,
+		expr: function (emit, x, z, i, j, t)
+		{
+          emit( x, z, traceY );
+        },
+    });
+	// zWrite: false, because of many transparent surfaces, need to draw correctly
+	var xPlaneVisible = false;
+	var xPlaneView = view.surface({
+		points: xPlaneData, 
+		color: "#FFCCCC", visible:xPlaneVisible, opacity:0.5, zWrite:false
+	});
+	
+	var yPlaneData = view.area({
+        axes: [3,2], channels: 3, width: 2, height: 2,
+		expr: function (emit, y, z, i, j, t)
+		{
+          emit( traceX, z, y );
+        },
+    });
+	var yPlaneVisible = false;
+	var yPlaneView = view.surface({
+		points :yPlaneData,
+		color: "#CCFFCC", visible:yPlaneVisible, opacity:0.5, zWrite:false
+	});
+	
+	// create data and view for partial derivatives in x and y and theta directions
+	
+	// items:2, because vectors require two values each
+	// data: represents the head and tail of vector
+	var xDerivData = view.array({
+		width: 1, items: 2, channels: 3,
+		data: [ [0,0,0],[1,1,1] ],
+	});
+	var yDerivData = view.array({
+		width: 1, items: 2, channels: 3,
+		data: [ [0,0,0],[1,1,1] ], 
+	});
+	var dirDerivData = view.array({
+		width: 1, items: 2, channels: 3,
+		data: [ [0,0,0],[1,1,1] ], 
+	});
+	var gradientData = view.array({
+		width: 1, items: 2, channels: 3,
+		data: [ [0,0,0],[1,1,1] ], 
+	});
+	
+	var xDerivVisible = false;
+	var xDerivView = view.vector({
+		points: xDerivData,
+		color: "red", width: 4, start: true, visible:xDerivVisible
+	});
+	var yDerivVisible = false;
+	var yDerivView = view.vector({
+		points: yDerivData,
+		color: "green", width: 4, start: true, visible:yDerivVisible
+	});
+	var dirDerivVisible = false;
+	var dirDerivView = view.vector({
+		points: dirDerivData,
+		color: "black", width: 4, start: true, visible:dirDerivVisible
+	});
+	var gradientVisible = false;
+	var gradientView = view.vector({
+		points: gradientData,
+		color: "orange", width: 4, start: true, visible:gradientVisible
+	});
+	
+	
+	// create data and view for tangent plane
+	
+	var tangentPlaneData = view.area({
+        axes: [1,3], channels: 3, width: 64, height: 64,
+		expr: function (emit, x, y, i, j, t)
+		{
+          emit( x, 3, y ); // actual emitter set later...
+        },
+    });
+	
+	var tangentPlaneVisible = false;
+	var tangentPlaneViewSolid = view.surface({shaded:false, color: "#888888", points:tangentPlaneData, visible:tangentPlaneVisible, opacity:0.8, zWrite:false} );
+	var tangentPlaneViewWire = view.surface({
+      points: tangentPlaneData,
+	  fill: false, lineX: true, lineY: true,
+      color: "#444444", visible: tangentPlaneVisible, opacity: 0.8, width: 2, zWrite:false
+    });
+	
+    // GUI controls
+	
+	var gui = new dat.GUI();
+	
+	gui.add( this, 'functionText' ).name('y = f(x) = ');
+	gui.add( this, "pointText" ).name("P = (x,y) = ");
+	
+	
+	var graphvisibleGUI = gui.add( this, "graphVisible" ).name("View graph").onChange(
+		function()
+		{
+			graphViewSolid.set("visible", graphVisible);
+			graphViewWire.set("visible", graphVisible);
+		}
+	);
+	var xPlaneGUI = gui.add( this, "xPlaneVisible" ).name("View x-plane").onChange( 
+		function()
+		{
+			xPlaneView.set("visible", xPlaneVisible);
+		}
+	 );
+	 var xCurveGUI = gui.add( this, "xCurveVisible" ).name("View x-curve").onChange( 
+		function()
+		{
+			xCurveView.set("visible", xCurveVisible);
+		}
+	 );
+	 var xDerivGUI = gui.add( this, "xDerivVisible" ).name("View x-deriv").onChange( 
+		function()
+		{
+			xDerivView.set("visible", xDerivVisible);
+		}
+	 );
+	var yPlaneGUI = gui.add( this, "yPlaneVisible" ).name("View y-plane").onChange( 
+		function()
+		{
+			yPlaneView.set("visible", yPlaneVisible);
+		}
+	 );
+	var yCurveGUI = gui.add( this, "yCurveVisible" ).name("View y-curve").onChange( 
+		function()
+		{
+			yCurveView.set("visible", yCurveVisible);
+		}
+	 );
+	 var yDerivGUI = gui.add( this, "yDerivVisible" ).name("View y-deriv").onChange( 
+		function()
+		{
+			yDerivView.set("visible", yDerivVisible);
+		}
+	 );
+	
+	var tangentPlaneGUI = gui.add( this, "tangentPlaneVisible" ).name("View tangentPlane").onChange( 
+		function()
+		{
+			tangentPlaneViewSolid.set("visible", tangentPlaneVisible);
+			tangentPlaneViewWire.set("visible", tangentPlaneVisible);
+		}
+	 );	
+	 
+	var dirDerivGUI = gui.add( this, "dirDerivVisible" ).name("View dir-deriv").onChange( 
+		function()
+		{
+			dirDerivView.set("visible", dirDerivVisible);
+		}
+	 );
+	
+	var thetaGUI = gui.add( this, "theta" ).min(0).max(6.28).step(0.01).name("theta = ").onChange(
+		function()
+		{
+			// valid for all vectors
+			var vectorTail = [traceX, traceZ, traceY];
+			// amount to scale slope vector by
+			var scale = 0.5;
+			// partial derivative for x (y held constant)
+			var dx = Math.cos(theta);
+			var dy = Math.sin(theta);
+			var dz = gradient[0] * dx + gradient[1] * dy;
+			var dirVectorHead = [traceX + scale * dx, traceZ + scale * dz, traceY + scale * dy];
+			dirDerivData.set( "data", [dirVectorHead,vectorTail] );
+		}
+	);
+	
+	var gradientGUI = gui.add( this, "gradientVisible" ).name("View gradient").onChange( 
+		function()
+		{
+			gradientView.set("visible", gradientVisible);
+		}
+	 );
+	
+	var folder0 = gui.addFolder('Parameters');
+	var aGUI = folder0.add( this, 'a' ).min(0).max(5).step(0.01).name('a = ');
+	var bGUI = folder0.add( this, 'b' ).min(0).max(5).step(0.01).name('b = ');
+	folder0.close();
+	
+	var folder1 = gui.addFolder('Window Range');
+	var xMinGUI = folder1.add( this, 'xMin' );
+	var xMaxGUI = folder1.add( this, 'xMax' );
+	var zMinGUI = folder1.add( this, 'zMin' ).name("yMin");
+	var zMaxGUI = folder1.add( this, 'zMax' ).name("yMax");
+	var yMinGUI = folder1.add( this, 'yMin' ).name("zMin");
+	var yMaxGUI = folder1.add( this, 'yMax' ).name("zMax");
+	folder1.close();
+	
+	gui.add( this, 'updateGraph' ).name("Update Graph");
+	
+	// onChange or onFinishChange
+	aGUI.onChange( updateGraphFunc );
+	bGUI.onChange( updateGraphFunc );
+	
+	gui.open();
+	
+	updateGraphFunc();
+	</script>
+</body>
+</html>
