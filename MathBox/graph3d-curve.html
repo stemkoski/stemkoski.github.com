@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MathBox - 3D Grapher</title>
+  <script src="mathbox-bundle.js"></script>
+  <script src="dat.gui.js"></script>
+  
+<!-- http://silentmatt.com/javascript-expression-evaluator/ -->
+<script src="parser.js"></script>
+
+  <link rel="stylesheet" href="mathbox.css">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+</head>
+<body>
+  <script>
+
+    var mathbox = mathBox({
+      plugins: ['core', 'controls', 'cursor', 'mathbox'],
+      controls: {klass: THREE.OrbitControls},
+
+    });
+    if (mathbox.fallback) throw "WebGL not supported"
+
+    var three = mathbox.three;
+    three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
+
+	var graphData, view;
+	
+	var xFunctionText = "t^3 - 3*t";
+	var yFunctionText = "t^4 - 4*t^2";
+	var zFunctionText = "(t^5 - 10*t)/5";
+	
+	var a = 1, b = 0.5;
+	var	xMin = -3, xMax = 3, yMin = -2,	yMax = 2, zMin = -3, zMax = 3;
+
+	// extrusion segments -- how many sample points to take along curve.
+	var segments = 128;
+	// how many sides the tube cross-section has
+	var radiusSegments = 8;
+	var tubeRadius = 0.12;
+
+	var tMin = -2, tMax = 2, tRange = tMax - tMin;
+	
+	// start of updateGraph function ==============================================================
+	var updateGraphFunc = function() 
+	{ 
+		var xFunc = Parser.parse( xFunctionText ).toJSFunction( ['t'] );
+		var yFunc = Parser.parse( yFunctionText ).toJSFunction( ['t'] );
+		var zFunc = Parser.parse( zFunctionText ).toJSFunction( ['t'] );
+		
+		curveDomain.set("range", [ [tMin, tMax] ]  );
+		tubeDomain.set("range", [ [tMin, tMax], [0,6.282] ]  );
+	
+		var dt = (tMax - tMin) / segments;
+		var epsilon = 0.000001;
+		
+		curveData.set("expr", 
+		    function (emit, t, i, time) 
+			{ 		
+				// head, then tail.
+				emit( xFunc(t), zFunc(t), yFunc(t) );
+				emit( xFunc(t - dt), zFunc(t - dt), yFunc(t - dt) );
+			}
+		);
+		
+		
+		var position = function(t)
+		{  return new THREE.Vector3( xFunc(t), zFunc(t), yFunc(t) ); }
+		
+		var tangent = function(t)
+		{  return new THREE.Vector3().subVectors( position(t+epsilon), position(t) ).normalize();  }
+		
+		var normal = function(t)
+		{  return new THREE.Vector3().subVectors( tangent(t+epsilon), tangent(t) ).normalize();  }
+		
+		var binormal = function(t)
+		{  return new THREE.Vector3().crossVectors( tangent(t), normal(t) );  }
+		
+		
+		tubeData.set("expr", 
+		    function (emit, u,v, i,j, time) 
+			{ 		
+			    var P = position(u);
+				var N = normal(u).multiplyScalar(tubeRadius);
+				var B = binormal(u).multiplyScalar(tubeRadius); 
+				
+				var M = P.add( N.multiplyScalar(Math.cos(v)) ).add( B.multiplyScalar( Math.sin(v) ) );
+				
+				emit( M.x, M.y, M.z );
+			}
+		);
+		
+		view.set("range", [[xMin, xMax], [yMin, yMax], [zMin,zMax]]); 
+		
+		// start of color options =============================================
+		if (graphColorStyle == "Solid Blue")
+		{
+			// just a solid blue color			
+			tubeColors.set("expr", 
+				function (emit, u,v, i,j, t) 
+				{ 
+					emit( 0.5, 0.5, 1.0, 1.0 );
+				}
+			);
+		}
+		else if (graphColorStyle == "Rainbow Along T")
+		{
+			// 		
+			tubeColors.set("expr", 
+				function (emit, u,v, i,j, t) 
+				{
+					var percent = (u - tMin) / (tMax - tMin);
+					var color = new THREE.Color( 0xffffff );
+					color.setHSL( percent, 1, 0.5 );
+					emit( color.r, color.g, color.b, 1.0 );
+				}
+			);
+		}
+		
+		// end of color options =============================================
+		
+	}
+	// end of updateGraph function ==============================================================
+	
+	var updateGraph = function() { updateGraphFunc(); };
+	
+
+
+	// setting proxy:true allows interactive controls to override base position
+	var camera = mathbox.camera( { 
+		proxy: true, 
+		position: [2, 1, 2],
+		
+	} );
+
+	 // save as variable to adjust later
+    view = mathbox.cartesian(
+	  {
+        range: [[xMin, xMax], [yMin, yMax], [zMin,zMax]],
+        scale: [2,1,2],
+      }
+	);
+
+	// axes
+	var xAxis = view.axis( {axis: 1, width: 8, detail: 40, color:"red"} );
+    var xScale = view.scale( {axis: 1, divide: 10, nice:true, zero:true} );
+    var xTicks = view.ticks( {width: 5, size: 15, color: "red", zBias:2} );
+    var xFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: xScale} );
+    var xTicksLabel = view.label( {color: "red", zIndex: 0, offset:[0,-20], points: xScale, text: xFormat} );
+	
+	var yAxis = view.axis( {axis: 3, width: 8, detail: 40, color:"green"} );
+    var yScale = view.scale( {axis: 3, divide: 5, nice:true, zero:false} );
+    var yTicks = view.ticks( {width: 5, size: 15, color: "green", zBias:2} );
+    var yFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: yScale} );
+    var yTicksLabel = view.label( {color: "green", zIndex: 0, offset:[0,0], points: yScale, text: yFormat} );
+	
+	var zAxis = view.axis( {axis: 2, width: 8, detail: 40, color:"blue"} );
+    var zScale = view.scale( {axis: 2, divide: 5, nice:true, zero:false} );
+    var zTicks = view.ticks( {width: 5, size: 15, color: "blue", zBias:2} );
+    var zFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: zScale} );
+    var zTicksLabel = view.label( {color: "blue", zIndex: 0, offset:[0,0], points: zScale, text: zFormat} );
+	
+	view.grid( {axes:[1,3], width: 2, divideX: 20, divideY: 20, opacity:0.25} );
+	
+	// need separate range for surface domain values. can't use values from view.
+	
+	
+	// curveData, curveView
+	
+	var curveDomain = mathbox.cartesian(
+	  {
+        range: [ [tMin,tMax] ] // t
+      }
+	);
+	
+	var curveData = curveDomain.interval({
+		width: segments,
+        expr: function (emit, t, i, time) 
+		{ 
+			var dt = (tMax - tMin) / segments;
+			// head, then tail.
+			emit( Math.cos(t), t, Math.sin(t) );
+			emit( Math.cos(t - dt), t - dt, Math.sin(t - dt) );
+		},
+        channels: 3,  // 3D space
+		items: 2,    // emit two vertices per line segment; required by view.
+
+    });
+	
+	var curveView = view.vector({
+		points: curveData, 
+		width: 4,
+        // expr: set later
+		color: "purple", start:false
+        
+    });
+	
+	// tubeData, tubeView
+	var tubeDomain = mathbox.cartesian(
+	  {
+        range: [[tMin,tMax], [0,6.282]] // u and v
+      }
+	);
+	
+	var tubeData = tubeDomain.area({
+		width: segments, height: radiusSegments,
+        expr: function(emit, u,v, i,j, time) 
+		{ 
+			emit( u,v,u+v );
+		},
+		axes: [1,2],  // u,v
+        channels: 3,  // 3D space
+    });
+
+	
+	var tubeColors = tubeDomain.area({
+		width: segments, height: radiusSegments,
+		// expr: set later
+ 		channels: 4, // RGBA
+    });
+	
+	var tubeViewFill = view.surface({
+	  points: tubeData,
+	  fill: true, shaded: false, lineX: false, lineY: false,
+      color: "white", colors: tubeColors,
+    });
+	
+	var tubeViewLine = view.surface({
+	  points: tubeData,
+	  fill: false, shaded: false, lineX: true, lineY: true, width:1,
+      color: "black",
+    });
+	
+    // GUI controls
+	
+	var gui = new dat.GUI();
+	
+	var xFuncGUI = gui.add( this, 'xFunctionText' ).name('x = f(t) = ');
+	var yFuncGUI = gui.add( this, 'yFunctionText' ).name('y = g(t) = ');
+	var zFuncGUI = gui.add( this, 'zFunctionText' ).name('z = h(t) = ');
+	
+	var folderP = gui.addFolder("Preset Equations");
+	folderP.open();
+	
+	var presetFunc1 = function() { 
+		xFuncGUI.setValue("cos(t)"); yFuncGUI.setValue("sin(t)"); zFuncGUI.setValue("t / 4"); 
+		tMinGUI.setValue(-6); tMaxGUI.setValue(6); 
+		updateGraph(); 
+		};
+	var preset1GUI = folderP.add( this, "presetFunc1" ).name("Helix");
+	
+	var presetFunc2 = function() { 
+		xFuncGUI.setValue("t^3 - 3*t"); yFuncGUI.setValue("t^4 - 4*t^2"); zFuncGUI.setValue("(t^5 - 10*t)/5"); 
+		tMinGUI.setValue(-2.1); tMaxGUI.setValue(2.1); 
+		updateGraph(); 
+		};
+	var preset2GUI = folderP.add( this, "presetFunc2" ).name("Trefoil&nbsp;Knot&nbsp;(Poly)");
+	
+	var presetFunc3 = function() { 
+		xFuncGUI.setValue("cos(2*t) * (2 + cos(5*t))"); yFuncGUI.setValue("sin(2*t) * (2 + cos(5*t))"); zFuncGUI.setValue("sin(5*t)"); 
+		tMinGUI.setValue(0); tMaxGUI.setValue(6.282); 
+		updateGraph(); 
+		};
+	var preset3GUI = folderP.add( this, "presetFunc3" ).name("Trefoil&nbsp;Knot&nbsp;(Torus)");
+	
+	var folder0 = gui.addFolder('Parameters');
+	var aGUI = folder0.add( this, 'a' ).min(0).max(5).step(0.01).name('a = ');
+	var bGUI = folder0.add( this, 'b' ).min(0).max(5).step(0.01).name('b = ');
+	folder0.open();
+	
+	var folder2 = gui.addFolder('Parameter (T) Range');
+	var tMinGUI = folder2.add( this, 'tMin' ).onChange( updateGraphFunc );
+	var tMaxGUI = folder2.add( this, 'tMax' ).onChange( updateGraphFunc );
+	folder2.open();
+	
+	var folder1 = gui.addFolder('Window (X,Y,Z) Range');
+	var xMinGUI = folder1.add( this, 'xMin' ).name("x Min");
+	var xMaxGUI = folder1.add( this, 'xMax' ).name("x Max");
+	var zMinGUI = folder1.add( this, 'zMin' ).name("y Min");
+	var zMaxGUI = folder1.add( this, 'zMax' ).name("y Max");
+	var yMinGUI = folder1.add( this, 'yMin' ).name("z Min");
+	var yMaxGUI = folder1.add( this, 'yMax' ).name("z Max");
+	folder1.close();
+	
+	var folderA = gui.addFolder('Appearance');
+	
+	folderA.add( this, 'tubeRadius' ).min(0.01).max(0.51).step(0.01).name('Tube Radius');
+	
+	var graphColorStyle = "Rainbow Along T";
+	var graphColorStyleList = ["Solid Blue", "Rainbow Along T"];
+	var graphColorGUI = folderA.add( this, "graphColorStyle", graphColorStyleList ).name('Graph style').onChange( updateGraphFunc );
+	
+	folderA.open();
+	
+	gui.add( this, 'updateGraph' ).name("Update Graph");
+	
+	gui.open();
+	
+	updateGraph();
+	
+	</script>
+	
+</body>
+</html>
