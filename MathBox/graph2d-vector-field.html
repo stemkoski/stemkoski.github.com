@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MathBox - 2D Grapher</title>
+  <script src="mathbox-bundle.js"></script>
+  <script src="dat.gui.js"></script>
+  
+<!-- http://silentmatt.com/javascript-expression-evaluator/ -->
+<script src="parser.js"></script>
+
+  <link rel="stylesheet" href="mathbox.css">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+</head>
+<body>
+  <script>
+    var mathbox = mathBox({
+      plugins: ['core', 'controls', 'cursor', 'mathbox'],
+      controls: {klass: THREE.OrbitControls}
+    });
+    if (mathbox.fallback) throw "WebGL not supported"
+
+    var three = mathbox.three;
+    three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
+
+	var graphData, view;
+	
+	var f1FuncText = "y";
+	var f2FuncText = "-x";
+	
+	var pointText = "(1,1)";
+	var stepSize = 0.01;
+	var curveData;
+	
+	var a = 1.25, b = 1.25;
+	var	xMin = -4, xMax = 4, yMin = -2,	yMax = 2;
+	
+	// start of updateGraph function ==============================================================
+	var updateGraphFunc = function() 
+	{ 
+		var f1Func = Parser.parse( f1FuncText ).toJSFunction( ['x','y'] );
+		var f2Func = Parser.parse( f2FuncText ).toJSFunction( ['x','y'] );
+		// var deltaT = (tMax - tMin)/256;
+		
+		// NOTE: END first, START second
+		graphData.set("expr", 
+		    function (emit, x, y, i, j, time, delta) 
+			{ 
+				
+				var vx = f1Func(x,y);
+				var vy = f2Func(x,y);
+				var len = Math.sqrt(vx*vx+vy*vy);
+				vx = vx / len * 0.25;
+				vy = vy / len * 0.25;
+				
+			    emit( x + vx, y + vy );
+				emit( x, y );
+			}
+		);
+		
+		// update starting point
+		
+		// use regular expression to trim out "\(" or "\)" globally in the string (replace it with "").
+		var tempString = pointText.replace(/\(|\)/g, " ");
+		var tempArray = tempString.split(",");
+		// number is a global JS function that converts String to Number
+		traceX = Number(tempArray[0]);
+		traceY = Number(tempArray[1]);
+		tracePointData.set("data", [ [traceX, traceY] ] );
+		
+		// NOTE: END first, START second
+		var curvePointArray = [];
+		var xPrev = traceX;
+		var yPrev = traceY;
+
+		for (var i = 0; i < 1024; i++)
+		{
+			var vx = f1Func(xPrev, yPrev);
+			var vy = f2Func(xPrev, yPrev);
+			
+			// Runge-Kutta method
+			var k1x = vx * stepSize;
+			var k1y = vy * stepSize;
+			
+			var v1x = f1Func(xPrev + 0.5 * k1x, yPrev + 0.5 * k1y);
+			var v1y = f2Func(xPrev + 0.5 * k1x, yPrev + 0.5 * k1y);
+			
+			var k2x = v1x * stepSize;
+			var k2y = v1y * stepSize;
+			
+			var v2x = f1Func(xPrev + 0.5 * k2x, yPrev + 0.5 * k2y);
+			var v2y = f2Func(xPrev + 0.5 * k2x, yPrev + 0.5 * k2y);
+			
+			var k3x = v2x * stepSize;
+			var k3y = v2y * stepSize;
+			
+			var v3x = f1Func(xPrev + 0.5 * k3x, yPrev + 0.5 * k3y);
+			var v3y = f2Func(xPrev + 0.5 * k3x, yPrev + 0.5 * k3y);
+			
+			var k4x = v3x * stepSize;
+			var k4y = v3y * stepSize;
+			
+			var xNext = xPrev + 1/6 * (k1x + 2*k2x + 2*k3x + k4x);
+			var yNext = yPrev + 1/6 * (k1y + 2*k2y + 2*k3y + k4y);
+			
+			/*
+			// Euler's method
+			var xNext = xPrev + vx * stepSize;
+			var yNext = yPrev + vy * stepSize;
+			*/
+			
+			curvePointArray.push( [xNext,yNext], [xPrev,yPrev] );
+			xPrev = xNext;
+			yPrev = yNext;
+		}
+		
+		curveData.set( "data", curvePointArray );
+		
+		view.set("range", [[xMin, xMax], [yMin, yMax]]); 
+	} 
+	// end of updateGraph function ==============================================================
+	
+	var updateGraph = function() { updateGraphFunc(); };
+	
+	var camera = mathbox.camera( { proxy: true, position: [0,0,2] } );
+
+	 // save as variable to adjust later
+    view = mathbox.cartesian(
+	  {
+        range: [[xMin, xMax], [yMin, yMax]],
+        scale: [2,1],
+      }
+	);
+
+	// axes
+	var xAxis = view.axis( {axis: 1, width: 8, detail: 40, color:"red"} );
+    var xScale = view.scale( {axis: 1, divide: 10, nice:true, zero:true} );
+    var xTicks = view.ticks( {width: 5, size: 15, color: "red", zBias:2} );
+    var xFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: xScale} );
+    var xTicksLabel = view.label( {color: "red", zIndex: 0, offset:[0,-20], points: xScale, text: xFormat} );
+	
+	var yAxis = view.axis( {axis: 2, width: 8, detail: 40, color:"green"} );
+    var yScale = view.scale( {axis: 2, divide: 5, nice:true, zero:false} );
+    var yTicks = view.ticks( {width: 5, size: 15, color: "green", zBias:2} );
+    var yFormat = view.format( {digits: 2, font:"Arial", weight: "bold", style: "normal", source: yScale} );
+    var yTicksLabel = view.label( {color: "green", zIndex: 0, offset:[0,0], points: yScale, text: yFormat} );
+	
+	view.grid( {axes:[1,2], width: 2, divideX: 20, divideY: 20, opacity:0.25} );
+	
+	var graphData = view.area({
+        // expr: set later
+        width: 20,
+		height: 20,
+		items: 2,
+        channels: 2,
+		
+    });
+	
+	var graphView = view.vector( {width: 4, color: "#4444FF", points: graphData, start: true,} );
+	
+	// plot a point on the graph.
+	
+	var tracePointData = view.array({
+		width: 1, channels: 2,		
+		data: [ [1,2] ],
+    });  
+	  
+	// TODO (maybe): replace this by a small sphere for easier visibility?
+	var tracePointView = view.point( {size: 20, color: "black", points:tracePointData, visible: true} );
+	
+
+	// data: will be set later (requires functions to be parsed)
+	curveData = view.array({
+		data: [], items: 2, channels: 2, width: 1024,
+	});
+	
+	var curveVisible = false;
+	
+	// start:true  will add arrows to vectors.
+	// NOTE: vector head (terminal) comes first, followed by tail (initial)
+	var curveView = view.vector({
+		points: curveData,
+		color: "purple", width: 4, visible: curveVisible, start:true
+	});
+	
+    // GUI controls
+	
+	var gui = new dat.GUI();
+	
+	gui.add( this, 'f1FuncText' ).name('f1(x,y) = ');
+	gui.add( this, 'f2FuncText' ).name('f2(x,y) = ');
+	
+	gui.add( this, "pointText" ).name("P = (x,y) = "); // .onChange( updateGraphFunc );
+	gui.add( this, "stepSize" ).name("step size = ").min(0.001).max(0.501).step(0.001).onChange( updateGraphFunc );
+	var curveVisibleGUI = gui.add( this, "curveVisible" ).name("view approximate curve").onChange( 
+		function()
+		{
+			curveView.set("visible", curveVisible);
+		}
+	 );
+	 
+	var folder0 = gui.addFolder('Parameters');
+	var aGUI = folder0.add( this, 'a' ).min(-6).max(6).step(0.01).name('a = ');
+	var bGUI = folder0.add( this, 'b' ).min(-6).max(6).step(0.01).name('b = ');
+	folder0.open();
+	
+	
+	var folder1 = gui.addFolder('Window Range');
+	var xMinGUI = folder1.add( this, 'xMin' );
+	var xMaxGUI = folder1.add( this, 'xMax' );
+	var yMinGUI = folder1.add( this, 'yMin' );
+	var yMaxGUI = folder1.add( this, 'yMax' );
+	folder1.close();
+	
+
+	gui.add( this, 'updateGraph' ).name("Update Graph");
+	
+	gui.open();
+	
+	updateGraphFunc();
+	</script>
+</body>
+</html>
