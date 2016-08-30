@@ -66,7 +66,7 @@ var segments = 120;
 var radiusSegments = 6;
 var tubeRadius = 0.1;
 
-var tMin = -2.11, tMax = 2.11, tRange = tMax - tMin;
+var tMin = -2.11, tMax = 2.11;
 
 var xFuncText = "t^3 - 3*t";
 var yFuncText = "t^4 - 4*t^2";
@@ -88,6 +88,7 @@ Knot = THREE.Curve.create(
 	{
 		// default:    0 < t < 1
 		//    want: tMin < t < tMax
+		tRange = tMax - tMin;
 		t = t * tRange + tMin;
 		return new THREE.Vector3(xFunc(t), yFunc(t), zFunc(t)).multiplyScalar(1);
 	}
