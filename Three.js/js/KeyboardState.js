@@ -10,6 +10,8 @@
  *       keyboard.down("A")    -- true for one update cycle after key is pressed
  *       keyboard.pressed("A") -- true as long as key is being pressed
  *       keyboard.up("A")      -- true for one update cycle after key is released
+ * (4) cleanup keyboard event listeners when you no longer need them
+ *       keyboard.destroy();
  * 
  *  See KeyboardState.k object data below for names of keys whose state can be polled
  */
@@ -20,6 +22,14 @@ KeyboardState = function()
 	// bind keyEvents
 	document.addEventListener("keydown", KeyboardState.onKeyDown, false);
 	document.addEventListener("keyup",   KeyboardState.onKeyUp,   false);	
+}
+
+// cleanup - stop listening to key events
+KeyboardState.prototype.destroy = function()
+{
+	// unbind keyEvents
+	document.removeEventListener("keydown", KeyboardState.onKeyDown, false);
+	document.removeEventListener("keyup",   KeyboardState.onKeyUp,   false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
